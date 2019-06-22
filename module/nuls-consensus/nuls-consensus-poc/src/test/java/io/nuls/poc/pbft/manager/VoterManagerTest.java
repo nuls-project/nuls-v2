@@ -3,12 +3,10 @@ package io.nuls.poc.pbft.manager;
 import io.nuls.poc.pbft.BlockVoter;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 /**
  * @author Niels
  */
-public class BlockVoterManagerTest {
+public class VoterManagerTest {
 
     @Test
     public void start() {
@@ -35,7 +33,7 @@ public class BlockVoterManagerTest {
 
     @Test
     public void testStartThread(){
-        BlockVoter voter = BlockVoterManager.getVoter(2);
+        BlockVoter voter = VoterManager.getVoter(2);
         try {
             Thread.sleep(100000L);
         } catch (InterruptedException e) {

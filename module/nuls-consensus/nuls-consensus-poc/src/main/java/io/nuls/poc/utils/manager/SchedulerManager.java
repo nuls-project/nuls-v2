@@ -2,7 +2,7 @@ package io.nuls.poc.utils.manager;
 
 import io.nuls.poc.model.bo.Chain;
 import io.nuls.poc.pbft.BlockVoter;
-import io.nuls.poc.pbft.manager.BlockVoterManager;
+import io.nuls.poc.pbft.manager.VoterManager;
 import io.nuls.poc.utils.thread.ConsensusProcessTask;
 import io.nuls.poc.utils.thread.process.ConsensusProcess;
 import io.nuls.core.core.annotation.Component;
@@ -39,6 +39,6 @@ public class SchedulerManager {
         chain.setScheduledThreadPoolExecutor(scheduledThreadPoolExecutor);
 
         BlockVoter voter = new BlockVoter(chain);
-        BlockVoterManager.putVoter(chainId, voter);
+        VoterManager.putVoter(chainId, voter);
     }
 }

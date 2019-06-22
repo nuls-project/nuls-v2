@@ -1,6 +1,7 @@
 package io.nuls.poc.pbft.cache;
 
 import io.nuls.base.data.NulsHash;
+import io.nuls.poc.pbft.message.VoteMessage;
 import io.nuls.poc.pbft.model.PbftData;
 import io.nuls.poc.pbft.model.VoteData;
 
@@ -24,17 +25,29 @@ public class VoteCenter {
     public PbftData addVote1(long height, int round, NulsHash hash, byte[] address, long startTime) {
 
         PbftData pbftData = getPbftData(height, round, startTime);
+
+
+        //todo 收集恶意数据
+
+
         VoteData data = new VoteData();
         data.setAddress(address);
         data.setHash(hash);
         data.setHeight(height);
         data.setRound(round);
         pbftData.addVote1Result(data);
+
+
         return pbftData;
     }
+
     public PbftData addVote2(long height, int round, NulsHash hash, byte[] address, long startTime) {
 
         PbftData pbftData = getPbftData(height, round, startTime);
+
+        //todo 收集恶意数据
+
+
         VoteData data = new VoteData();
         data.setAddress(address);
         data.setHash(hash);
@@ -58,4 +71,22 @@ public class VoteCenter {
         return data;
     }
 
+    public boolean contains(VoteMessage message, byte[] address) {
+        String key = message.getRound() + "_" + message.getRound();
+        PbftData pbftData = map.get(key);
+        if (null == pbftData) {
+            return false;
+        }
+        if (message.getStep() == 0) {
+            return null != pbftData.getVote1ByAddress(address);
+        } else if (message.getStep() == 1) {
+            return null != pbftData.getVote2ByAddress(address);
+        }
+        return false;
+    }
+
+    public PbftData getCurrentResult(long height, int round) {
+        String key = height + "_" + round;
+        return map.get(key);
+    }
 }

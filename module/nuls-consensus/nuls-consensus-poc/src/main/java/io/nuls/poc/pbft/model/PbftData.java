@@ -130,4 +130,21 @@ public class PbftData {
         }
         return false;
     }
+
+    public VoteData getVote1ByAddress(byte[] address) {
+        return getVoteByAddress(address, this.voteDataList1);
+    }
+
+    public VoteData getVote2ByAddress(byte[] address) {
+        return getVoteByAddress(address, this.voteDataList2);
+    }
+
+    public VoteData getVoteByAddress(byte[] address, List<VoteData> list) {
+        for (VoteData data : list) {
+            if (ArraysTool.arrayEquals(address, data.getAddress())) {
+                return data;
+            }
+        }
+        return null;
+    }
 }

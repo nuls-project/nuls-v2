@@ -3,6 +3,7 @@ package io.nuls.poc.pbft.message;
 import io.nuls.base.basic.NulsByteBuffer;
 import io.nuls.base.basic.NulsOutputStreamBuffer;
 import io.nuls.base.data.BaseBusinessMessage;
+import io.nuls.base.data.BlockHeader;
 import io.nuls.base.data.NulsHash;
 import io.nuls.core.constant.ToolsConstant;
 import io.nuls.core.crypto.UnsafeByteArrayOutputStream;
@@ -22,8 +23,16 @@ public class VoteMessage extends BaseBusinessMessage {
     private int round;
 
     private byte step = 0;
+    /**
+     * 精确到秒
+     */
+    private long startTime;
 
     private NulsHash hash;
+
+    //恶意分叉时，传递证据。
+    private BlockHeader header1;
+    private BlockHeader header2;
 
     private byte[] sign;
 
@@ -33,6 +42,8 @@ public class VoteMessage extends BaseBusinessMessage {
         stream.write(SerializeUtils.int16ToBytes(round));
         stream.write(step);
         stream.write(hash.getBytes());
+        stream.writeNulsData(header1);
+        stream.writeNulsData(header2);
         stream.writeBytesWithLength(sign);
     }
 
@@ -49,6 +60,8 @@ public class VoteMessage extends BaseBusinessMessage {
                 buffer.write(SerializeUtils.int16ToBytes(round));
                 buffer.write(step);
                 buffer.write(hash.getBytes());
+                buffer.writeNulsData(header1);
+                buffer.writeNulsData(header2);
             }
             return bos.toByteArray();
         } finally {
@@ -68,6 +81,8 @@ public class VoteMessage extends BaseBusinessMessage {
         this.round = byteBuffer.readShort();
         this.step = byteBuffer.readByte();
         this.hash = byteBuffer.readHash();
+        this.header1 = byteBuffer.readNulsData(new BlockHeader());
+        this.header2 = byteBuffer.readNulsData(new BlockHeader());
         this.sign = byteBuffer.readByLengthByte();
 
     }
@@ -75,6 +90,8 @@ public class VoteMessage extends BaseBusinessMessage {
     @Override
     public int size() {
         int size = 43;
+        size += SerializeUtils.sizeOfNulsData(header1);
+        size += SerializeUtils.sizeOfNulsData(header2);
         size += SerializeUtils.sizeOfBytes(sign);
         return size;
     }
@@ -117,5 +134,29 @@ public class VoteMessage extends BaseBusinessMessage {
 
     public void setSign(byte[] sign) {
         this.sign = sign;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public BlockHeader getHeader1() {
+        return header1;
+    }
+
+    public void setHeader1(BlockHeader header1) {
+        this.header1 = header1;
+    }
+
+    public BlockHeader getHeader2() {
+        return header2;
+    }
+
+    public void setHeader2(BlockHeader header2) {
+        this.header2 = header2;
     }
 }

@@ -15,8 +15,7 @@ import io.nuls.poc.constant.ConsensusConstant;
 import io.nuls.poc.constant.ConsensusErrorCode;
 import io.nuls.poc.model.bo.Chain;
 import io.nuls.poc.model.dto.input.ValidBlockDTO;
-import io.nuls.poc.pbft.BlockVoter;
-import io.nuls.poc.pbft.manager.BlockVoterManager;
+import io.nuls.poc.pbft.manager.VoterManager;
 import io.nuls.poc.rpc.call.CallMethodUtils;
 import io.nuls.poc.service.BlockService;
 import io.nuls.poc.utils.manager.BlockManager;
@@ -169,7 +168,7 @@ public class BlockServiceImpl implements BlockService {
         Result result = this.realValidBlock(block, dto, chain, validResult);
         if (chain.getConfig().getPbft() == 1 && result.isSuccess()) {
             //添加到投票管理器
-            ErrorCode errorCode = BlockVoterManager.getVoter(chainId).recieveBlock(block);
+            ErrorCode errorCode = VoterManager.getVoter(chainId).recieveBlock(block);
             result.setErrorCode(errorCode);
         }
         return result;

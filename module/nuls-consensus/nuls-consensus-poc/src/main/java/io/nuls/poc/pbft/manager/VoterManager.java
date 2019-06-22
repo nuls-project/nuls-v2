@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * @author Niels
  */
-public class BlockVoterManager {
+public class VoterManager {
 
     private static final Map<Integer, BlockVoter> voterMap = new HashMap<>();
 

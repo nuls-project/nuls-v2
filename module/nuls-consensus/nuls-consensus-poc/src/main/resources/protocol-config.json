@@ -2,6 +2,13 @@
   {
     "version": "1",
     "extend": "",
+    "validMsgs": [
+      {
+        "name": "io.nuls.poc.pbft.message.VoteMessage",
+        "protocolCmd": "vote",
+        "handlers": "VoteHandlerV1"
+      }
+    ],
     "validTxs": [
       {
         "type": "1",

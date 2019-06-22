@@ -89,6 +89,8 @@ public class MeetingRound {
      */
     private MeetingMember myMember;
 
+    private int currentMemberIndex = 0;
+
     private long offset;
 
     public MeetingRound getPreRound() {
@@ -269,5 +271,13 @@ public class MeetingRound {
 
     public void setOffset(long offset) {
         this.offset = offset;
+    }
+
+    public int getCurrentMemberIndex() {
+        return currentMemberIndex;
+    }
+
+    public void setCurrentMemberIndex(int currentMemberIndex) {
+        this.currentMemberIndex = currentMemberIndex;
     }
 }
