@@ -83,9 +83,6 @@ public class MeetingMember implements Comparable<MeetingMember> {
      */
     private long endTime;
 
-    //是否可以进入区块生产车间的钥匙，没有这个钥匙时，不能进行打包，否则会有黄牌
-    private boolean key;
-
     /**
      * 计算节点打包排序值
      * Computing Packing Sort Value of Nodes
@@ -161,13 +158,5 @@ public class MeetingMember implements Comparable<MeetingMember> {
 
     public void setRoundIndex(long roundIndex) {
         this.roundIndex = roundIndex;
-    }
-
-    public boolean hasKey() {
-        return key;
-    }
-
-    public void setKey(boolean key) {
-        this.key = key;
     }
 }

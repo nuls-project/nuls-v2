@@ -96,7 +96,7 @@ public class RoundManager {
      * 清理比指定轮次之后的轮次信息
      * Clean up the wheel number information of the specified chain
      *
-     * @param chain chain info
+     * @param chain      chain info
      * @param roundIndex 保留几轮轮次信息/Keep several rounds of information
      * @return boolean
      */
@@ -107,7 +107,7 @@ public class RoundManager {
             round = roundList.get(i);
             if (round.getIndex() > roundIndex) {
                 roundList.remove(i);
-            } else{
+            } else {
                 break;
             }
         }
@@ -456,8 +456,6 @@ public class RoundManager {
         List<MeetingMember> memberList = new ArrayList<>();
         String seedNodesStr = chain.getConfig().getSeedNodes();
         String[] seedNodes;
-
-        boolean pbft = chain.getConfig().getPbft() == 1;
         /*
         种子节点打包信息组装
         Seed node packaging information assembly
@@ -476,9 +474,6 @@ public class RoundManager {
                 member.setRoundStartTime(round.getStartTime());
                 member.setAgent(agent);
                 member.setRoundIndex(round.getIndex());
-                if (!pbft) {
-                    member.setKey(true);
-                }
                 memberList.add(member);
             }
         }
@@ -508,9 +503,6 @@ public class RoundManager {
             member.setDepositList(cdList);
             member.setRoundIndex(round.getIndex());
             member.setAgent(realAgent);
-            if (!pbft) {
-                member.setKey(true);
-            }
             /*
             节点总的委托金额是否达到出块节点的最小值
             Does the total delegation amount of the node reach the minimum value of the block node?

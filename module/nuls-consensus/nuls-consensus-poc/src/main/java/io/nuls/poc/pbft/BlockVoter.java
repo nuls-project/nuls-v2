@@ -27,6 +27,7 @@ import io.nuls.poc.utils.LoggerUtil;
 import io.nuls.poc.utils.manager.RoundManager;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * @author Niels
@@ -135,6 +136,7 @@ public class BlockVoter implements Runnable {
     }
 
     public ErrorCode recieveBlock(Block block) {
+        LoggerUtil.commonLog.info("=========== receive block:{}, {}", block.getHeader().getHeight(), block.getHeader().getHash());
         ErrorCode code = ConsensusErrorCode.WAIT_BLOCK_VERIFY;
         long height = block.getHeader().getHeight();
         NulsHash hash = block.getHeader().getHash();
@@ -200,6 +202,7 @@ public class BlockVoter implements Runnable {
     }
 
     public void recieveVote(String nodeId, VoteMessage message, byte[] address) {
+        LoggerUtil.commonLog.info("=======Vote:{} ,{} address:{}", message.getHeight(), message.getHash(), AddressTool.getStringAddressByBytes(address));
         // 判断是否接受此投票
         if (curRound.getHeight() > message.getHeight() || (curRound.getHeight() == message.getHeight() && curRound.getRound() > message.getRound())) {
             return;

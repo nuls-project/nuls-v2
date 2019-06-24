@@ -19,6 +19,7 @@ import io.nuls.poc.model.bo.Chain;
 import io.nuls.poc.model.bo.round.MeetingMember;
 import io.nuls.poc.model.bo.round.MeetingRound;
 import io.nuls.poc.rpc.call.CallMethodUtils;
+import io.nuls.poc.utils.LoggerUtil;
 import io.nuls.poc.utils.enumeration.ConsensusStatus;
 import io.nuls.poc.utils.manager.ConsensusManager;
 import io.nuls.poc.utils.manager.RoundManager;
@@ -109,7 +110,7 @@ public class ConsensusProcess {
         1. Is the node packing?
         2. Is the current time between the start and end of the node packing?
         */
-        if (!hasPacking && this.isMyTurn(round, member)) {
+        if (!hasPacking && this.isMyTurn(chain, round, member)) {
             hasPacking = true;
             try {
                 if (consensusLogger.getLogger().isDebugEnabled()) {
@@ -134,9 +135,16 @@ public class ConsensusProcess {
         }
     }
 
-    private boolean isMyTurn(MeetingRound round, MeetingMember member) {
-        return member.hasKey() && (round.getOffset() + member.getStartTime()) < NulsDateUtils.getCurrentTimeSeconds()
-                && (round.getOffset() + member.getEndTime()) > NulsDateUtils.getCurrentTimeSeconds();
+    private boolean isMyTurn(Chain chain, MeetingRound round, MeetingMember member) {
+        LoggerUtil.commonLog.info("=====mystart:{},now:{},endtime:{}", member.getStartTime(), NulsDateUtils.getCurrentTimeSeconds(), member.getEndTime());
+        boolean pbft = chain.getConfig().getPbft() == 1;
+        if (pbft) {
+            return member.getPackingIndexOfRound() == round.getCurrentMemberIndex() && (round.getOffset() + member.getStartTime()) <= NulsDateUtils.getCurrentTimeSeconds()
+                    && (round.getOffset() + member.getEndTime()) > NulsDateUtils.getCurrentTimeSeconds();
+        } else {
+            return (round.getOffset() + member.getStartTime()) <= NulsDateUtils.getCurrentTimeSeconds()
+                    && (round.getOffset() + member.getEndTime()) > NulsDateUtils.getCurrentTimeSeconds();
+        }
     }
 
     private void packing(Chain chain, MeetingMember self, MeetingRound round) throws Exception {
