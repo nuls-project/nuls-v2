@@ -4,10 +4,7 @@ import io.nuls.base.RPCUtil;
 import io.nuls.base.basic.AddressTool;
 import io.nuls.base.basic.NulsByteBuffer;
 import io.nuls.base.basic.ProtocolVersion;
-import io.nuls.base.data.BaseBusinessMessage;
-import io.nuls.base.data.BlockExtendsData;
-import io.nuls.base.data.BlockHeader;
-import io.nuls.base.data.Transaction;
+import io.nuls.base.data.*;
 import io.nuls.base.signture.BlockSignature;
 import io.nuls.base.signture.P2PHKSignature;
 import io.nuls.base.signture.SignatureUtil;
@@ -773,4 +770,25 @@ public class CallMethodUtils {
         }
     }
 
+    /**
+     * 将pbft的结果发送给区块管理模块
+     *
+     * @param chainId
+     * @param height
+     * @param hash
+     * @return
+     */
+    public static boolean sendVerifyResult(int chainId, long height, NulsHash hash) {
+        try {
+            Map<String, Object> params = new HashMap(4);
+            params.put(Constants.CHAIN_ID, chainId);
+            params.put("blockHeight", height);
+            params.put("blockHash", hash);
+            ResponseMessageProcessor.requestAndResponse(ModuleE.BL.abbr, "receiveVerifyResult", params);
+            return true;
+        } catch (Exception e) {
+            LoggerUtil.commonLog.error("", e);
+            return false;
+        }
+    }
 }

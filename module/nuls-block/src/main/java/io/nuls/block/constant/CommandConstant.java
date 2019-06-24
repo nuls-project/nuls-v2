@@ -136,4 +136,8 @@ public interface CommandConstant {
      * 提供给协议升级模块的批量接口
      */
     String GET_BLOCK_HEADERS_FOR_PROTOCOL = "getBlockHeadersForProtocol";
+    /**
+     * 接收区块的最终验证结果
+     */
+    String RECEIVE_VERIFY_RESULT = "receiveVerifyResult";
 }

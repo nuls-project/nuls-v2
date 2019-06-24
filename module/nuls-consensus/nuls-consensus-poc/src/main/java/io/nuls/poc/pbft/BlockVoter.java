@@ -59,6 +59,10 @@ public class BlockVoter implements Runnable {
     public void run() {
         while (true) {
             try {
+                if (null == this.roundManager) {
+                    Thread.sleep(1000L);
+                    continue;
+                }
                 long sleep = 200L;
                 if (null == pocRound || pocRound.getMemberCount() == (1 + pocRound.getCurrentMemberIndex())) {
                     this.pocRound = this.roundManager.getCurrentRound(chain);
@@ -114,11 +118,12 @@ public class BlockVoter implements Runnable {
         this.curRound.setStart(this.lastHeader.getTime() + round * this.timeout);
     }
 
-    private void sureResult(NulsHash hash, MeetingRound pocRound) {
-        //todo 通知block模块
-        this.preCommitCache.clear(hash);
-        pocRound.setCurrentMemberIndex(pocRound.getCurrentMemberIndex() + 1);
-
+    private void sureResult(long height, NulsHash hash, MeetingRound pocRound) {
+        boolean result = CallMethodUtils.sendVerifyResult(chainId, height, hash);
+        if (result) {
+            this.preCommitCache.clear(hash);
+            pocRound.setCurrentMemberIndex(pocRound.getCurrentMemberIndex() + 1);
+        }
     }
 
     public ErrorCode recieveBlock(Block block) {
@@ -239,7 +244,7 @@ public class BlockVoter implements Runnable {
             pbftData = cache.addVote2(message.getHeight(), message.getRound(), message.getHash(), address, time);
             VoteResultItem result = pbftData.getVote2LargestItem();
             if (result.getCount() > VoteConstant.DEFAULT_RATE * totalCount) {
-                this.sureResult(result.getHash(), pocRound);
+                this.sureResult(pbftData.getHeight(), result.getHash(), pocRound);
             }
         }
 

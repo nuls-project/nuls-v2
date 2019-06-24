@@ -27,9 +27,12 @@ import io.nuls.base.data.BlockHeader;
 import io.nuls.base.data.NulsHash;
 import io.nuls.base.data.po.BlockHeaderPo;
 import io.nuls.block.constant.BlockErrorCode;
+import io.nuls.block.manager.BlockSaverManager;
 import io.nuls.block.manager.ContextManager;
+import io.nuls.block.model.BlockSure;
 import io.nuls.block.model.ChainContext;
 import io.nuls.block.service.BlockService;
+import io.nuls.block.thread.BlockSaver;
 import io.nuls.core.core.annotation.Autowired;
 import io.nuls.core.core.annotation.Component;
 import io.nuls.core.log.logback.NulsLogger;
@@ -434,7 +437,7 @@ public class BlockResource extends BaseCmd {
             }
             long height = Long.parseLong(map.get("height").toString());
             Block block = service.getBlock(chainId, height);
-            if(block == null) {
+            if (block == null) {
                 return success(null);
             }
             return success(RPCUtil.encode(block.serialize()));
@@ -559,6 +562,46 @@ public class BlockResource extends BaseCmd {
             } else {
                 return failed(BlockErrorCode.PARAMETER_ERROR);
             }
+        } catch (Exception e) {
+            commonLog.error("", e);
+            return failed(e.getMessage());
+        }
+    }
+
+    /**
+     * 接收区块最终验证结果
+     *
+     * @param map
+     * @return
+     */
+    @CmdAnnotation(cmd = RECEIVE_VERIFY_RESULT, version = 1.0, description = "receive the result of the block validater.")
+    @Parameters({
+            @Parameter(parameterName = "chainId", parameterType = "int", parameterDes = "链ID", canNull = false),
+            @Parameter(parameterName = "blockHash", parameterType = "string", parameterDes = "本次验证结果对应的正确的区块HASH字符串(HEX)", canNull = false),
+            @Parameter(parameterName = "blockHeight", parameterType = "long", parameterDes = "本次验证结果对应的区块高度", canNull = false)
+    })
+    @ResponseData(name = "返回值", description = "无返回值")
+    public Response receiveVerifyResult(Map map) {
+        int chainId = Integer.parseInt(map.get(Constants.CHAIN_ID).toString());
+        ChainContext context = ContextManager.getContext(chainId);
+        if (context == null) {
+            return success(null);
+        }
+
+        long height = Long.parseLong(map.get("blockHeight").toString());
+        NulsHash blockHash = NulsHash.fromHex(map.get("blockHash").toString());
+        NulsLogger commonLog = context.getLogger();
+        try {
+
+            BlockSaver saver = BlockSaverManager.getBlockSaver(chainId);
+            if (saver == null) {
+                return failed(BlockErrorCode.DATA_ERROR);
+            }
+            BlockSure sure = new BlockSure();
+            sure.setHeight(height);
+            sure.setHash(blockHash);
+            saver.addSure(sure);
+            return success();
         } catch (Exception e) {
             commonLog.error("", e);
             return failed(e.getMessage());
