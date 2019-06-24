@@ -52,10 +52,11 @@ import java.util.Map;
 public class ConsensusUtil {
     @Autowired
     private static BlockService service;
+
     /**
      * 共识验证
      *
-     * @param chainId 链Id/chain id
+     * @param chainId  链Id/chain id
      * @param block
      * @param download 0区块下载中,1接收到最新区块
      * @return
@@ -75,6 +76,9 @@ public class ConsensusUtil {
                 boolean value = (Boolean) v.get("value");
                 if (value) {
                     List contractList = (List) v.get("contractList");
+                    if (BlockErrorCode.WAIT_BLOCK_VERIFY.getCode().equals(response.getResponseErrorCode())) {
+                        return Result.getSuccess(BlockErrorCode.WAIT_BLOCK_VERIFY).setData(contractList);
+                    }
                     return Result.getSuccess(BlockErrorCode.SUCCESS).setData(contractList);
                 }
             }
@@ -134,7 +138,7 @@ public class ConsensusUtil {
         //    return true;
         //}
         for (byte[] tmp : packingAddressList) {
-            if (Arrays.equals(tmp,masterHeaderPackingAddress)) {
+            if (Arrays.equals(tmp, masterHeaderPackingAddress)) {
                 return true;
             }
         }
@@ -177,7 +181,7 @@ public class ConsensusUtil {
     /**
      * 新增区块时通知共识模块
      *
-     * @param chainId 链Id/chain id
+     * @param chainId   链Id/chain id
      * @param localInit
      * @return
      */

@@ -136,7 +136,6 @@ public class ConsensusProcess {
     }
 
     private boolean isMyTurn(Chain chain, MeetingRound round, MeetingMember member) {
-        LoggerUtil.commonLog.info("=====mystart:{},now:{},endtime:{}", member.getStartTime(), NulsDateUtils.getCurrentTimeSeconds(), member.getEndTime());
         boolean pbft = chain.getConfig().getPbft() == 1;
         if (pbft) {
             return member.getPackingIndexOfRound() == round.getCurrentMemberIndex() && (round.getOffset() + member.getStartTime()) <= NulsDateUtils.getCurrentTimeSeconds()
