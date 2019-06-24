@@ -114,6 +114,7 @@ public class BlockVoter implements Runnable {
             LoggerUtil.commonLog.info("====投票给分叉");
             preCommitVote(preCommitCache.getHeight(), (int) round, preCommitCache.getShouldNext(), preCommitCache.getHeader(), preCommitCache.getForkHeader(), pocRound.getMyMember());
         } else {
+            pocRound.setOffset(pocRound.getOffset() + this.timeout);
             LoggerUtil.commonLog.info("====投票给空块：{}", preCommitCache.getHeight());
             this.preCommitVote(preCommitCache.getHeight(), (int) round, null, null, null, pocRound.getMyMember());
         }
