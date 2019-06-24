@@ -368,7 +368,7 @@ public class BlockServiceImpl implements BlockService {
             commonLog.error("ProtocolUtil saveNotice fail!chainId-" + chainId + ",height-" + height);
             return false;
         }
-        CrossChainUtil.heightNotice(chainId, height);
+        CrossChainUtil.heightNotice(chainId, height,header);
 
         //6.如果不是第一次启动,则更新主链属性
         if (!localInit) {
