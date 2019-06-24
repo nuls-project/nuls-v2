@@ -136,7 +136,6 @@ public class BlockVoter implements Runnable {
     }
 
     public ErrorCode recieveBlock(Block block) {
-        LoggerUtil.commonLog.info("=========== receive block:{}, {}", block.getHeader().getHeight(), block.getHeader().getHash());
         ErrorCode code = ConsensusErrorCode.WAIT_BLOCK_VERIFY;
         long height = block.getHeader().getHeight();
         NulsHash hash = block.getHeader().getHash();
