@@ -89,7 +89,7 @@ public class MeetingRound {
      */
     private MeetingMember myMember;
 
-    private int currentMemberIndex = 0;
+    private int currentMemberIndex = 1;
 
     private long offset;
 
