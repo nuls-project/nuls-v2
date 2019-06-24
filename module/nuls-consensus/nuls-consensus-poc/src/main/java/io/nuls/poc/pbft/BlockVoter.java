@@ -109,7 +109,7 @@ public class BlockVoter implements Runnable {
                 return;
             }
         }
-        this.changeCurrentRound(round, meetingMember.getStartTime() + this.timeout * (round - 1));
+        this.changeCurrentRound(round, meetingMember.getEndTime() + this.timeout * (round - 1));
         if (now < this.curRound.getEnd()) {
             return;
         }
