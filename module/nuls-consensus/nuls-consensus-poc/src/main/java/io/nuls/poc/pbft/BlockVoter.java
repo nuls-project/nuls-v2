@@ -70,11 +70,16 @@ public class BlockVoter implements Runnable {
                 if (pocRound.getMyMember() != null) {
                     doit(pocRound);
                 } else {
-                    sleep = 10000L;
+                    sleep = 5000L;
                 }
                 Thread.sleep(sleep);
             } catch (Exception e) {
                 LoggerUtil.commonLog.error(e);
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException ex) {
+                    LoggerUtil.commonLog.error(e);
+                }
             }
         }
     }
@@ -92,7 +97,9 @@ public class BlockVoter implements Runnable {
             return;
         }
         PbftData pbftData = cache.getCurrentResult(this.curRound.getHeight(), this.curRound.getRound());
-
+        if (null == pbftData) {
+            return;
+        }
         VoteResultItem result = pbftData.getVote2LargestItem();
         if (result.getCount() > VoteConstant.DEFAULT_RATE * pocRound.getMemberCount()) {
             return;
