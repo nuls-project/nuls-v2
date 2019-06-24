@@ -459,7 +459,8 @@ public class PunishManager {
                     } else {
                         BlockHeader preRoundHeader = roundManager.getFirstBlockOfPreRound(chain, round.getIndex() - 1);
                         BlockExtendsData preRoundExtendsData = new BlockExtendsData(preRoundHeader.getExtend());
-                        preRound = roundManager.getRoundByRoundIndex(chain, preRoundExtendsData.getRoundIndex(), preRoundExtendsData.getRoundStartTime());
+                        long offset = preRoundHeader.getTime() - preBlockRoundData.getRoundStartTime() - chain.getConfig().getPackingInterval() * preBlockRoundData.getPackingIndexOfRound();
+                        preRound = roundManager.getRoundByRoundIndex(chain, preRoundExtendsData.getRoundIndex(), preRoundExtendsData.getRoundStartTime(), offset, 1);
                     }
                 }
                 member = preRound.getMember(index + preRound.getMemberCount());

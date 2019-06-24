@@ -22,19 +22,26 @@ public class VoteCenter {
         this.chainId = chainId;
     }
 
-    public PbftData addVote1(long height, int round, NulsHash hash, byte[] address, long startTime) {
+    public PbftData addVote1(long height, int round, NulsHash hash, byte[] address, long startTime, boolean bifurcation) {
 
         PbftData pbftData = getPbftData(height, round, startTime);
-
-
-        //todo 收集恶意数据
-
-
-        VoteData data = new VoteData();
+        VoteData voteData = pbftData.getVote1ByAddress(address);
+        VoteData data;
+        if (null != voteData) {
+            if (voteData.getHash() != null && hash == null && !bifurcation) {
+                //todo 恶意修改投票结果
+            } else if (voteData.getHash() == null && voteData.isBifurcation() && !bifurcation) {
+                //todo 恶意修改投票结果
+            }
+            data = voteData;
+        } else {
+            data = new VoteData();
+        }
         data.setAddress(address);
         data.setHash(hash);
         data.setHeight(height);
         data.setRound(round);
+        data.setBifurcation(bifurcation);
         pbftData.addVote1Result(data);
 
 

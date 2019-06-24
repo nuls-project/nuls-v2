@@ -125,7 +125,7 @@ public class BlockValidator {
             if (round != null) {
                 currentRound = round;
             } else {
-                currentRound = roundManager.getRound(chain, extendsData, false);
+                currentRound = roundManager.getRound(chain, blockHeader, extendsData, false);
             }
             if (chain.getRoundList().isEmpty()) {
                 hasChangeRound = true;
@@ -143,7 +143,7 @@ public class BlockValidator {
                 chain.getLogger().error("block height " + blockHeader.getHeight() + " is the block of the future and received in advance! hash :" + blockHeaderHash);
                 throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
             }
-            MeetingRound tempRound = roundManager.getRound(chain, extendsData, !isDownload);
+            MeetingRound tempRound = roundManager.getRound(chain, blockHeader, extendsData, !isDownload);
             if (tempRound.getIndex() > currentRound.getIndex()) {
                 tempRound.setPreRound(currentRound);
                 hasChangeRound = true;
@@ -164,7 +164,7 @@ public class BlockValidator {
             chain.getLogger().error("block height " + blockHeader.getHeight() + " packager error! hash :" + blockHeaderHash);
             throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
         }
-        if (member.getEndTime() + currentRound.getOffset() >= blockHeader.getTime() && member.getEndTime() <= blockHeader.getTime()) {
+        if (member.getStartTime() > blockHeader.getTime()) {
             chain.getLogger().error("block height " + blockHeader.getHeight() + " time error! hash :" + blockHeaderHash);
             throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
         }

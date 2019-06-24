@@ -90,10 +90,13 @@ public class BlockVoter implements Runnable {
         long now = NulsDateUtils.getCurrentTimeSeconds();
         this.lastHeader = chain.getNewestHeader();
         MeetingMember meetingMember = pocRound.getMember(pocRound.getCurrentMemberIndex());
-        long offset = now - meetingMember.getStartTime() - pocRound.getOffset() - this.timeout;
+        long offset = now - meetingMember.getStartTime() - this.timeout;
+        if (offset < 0) {
+            offset = 0;
+        }
         long round = offset / this.timeout + 1;
         if (this.curRound == null) {
-            changeCurrentRound(round);
+            changeCurrentRound(round, meetingMember.getStartTime() + this.timeout * (round - 1));
             return;
         }
         if (now < this.curRound.getStart()) {
@@ -106,11 +109,11 @@ public class BlockVoter implements Runnable {
                 return;
             }
         }
+        this.changeCurrentRound(round, meetingMember.getStartTime() + this.timeout * (round - 1));
         if (now < this.curRound.getEnd()) {
             return;
         }
         long start = this.curRound.getEnd();
-        this.changeCurrentRound(round);
         if (preCommitCache.getForkHeader() != null) {
             LoggerUtil.commonLog.info("====投票给分叉");
             preCommitVote(this.curRound.getHeight(), (int) round, preCommitCache.getShouldNext(), preCommitCache.getHeader(), start, preCommitCache.getForkHeader(), pocRound.getMyMember());
@@ -121,13 +124,13 @@ public class BlockVoter implements Runnable {
         }
     }
 
-    private void changeCurrentRound(long round) {
+    private void changeCurrentRound(long round, long startTime) {
         this.lastRound = this.curRound;
         this.curRound = new VoteRound();
         this.curRound.setHeight(this.lastHeader.getHeight() + 1);
         this.curRound.setRound((int) round);
-        this.curRound.setStart(this.lastHeader.getTime() + round * this.timeout);
-        this.curRound.setEnd(this.curRound.getStart() + this.timeout);
+        this.curRound.setStart(startTime);
+        this.curRound.setEnd(startTime + this.timeout);
     }
 
     private void sureResult(long height, NulsHash hash, MeetingRound pocRound) {
@@ -142,7 +145,7 @@ public class BlockVoter implements Runnable {
         ErrorCode code = ConsensusErrorCode.WAIT_BLOCK_VERIFY;
         long height = block.getHeader().getHeight();
         NulsHash hash = block.getHeader().getHash();
-        PbftData pbftData = cache.addVote1(height, 1, hash, block.getHeader().getPackingAddress(chainId), block.getHeader().getTime());
+        PbftData pbftData = cache.addVote1(height, 1, hash, block.getHeader().getPackingAddress(chainId), block.getHeader().getTime(), false);
 
         int totalCount = pocRound.getMemberCount();
         if (totalCount == 1) {
@@ -167,8 +170,8 @@ public class BlockVoter implements Runnable {
             message.setStartTime(block.getHeader().getTime());
             message.setHash(result.getHash());
             this.signAndBroadcast(self, message);
-            LoggerUtil.commonLog.info("====commit轮投票：{} ,{}", height, hash);
-            cache.addVote2(height, pbftData.getRound(), hash, self.getAgent().getPackingAddress(), block.getHeader().getTime());
+            LoggerUtil.commonLog.info("====commit轮投票：{} ,{}", height, message.getHash());
+            cache.addVote2(height, pbftData.getRound(), message.getHash(), self.getAgent().getPackingAddress(), block.getHeader().getTime());
         }
         return code;
     }
@@ -180,13 +183,15 @@ public class BlockVoter implements Runnable {
         message.setStep((byte) 0);
         message.setStartTime(time);
         message.setHash(hash);
+        boolean bifurcation = false;
         if (null != header) {
+            bifurcation = true;
             message.setHeader1(header);
             message.setHeader2(forkHeader);
         }
         this.signAndBroadcast(self, message);
         this.preCommitCache.change(height, round, preCommitCache.getShouldNext(), header, forkHeader);
-        cache.addVote1(height, round, hash, self.getAgent().getPackingAddress(), time);
+        cache.addVote1(height, round, hash, self.getAgent().getPackingAddress(), time, bifurcation);
 
     }
 
@@ -243,7 +248,7 @@ public class BlockVoter implements Runnable {
         byte step = message.getStep();
         PbftData pbftData;
         if (step < 1) {
-            pbftData = cache.addVote1(message.getHeight(), message.getRound(), message.getHash(), address, time);
+            pbftData = cache.addVote1(message.getHeight(), message.getRound(), message.getHash(), address, time, message.getHash() == null && message.getHeader2() != null);
             VoteResultItem result = pbftData.getVote1LargestItem();
             //判断自己是否需要签名，如果需要就直接进行
             MeetingMember self = pocRound.getMyMember();

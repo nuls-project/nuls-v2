@@ -14,6 +14,16 @@ public class VoteData {
 
     private byte[] address;
 
+    public boolean isBifurcation() {
+        return bifurcation;
+    }
+
+    public void setBifurcation(boolean bifurcation) {
+        this.bifurcation = bifurcation;
+    }
+
+    private boolean bifurcation;
+
     public long getHeight() {
         return height;
     }

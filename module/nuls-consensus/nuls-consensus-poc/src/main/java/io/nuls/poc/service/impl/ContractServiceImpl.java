@@ -404,7 +404,7 @@ public class ContractServiceImpl implements ContractService {
             BlockExtendsData extendsData = new BlockExtendsData(blockHeader.getExtend());
             MeetingRound round = roundManager.getRoundByIndex(chain, extendsData.getRoundIndex());
             if (round == null) {
-                round = roundManager.getRound(chain, extendsData, false);
+                round = roundManager.getRound(chain, blockHeader, extendsData, false);
             }
             MeetingMember member = round.getMember(extendsData.getPackingIndexOfRound());
             if (AddressTool.validContractAddress(member.getAgent().getRewardAddress(), chain.getConfig().getChainId())) {

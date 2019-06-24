@@ -438,7 +438,7 @@ public class ChainServiceImpl implements ChainService {
     @Override
     @SuppressWarnings("unchecked")
     public Result getRoundMemberList(Map<String, Object> params) {
-        if (params == null || params.get(ConsensusConstant.PARAM_CHAIN_ID) == null || params.get(ConsensusConstant.PARAM_EXTEND) == null) {
+        if (params == null || params.get(ConsensusConstant.PARAM_CHAIN_ID) == null || params.get(ConsensusConstant.PARAM_HEADER) == null) {
             return Result.getFailed(ConsensusErrorCode.PARAM_ERROR);
         }
         int chainId = (Integer) params.get(ConsensusConstant.PARAM_CHAIN_ID);
@@ -450,10 +450,12 @@ public class ChainServiceImpl implements ChainService {
             return Result.getFailed(ConsensusErrorCode.CHAIN_NOT_EXIST);
         }
         try {
-            BlockExtendsData extendsData = new BlockExtendsData(RPCUtil.decode((String) params.get(ConsensusConstant.PARAM_EXTEND)));
+            BlockHeader header = new BlockHeader();
+            header.parse(RPCUtil.decode((String) params.get(ConsensusConstant.PARAM_HEADER)), 0);
+            BlockExtendsData extendsData = new BlockExtendsData(header.getExtend());
             MeetingRound round = roundManager.getRoundByIndex(chain, extendsData.getRoundIndex());
             if (round == null) {
-                round = roundManager.getRound(chain, extendsData, false);
+                round = roundManager.getRound(chain, header, extendsData, false);
             }
             List<String> packAddressList = new ArrayList<>();
             for (MeetingMember meetingMember : round.getMemberList()) {

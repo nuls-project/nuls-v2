@@ -206,14 +206,15 @@ public class RoundManager {
             BlockHeader newestHeader = chain.getNewestHeader();
             BlockExtendsData extendsData = new BlockExtendsData(newestHeader.getExtend());
             List<BlockHeader> blockHeaderList = chain.getBlockHeaderList();
+            BlockHeader blockHeader = newestHeader;
             for (int i = blockHeaderList.size() - 1; i >= 0; i--) {
-                BlockHeader blockHeader = blockHeaderList.get(i);
+                blockHeader = blockHeaderList.get(i);
                 extendsData = new BlockExtendsData(blockHeader.getExtend());
                 if (extendsData.getRoundIndex() < currentRound.getIndex()) {
                     break;
                 }
             }
-            MeetingRound preRound = getRound(chain, extendsData, false);
+            MeetingRound preRound = getRound(chain, blockHeader, extendsData, false);
             currentRound.setPreRound(preRound);
         }
     }
@@ -236,8 +237,8 @@ public class RoundManager {
                 If the local latest round is empty or the local latest round is packaged less than the current time,
                 the next round of information needs to be calculated.
                 */
-                if (round == null || round.getEndTime() < NulsDateUtils.getCurrentTimeSeconds()) {
-                    MeetingRound nextRound = getRound(chain, null, true);
+                if (round == null || round.getEndTime() + round.getOffset() < NulsDateUtils.getCurrentTimeSeconds()) {
+                    MeetingRound nextRound = getRound(chain, null, null, true);
                     nextRound.setPreRound(round);
                     addRound(chain, nextRound);
                     round = nextRound;
@@ -256,7 +257,7 @@ public class RoundManager {
             if (round != null && extendsData.getRoundIndex() == round.getIndex() && extendsData.getPackingIndexOfRound() != extendsData.getConsensusMemberCount()) {
                 return round;
             }
-            MeetingRound nextRound = getRound(chain, extendsData, false);
+            MeetingRound nextRound = getRound(chain, blockHeader, extendsData, false);
             /*
             如果当前轮次不为空且计算出的下一轮次下标小于当前轮次下标则直接返回计算出的下一轮次信息
             If the current round is not empty and the calculated next round subscript is less than the current round subscript,
@@ -282,7 +283,7 @@ public class RoundManager {
      * @param isRealTime 是否根据最新时间计算轮次/Whether to calculate rounds based on current time
      * @return MeetingRound
      */
-    public MeetingRound getRound(Chain chain, BlockExtendsData roundData, boolean isRealTime) throws Exception {
+    public MeetingRound getRound(Chain chain, BlockHeader header, BlockExtendsData roundData, boolean isRealTime) throws Exception {
         chain.getRoundLock().lock();
         try {
             if (isRealTime && roundData == null) {
@@ -290,45 +291,11 @@ public class RoundManager {
             } else if (!isRealTime && roundData == null) {
                 return getRoundByNewestBlock(chain);
             } else {
-                return getRoundByExpectedRound(chain, roundData);
+                return getRoundByExpectedRound(chain, header, roundData);
             }
         } finally {
             chain.getRoundLock().unlock();
         }
-    }
-
-    public MeetingRound getRoundByTime(Chain chain, long time) throws Exception {
-        int blockHeaderSize = chain.getBlockHeaderList().size();
-        for (int index = blockHeaderSize - 1; index >= 0; index--) {
-            BlockHeader blockHeader = chain.getBlockHeaderList().get(index);
-            if (blockHeader.getTime() <= time) {
-                BlockExtendsData blockExtendsData = new BlockExtendsData();
-                blockExtendsData.parse(blockHeader.getExtend(), 0);
-                long roundStartTime = blockExtendsData.getRoundStartTime();
-                long roundEndTime = roundStartTime + chain.getConfig().getPackingInterval() * blockExtendsData.getConsensusMemberCount();
-                if (roundStartTime <= time) {
-                    if (roundEndTime >= time) {
-                        return getRound(chain, blockExtendsData, false);
-                    } else {
-                        int realIndex = index + 1;
-                        while (realIndex <= blockHeaderSize - 1) {
-                            blockExtendsData.parse(chain.getBlockHeaderList().get(realIndex).getExtend(), 0);
-                            roundStartTime = blockExtendsData.getRoundStartTime();
-                            roundEndTime = roundStartTime + chain.getConfig().getPackingInterval() * blockExtendsData.getConsensusMemberCount();
-                            if (roundStartTime > time) {
-                                return null;
-                            }
-                            if (roundEndTime >= time) {
-                                return getRound(chain, blockExtendsData, false);
-                            }
-                            realIndex++;
-                        }
-                        return null;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
 
@@ -343,7 +310,8 @@ public class RoundManager {
         BlockHeader bestBlockHeader = chain.getNewestHeader();
         BlockHeader startBlockHeader = bestBlockHeader;
         BlockExtendsData bestRoundData = new BlockExtendsData(bestBlockHeader.getExtend());
-        long bestRoundEndTime = bestRoundData.getRoundEndTime(chain.getConfig().getPackingInterval());
+        long offset = bestBlockHeader.getTime() - bestRoundData.getRoundStartTime() - chain.getConfig().getPackingInterval() * bestRoundData.getPackingIndexOfRound();
+        long bestRoundEndTime = bestRoundData.getRoundEndTime(chain.getConfig().getPackingInterval()) + offset;
         if (startBlockHeader.getHeight() != 0L) {
             long roundIndex = bestRoundData.getRoundIndex();
             /*
@@ -363,6 +331,7 @@ public class RoundManager {
         找到需计算的轮次下标及轮次开始时间,如果当前时间<本地最新区块时间，则表示需计算轮次就是本地最新区块轮次
         Find the rounds subscripts to be calculated and the start time of rounds
         */
+        int currentIndex = 1;
         if (nowTime < bestRoundEndTime) {
             index = bestRoundData.getRoundIndex();
             startTime = bestRoundData.getRoundStartTime();
@@ -375,8 +344,10 @@ public class RoundManager {
             int diffRoundCount = (int) (diffTime / (consensusMemberCount * packingInterval));
             index = bestRoundData.getRoundIndex() + diffRoundCount + 1;
             startTime = bestRoundEndTime + diffRoundCount * consensusMemberCount * packingInterval;
+
+            currentIndex = (int) ((nowTime - startTime) / chain.getConfig().getPackingInterval() + 1);
         }
-        return calculationRound(chain, startBlockHeader, index, startTime);
+        return calculationRound(chain, startBlockHeader, index, startTime, 0, currentIndex);
     }
 
     /**
@@ -391,33 +362,35 @@ public class RoundManager {
         BlockExtendsData extendsData = new BlockExtendsData(bestBlockHeader.getExtend());
         extendsData.setRoundStartTime(extendsData.getRoundEndTime(chain.getConfig().getPackingInterval()));
         extendsData.setRoundIndex(extendsData.getRoundIndex() + 1);
-        return getRoundByExpectedRound(chain, extendsData);
+        return getRoundByExpectedRound(chain, bestBlockHeader, extendsData);
     }
 
     /**
      * 根据指定区块数据计算所在轮次信息
      * Calculate next round information based on the latest block entity
      *
-     * @param chain     chain info
-     * @param roundData 区块里的轮次信息/block extends entity
+     * @param chain           chain info
+     * @param bestBlockHeader
+     * @param roundData       区块里的轮次信息/block extends entity
      * @return MeetingRound
      */
-    private MeetingRound getRoundByExpectedRound(Chain chain, BlockExtendsData roundData) throws Exception {
+    private MeetingRound getRoundByExpectedRound(Chain chain, BlockHeader bestBlockHeader, BlockExtendsData roundData) throws Exception {
+        long offset = bestBlockHeader.getTime() - roundData.getRoundStartTime() - chain.getConfig().getPackingInterval() * roundData.getPackingIndexOfRound();
         BlockHeader startBlockHeader = chain.getNewestHeader();
         long roundIndex = roundData.getRoundIndex();
         long roundStartTime = roundData.getRoundStartTime();
         if (startBlockHeader.getHeight() != 0L) {
             startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
         }
-        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime);
+        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, offset, roundData.getPackingIndexOfRound());
     }
 
-    public MeetingRound getRoundByRoundIndex(Chain chain, long roundIndex, long roundStartTime) throws Exception {
+    public MeetingRound getRoundByRoundIndex(Chain chain, long roundIndex, long roundStartTime, long offset, int currentMemberIndex) throws Exception {
         BlockHeader startBlockHeader = chain.getNewestHeader();
         if (startBlockHeader.getHeight() != 0L) {
             startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
         }
-        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime);
+        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, offset, currentMemberIndex);
     }
 
     /**
@@ -430,10 +403,12 @@ public class RoundManager {
      * @param startTime        轮次开始打包时间/start time
      */
     @SuppressWarnings("unchecked")
-    private MeetingRound calculationRound(Chain chain, BlockHeader startBlockHeader, long index, long startTime) throws Exception {
+    private MeetingRound calculationRound(Chain chain, BlockHeader startBlockHeader, long index, long startTime, long offset, int currentMemberIndex) throws Exception {
         MeetingRound round = new MeetingRound();
         round.setIndex(index);
         round.setStartTime(startTime);
+        round.setOffset(offset);
+        round.setCurrentMemberIndex(currentMemberIndex);
         setMemberList(chain, round, startBlockHeader);
         List<byte[]> packingAddressList = CallMethodUtils.getEncryptedAddressList(chain);
         if (!packingAddressList.isEmpty()) {

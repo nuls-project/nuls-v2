@@ -158,7 +158,7 @@ public class ChainCmd extends BaseCmd {
      */
     @CmdAnnotation(cmd = "cs_getRoundMemberList", version = 1.0, description = "get current round information 1.0")
     @Parameter(parameterName = "chainId", parameterType = "int")
-    @Parameter(parameterName = "extend", parameterType = "String")
+    @Parameter(parameterName = "header", parameterType = "String")
     public Response getRoundMemberList(Map<String, Object> params) {
         Result result = service.getRoundMemberList(params);
         if (result.isFailed()) {

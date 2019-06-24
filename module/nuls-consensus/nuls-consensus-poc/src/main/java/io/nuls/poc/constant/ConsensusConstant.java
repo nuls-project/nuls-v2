@@ -4,14 +4,15 @@ import java.math.BigInteger;
 
 /**
  * 共识模块常量类
+ *
  * @author tag
  * 2018/11/6
- * */
+ */
 public interface ConsensusConstant {
 
     /**
      * Consensus module related table name/共识模块相关表名
-     * */
+     */
     String DB_NAME_CONSENSUS_AGENT = "consensus_agent";
     String DB_NAME_CONSENSUS_DEPOSIT = "consensus_deposit";
     String DB_NAME_CONSENSUS_PUNISH = "consensus_punish";
@@ -21,7 +22,7 @@ public interface ConsensusConstant {
 
     /**
      * config param
-     * */
+     */
     String PARAM_PACKING_INTERVAL = "packing_interval";
     String PARAM_BLOCK_SIZE = "block_size";
     String PARAM_PACKING_AMOUNT = "packing_amount";
@@ -39,33 +40,33 @@ public interface ConsensusConstant {
 
     /**
      * boot path
-     * */
+     */
     String BOOT_PATH = "io.nuls";
 
     /**
      * context path
-     * */
+     */
     String CONTEXT_PATH = "io.nuls.poc";
 
     /**
      * rpc file path
-     * */
+     */
     String RPC_PATH = "io.nuls.poc.rpc";
 
 
     /**
      * system params
-     * */
+     */
     String SYS_ALLOW_NULL_ARRAY_ELEMENT = "protostuff.runtime.allow_null_array_element";
     String SYS_FILE_ENCODING = "file.encoding";
 
 
     /**
      * DB config
-     * */
-    String DB_CONFIG_NAME ="db_config.properties";
-    String DB_DATA_PATH ="rocksdb.datapath";
-    String DB_DATA_DEFAULT_PATH ="rocksdb.datapath";
+     */
+    String DB_CONFIG_NAME = "db_config.properties";
+    String DB_DATA_PATH = "rocksdb.datapath";
+    String DB_DATA_DEFAULT_PATH = "rocksdb.datapath";
 
 
     /**
@@ -88,7 +89,7 @@ public interface ConsensusConstant {
     /**
      * 系统启动时缓存指定轮次的区块
      * Buffer a specified number of blocks at system startup
-     * */
+     */
     int INIT_BLOCK_HEADER_COUNT = 110;
 
     /**
@@ -116,28 +117,28 @@ public interface ConsensusConstant {
 
     /**
      * 信誉值的最小值，小于等于该值会给红牌处罚
-     * */
+     */
     double RED_PUNISH_CREDIT_VAL = -1D;
 
     /**
      * 共识锁定时间
-     * */
+     */
     long CONSENSUS_LOCK_TIME = -1;
 
     /**
      * lock of lockTime,(max of int48)(281474976710655L)
      */
-    long LOCK_OF_LOCK_TIME = -1L ;
+    long LOCK_OF_LOCK_TIME = -1L;
 
     /**
      * Map初始值
-     * */
-    int  INIT_CAPACITY =16;
+     */
+    int INIT_CAPACITY = 16;
 
     /**
      * RPC接口参数控制
      * RPC Interface Parameter Control
-     * */
+     */
     int MIN_VALUE = 0;
     int PAGE_NUMBER_INIT_VALUE = 1;
     int PAGE_SIZE_INIT_VALUE = 10;
@@ -147,13 +148,13 @@ public interface ConsensusConstant {
     String PARAM_TX = "tx";
     String PARAM_TX_HEX_LIST = "txList";
     String PARAM_HEIGHT = "height";
-    String PARAM_BLOCK_HEADER ="blockHeader";
-    String PARAM_EXTEND="extend";
-    String PARAM_BLOCK_HEADER_HEX ="blockHeader";
-    String PARAM_BLOCK="block";
-    String PARAM_EVIDENCE_HEADER ="evidenceHeader";
-    String VALID_RESULT ="valid";
-    String PARAM_RESULT_VALUE ="value";
+    String PARAM_BLOCK_HEADER = "blockHeader";
+    String PARAM_HEADER = "header";
+    String PARAM_BLOCK_HEADER_HEX = "blockHeader";
+    String PARAM_BLOCK = "block";
+    String PARAM_EVIDENCE_HEADER = "evidenceHeader";
+    String VALID_RESULT = "valid";
+    String PARAM_RESULT_VALUE = "value";
     String PARAM_STATUS = "status";
     String HEADER_LIST = "headerList";
     String STATE_ROOT = "stateRoot";
@@ -161,12 +162,12 @@ public interface ConsensusConstant {
     /**
      * 共识模块日志管理
      * Consensus module log management
-     * */
+     */
     String CONSENSUS_LOGGER_NAME = "consensus/consensus";
     String BASIC_LOGGER_NAME = "consensus/rpc";
     String COMMON_LOG_NAME = "common";
 
-    String CHAIN ="chain";
+    String CHAIN = "chain";
 
     String RPC_VERSION = "1.0";
 
@@ -176,7 +177,7 @@ public interface ConsensusConstant {
 
     int RPC_CALL_TRY_COUNT = 5;
 
-    byte VALUE_OF_ONE_HUNDRED =100;
+    byte VALUE_OF_ONE_HUNDRED = 100;
 
     String SEPARATOR = "_";
- }
+}
