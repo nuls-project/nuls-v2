@@ -41,7 +41,7 @@ import java.util.*;
 public class CallMethodUtils {
     public static final long MIN_PACK_SURPLUS_TIME = 2000;
     public static final long TIME_OUT = 1000;
-    public static final long PROCESS_TIME = 1200;
+    public static final long PROCESS_TIME = 800;
 
     /**
      * 账户验证

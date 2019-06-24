@@ -32,9 +32,17 @@ public class ApiConfig implements ModuleConfig {
 
     private int assetId;
 
+    private int mainChainId;
+
+    private int mainAssetId;
+
+    private String mainSymbol;
+
     private String chainName;
 
     private String symbol;
+
+    private int decimals;
 
     private String listenerIp;
 
@@ -159,4 +167,37 @@ public class ApiConfig implements ModuleConfig {
     public void setChainName(String chainName) {
         this.chainName = chainName;
     }
+
+    public int getDecimals() {
+        return decimals;
+    }
+
+    public void setDecimals(int decimals) {
+        this.decimals = decimals;
+    }
+
+    public int getMainChainId() {
+        return mainChainId;
+    }
+
+    public void setMainChainId(int mainChainId) {
+        this.mainChainId = mainChainId;
+    }
+
+    public int getMainAssetId() {
+        return mainAssetId;
+    }
+
+    public void setMainAssetId(int mainAssetId) {
+        this.mainAssetId = mainAssetId;
+    }
+
+    public String getMainSymbol() {
+        return mainSymbol;
+    }
+
+    public void setMainSymbol(String mainSymbol) {
+        this.mainSymbol = mainSymbol;
+    }
+
 }

@@ -19,7 +19,6 @@ import io.nuls.transaction.constant.TxErrorCode;
 import io.nuls.transaction.manager.ChainManager;
 import io.nuls.transaction.manager.TxManager;
 import io.nuls.transaction.model.bo.Chain;
-import io.nuls.transaction.model.bo.TxRegister;
 import io.nuls.transaction.model.po.TransactionConfirmedPO;
 import io.nuls.transaction.model.po.TransactionUnconfirmedPO;
 import io.nuls.transaction.rpc.call.LedgerCall;
@@ -28,6 +27,7 @@ import io.nuls.transaction.service.ConfirmedTxService;
 import io.nuls.transaction.service.TxService;
 import io.nuls.transaction.storage.ConfirmedTxStorageService;
 import io.nuls.transaction.storage.UnconfirmedTxStorageService;
+import io.nuls.transaction.task.StatisticsTask;
 import io.nuls.transaction.utils.TxUtil;
 
 import java.util.ArrayList;
@@ -96,10 +96,7 @@ public class ConfirmedTxServiceImpl implements ConfirmedTxService {
         if(contractList.size() > 0){
             int ide = txStrList.size() - 1;
             String lastTxStr = txStrList.get(ide);
-            /**
-             * 如果区块最后一笔交易是智能合约返还GAS的交易, 则将contractList交易, 加入该交易之前,
-             * 否则直接加入队尾
-             */
+            //如果区块最后一笔交易是智能合约返还GAS的交易, 则将contractList交易, 加入该交易之前,否则直接加入队尾
             if (TxUtil.extractTxTypeFromTx(lastTxStr) == TxType.CONTRACT_RETURN_GAS) {
                 txStrList.remove(ide);
                 txStrList.addAll(contractList);
@@ -116,14 +113,14 @@ public class ConfirmedTxServiceImpl implements ConfirmedTxService {
         }
     }
 
-    private boolean saveBlockTxList(Chain chain, List<String> txStrList, String blockHeaderStr, boolean gengsis) throws NulsException {
+    private boolean saveBlockTxList(Chain chain, List<String> txStrList, String blockHeaderStr, boolean gengsis) {
         long start = NulsDateUtils.getCurrentTimeMillis();//-----
         List<Transaction> txList = new ArrayList<>();
         int chainId = chain.getChainId();
         List<byte[]> txHashs = new ArrayList<>();
         //组装统一验证参数数据,key为各模块统一验证器cmd
-        Map<TxRegister, List<String>> moduleVerifyMap = new HashMap<>(TxConstant.INIT_CAPACITY_8);
-        BlockHeader blockHeader = null;
+        Map<String, List<String>> moduleVerifyMap = new HashMap<>(TxConstant.INIT_CAPACITY_8);
+        BlockHeader blockHeader;
         NulsLogger logger = chain.getLogger();
         try {
             blockHeader = TxUtil.getInstanceRpcStr(blockHeaderStr, BlockHeader.class);
@@ -175,8 +172,9 @@ public class ConfirmedTxServiceImpl implements ConfirmedTxService {
         //如果确认交易成功，则从未打包交易库中删除交易
         unconfirmedTxStorageService.removeTxList(chainId, txHashs);
         //从待打包map中删除
-        packablePool.clearConfirmedTxs(chain,txHashs);
-        logger.debug("[保存区块] - 合计执行时间:[{}] - 高度:[{}], - 交易数量:[{}]",
+        packablePool.clearConfirmedTxs(chain, txHashs);
+        StatisticsTask.confirmedTx.addAndGet(txHashs.size());
+        logger.debug("[保存区块] - 合计执行时间:{} - 高度:{}, - 交易数量:{}",
                 NulsDateUtils.getCurrentTimeMillis() - start, blockHeader.getHeight(), txList.size());
         return true;
     }
@@ -202,13 +200,13 @@ public class ConfirmedTxServiceImpl implements ConfirmedTxService {
     }
 
     /**调提交易*/
-    private boolean commitTxs(Chain chain, Map<TxRegister, List<String>> moduleVerifyMap, String blockHeader, boolean atomicity) {
+    private boolean commitTxs(Chain chain, Map<String, List<String>> moduleVerifyMap, String blockHeader, boolean atomicity) {
         //调用交易模块统一commit接口 批量
-        Map<TxRegister, List<String>> successed = new HashMap<>(TxConstant.INIT_CAPACITY_8);
+        Map<String, List<String>> successed = new HashMap<>(TxConstant.INIT_CAPACITY_8);
         boolean result = true;
-        for (Map.Entry<TxRegister, List<String>> entry : moduleVerifyMap.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : moduleVerifyMap.entrySet()) {
             boolean rs = TransactionCall.txProcess(chain, BaseConstant.TX_COMMIT,
-                    entry.getKey().getModuleCode(), entry.getValue(), blockHeader);
+                    entry.getKey(), entry.getValue(), blockHeader);
             if (!rs) {
                 result = false;
                 chain.getLogger().debug("save tx failed! commitTxs");
@@ -250,12 +248,12 @@ public class ConfirmedTxServiceImpl implements ConfirmedTxService {
     }
 
     /**回滚交易业务数据*/
-    private boolean rollbackTxs(Chain chain, Map<TxRegister, List<String>> moduleVerifyMap, String blockHeader, boolean atomicity) {
-        Map<TxRegister, List<String>> successed = new HashMap<>(TxConstant.INIT_CAPACITY_8);
+    private boolean rollbackTxs(Chain chain, Map<String, List<String>> moduleVerifyMap, String blockHeader, boolean atomicity) {
+        Map<String, List<String>> successed = new HashMap<>(TxConstant.INIT_CAPACITY_8);
         boolean result = true;
-        for (Map.Entry<TxRegister, List<String>> entry : moduleVerifyMap.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : moduleVerifyMap.entrySet()) {
             boolean rs = TransactionCall.txProcess(chain, BaseConstant.TX_ROLLBACK,
-                    entry.getKey().getModuleCode(), entry.getValue(), blockHeader);
+                    entry.getKey(), entry.getValue(), blockHeader);
             if (!rs) {
                 result = false;
                 chain.getLogger().debug("failed! rollbackcommitTxs ");
@@ -287,20 +285,19 @@ public class ConfirmedTxServiceImpl implements ConfirmedTxService {
         }
     }
 
-
     @Override
     public boolean rollbackTxList(Chain chain, List<NulsHash> txHashList, String blockHeaderStr) throws NulsException {
         NulsLogger logger =  chain.getLogger();
-        logger.debug("start rollbackTxList..............");
         if (txHashList == null || txHashList.isEmpty()) {
             throw new NulsException(TxErrorCode.PARAMETER_ERROR);
         }
         int chainId = chain.getChainId();
-
+        BlockHeader blockHeader = TxUtil.getInstanceRpcStr(blockHeaderStr, BlockHeader.class);
+        logger.info("start rollbackTxList block height:{}", blockHeader.getHeight());
         List<Transaction> txList = new ArrayList<>();
         List<String> txStrList = new ArrayList<>();
         //组装统一验证参数数据,key为各模块统一验证器cmd
-        Map<TxRegister, List<String>> moduleVerifyMap = new HashMap<>(TxConstant.INIT_CAPACITY_8);
+        Map<String, List<String>> moduleVerifyMap = new HashMap<>(TxConstant.INIT_CAPACITY_8);
         try {
             for (NulsHash hash : txHashList) {
                 TransactionConfirmedPO txPO = confirmedTxStorageService.getTx(chainId, hash);
@@ -318,8 +315,7 @@ public class ConfirmedTxServiceImpl implements ConfirmedTxService {
             logger.error(e);
             return false;
         }
-        BlockHeader blockHeader = TxUtil.getInstanceRpcStr(blockHeaderStr, BlockHeader.class);
-        logger.debug("rollbackTxList block height:{}", blockHeader.getHeight());
+
         if (!rollbackLedger(chain, txStrList, blockHeader.getHeight())) {
             return false;
         }
@@ -350,14 +346,12 @@ public class ConfirmedTxServiceImpl implements ConfirmedTxService {
      *
      * @param chain chain
      * @param tx    Transaction
-     * @return boolean
      */
-    private boolean savePackable(Chain chain, Transaction tx) {
+    private void savePackable(Chain chain, Transaction tx) {
         //不是系统交易 并且节点是打包节点则重新放回待打包队列的最前端
         if (chain.getPackaging().get()) {
             packablePool.offerFirst(chain, tx);
         }
-        return true;
     }
 
     @Override
@@ -391,7 +385,7 @@ public class ConfirmedTxServiceImpl implements ConfirmedTxService {
         int chainId = chain.getChainId();
         for(String hashHex : hashList){
             TransactionUnconfirmedPO txPo = unconfirmedTxStorageService.getTx(chain.getChainId(), hashHex);
-            Transaction tx = null;
+            Transaction tx;
             if(null == txPo) {
                 TransactionConfirmedPO txCfmPO = confirmedTxStorageService.getTx(chainId, hashHex);
                 if(null == txCfmPO){
@@ -413,7 +407,6 @@ public class ConfirmedTxServiceImpl implements ConfirmedTxService {
                     //allHits为true时直接返回空list
                     return new ArrayList<>();
                 }
-                continue;
             }
         }
         return txList;

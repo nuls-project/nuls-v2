@@ -22,30 +22,29 @@
  * SOFTWARE.
  *
  */
+package io.nuls.core.rpc.model;
 
-package io.nuls.transaction.cache;
-
-import io.nuls.base.data.NulsHash;
-import io.nuls.transaction.utils.InventoryFilter;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * 用于接收交易去重
+ * 接口返回值
  *
- * @author: qinyifeng
- * @date: 2018/12/26
+ * @author: PierreLuo
+ * @date: 2019-06-18
  */
-public class TxDuplicateRemovalTemp {
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ResponseData {
 
-    private TxDuplicateRemovalTemp() {
-    }
+    String name() default "";
+    /**
+     * 描述
+     */
+    String description() default "";
 
-    private static InventoryFilter filter = new InventoryFilter( 1000000);
+    TypeDescriptor responseType() default @TypeDescriptor();
 
-    public static boolean mightContain(NulsHash hash) {
-        return filter.contains(hash.getBytes());
-    }
-
-    public static void insert(NulsHash hash) {
-        filter.insert(hash.getBytes());
-    }
 }

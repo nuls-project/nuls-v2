@@ -53,7 +53,7 @@ public class CallRpcServiceImpl implements CallRpcService {
         map.put("chainId", chainId);
         map.put("height", height);
         try {
-            Response response = ResponseMessageProcessor.requestAndResponse(ModuleE.BL.abbr, CmdConstant.CMD_GET_BLOCK_BY_HEIGHT, map, 1000);
+            Response response = ResponseMessageProcessor.requestAndResponse(ModuleE.BL.abbr, CmdConstant.CMD_GET_BLOCK_BY_HEIGHT, map);
             if (null != response && response.isSuccess()) {
                 Map responseData = (Map) response.getResponseData();
                 String hex = (String) responseData.get(CmdConstant.CMD_GET_BLOCK_BY_HEIGHT);
@@ -68,6 +68,7 @@ public class CallRpcServiceImpl implements CallRpcService {
             }
         } catch (Exception e) {
             LoggerUtil.logger(chainId).error("getBlockByHeight error,chainId={},height={}.exception={}", chainId, height, e.getMessage());
+            LoggerUtil.logger(chainId).error(e);
         }
         return null;
     }

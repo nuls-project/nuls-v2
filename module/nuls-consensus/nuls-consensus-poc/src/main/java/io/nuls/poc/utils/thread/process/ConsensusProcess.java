@@ -171,7 +171,7 @@ public class ConsensusProcess {
      * Otherwise, if the block from the previous node has not been received after waiting for a certain time, it will be packed directly.
      */
     private void waitReceiveNewestBlock(Chain chain, MeetingMember self, MeetingRound round) {
-        long timeout = chain.getConfig().getPackingInterval() / 5;
+        long timeout = chain.getConfig().getPackingInterval() / 2;
         long endTime = self.getStartTime() + round.getOffset() + timeout;
         boolean hasReceiveNewestBlock;
         if (NulsDateUtils.getCurrentTimeSeconds() >= endTime) {

@@ -12,6 +12,7 @@ import io.nuls.core.core.annotation.Autowired;
 import io.nuls.core.core.annotation.Component;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,17 +47,21 @@ public class MongoDBTableServiceImpl implements DBTableService {
     }
 
     public void addDefaultChain() {
-        addChain(ApiContext.defaultChainId, ApiContext.defaultAssetId, ApiContext.defaultChainName, ApiContext.defaultSymbol);
+        addChain(ApiContext.defaultChainId, ApiContext.defaultAssetId, ApiContext.defaultChainName, ApiContext.defaultSymbol, ApiContext.defaultDecimals);
     }
 
-    public void addChain(int chainId, int defaultAssetId, String chainName, String symbol) {
+    public void addChain(int chainId, int defaultAssetId, String chainName, String symbol, int decimals) {
         Result<Map> result = WalletRpcHandler.getConsensusConfig(chainId);
         if (result.isFailed()) {
             throw new RuntimeException("find consensus config error");
         }
         Map map = result.getData();
-        List<String> seedNodeList = (List<String>) map.get("seedNodeList");
 
+        String seeds = (String) map.get("seedNodes");
+        List<String> seedNodeList = new ArrayList<>();
+        for (String seed : seeds.split(",")) {
+            seedNodeList.add(seed);
+        }
 
         initTables(chainId);
         initTablesIndex(chainId);
@@ -64,7 +69,7 @@ public class MongoDBTableServiceImpl implements DBTableService {
         ChainInfo chainInfo = new ChainInfo();
         chainInfo.setChainId(chainId);
         chainInfo.setChainName(chainName);
-        AssetInfo assetInfo = new AssetInfo(chainId, defaultAssetId, symbol);
+        AssetInfo assetInfo = new AssetInfo(chainId, defaultAssetId, symbol, decimals);
         chainInfo.setDefaultAsset(assetInfo);
         chainInfo.getAssets().add(assetInfo);
         for (String address : seedNodeList) {

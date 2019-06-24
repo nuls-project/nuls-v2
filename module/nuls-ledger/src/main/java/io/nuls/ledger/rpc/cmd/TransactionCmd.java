@@ -88,9 +88,7 @@ public class TransactionCmd extends BaseLedgerCmd {
                 response = success(rtMap);
             } else {
                 response = failed(validateResult.toErrorCode());
-            }
-            if (!validateResult.isSuccess()) {
-                LoggerUtil.logger(chainId).debug("####commitUnconfirmedTx chainId={},txHash={},value={}=={}", chainId, tx.getHash().toHex(), validateResult.getValidateCode(), validateResult.getValidateDesc());
+                LoggerUtil.logger(chainId).error("####commitUnconfirmedTx chainId={},txHash={},value={}=={}", chainId, tx.getHash().toHex(), validateResult.getValidateCode(), validateResult.getValidateDesc());
             }
         } catch (Exception e) {
             LoggerUtil.logger(chainId).error("commitUnconfirmedTx exception ={}", e);
@@ -130,13 +128,10 @@ public class TransactionCmd extends BaseLedgerCmd {
                 ValidateResult validateResult = transactionService.unConfirmTxProcess(chainId, tx);
                 if (validateResult.isSuccess()) {
                     //success
-                    LoggerUtil.logger(chainId).debug("commitBatchUnconfirmedTxs success txHash={}", txHash);
                 } else if (validateResult.isOrphan()) {
                     orphanList.add(txHash);
-                    LoggerUtil.logger(chainId).debug("commitBatchUnconfirmedTxs Orphan txHash={}", txHash);
                 } else {
                     failList.add(txHash);
-                    LoggerUtil.logger(chainId).debug("commitBatchUnconfirmedTxs failed txHash={}", txHash);
                 }
             }
 
@@ -284,15 +279,13 @@ public class TransactionCmd extends BaseLedgerCmd {
                 LoggerUtil.logger(chainId).error("txList is blank");
                 return failed("txList is blank");
             }
-            LoggerUtil.logger(chainId).debug("rollBackBlockTxs txStrList={}", txStrList.size());
             List<Transaction> txList = new ArrayList<>();
             Response parseResponse = parseTxs(txStrList, txList, chainId);
             if (!parseResponse.isSuccess()) {
                 LoggerUtil.logger(chainId).debug("commitBlockTxs response={}", parseResponse);
                 return parseResponse;
             }
-
-            LoggerUtil.logger(chainId).debug("rollBackBlockTxs chainId={},blockHeight={}", chainId, blockHeight);
+            LoggerUtil.logger(chainId).debug("rollBackBlockTxs chainId={},blockHeight={},txStrList={}", chainId, blockHeight,txStrList.size());
             if (transactionService.rollBackConfirmTxs(chainId, blockHeight, txList)) {
                 value = true;
             }

@@ -1,5 +1,6 @@
 package io.nuls.api.analysis;
 
+import io.nuls.api.ApiContext;
 import io.nuls.api.cache.ApiCache;
 import io.nuls.api.constant.ApiConstant;
 import io.nuls.api.constant.CommandConstant;
@@ -7,6 +8,7 @@ import io.nuls.api.manager.CacheManager;
 import io.nuls.api.model.entity.*;
 import io.nuls.api.model.po.db.*;
 import io.nuls.api.rpc.RpcCall;
+import io.nuls.api.utils.DBUtil;
 import io.nuls.base.RPCUtil;
 import io.nuls.base.basic.AddressTool;
 import io.nuls.base.basic.NulsByteBuffer;
@@ -141,7 +143,6 @@ public class AnalysisHandler {
         TransactionInfo info = new TransactionInfo();
         info.setHash(tx.getHash().toHex());
         info.setHeight(tx.getBlockHeight());
-        info.setFee(tx.getFee());
         info.setType(tx.getType());
         info.setSize(tx.getSize());
         info.setCreateTime(tx.getTime());
@@ -169,6 +170,7 @@ public class AnalysisHandler {
             info.setTxData(toTxData(chainId, tx));
         }
         info.calcValue();
+        info.calcFee();
         return info;
     }
 
@@ -176,7 +178,6 @@ public class AnalysisHandler {
         TransactionInfo info = new TransactionInfo();
         info.setHash(tx.getHash().toHex());
         info.setHeight(tx.getBlockHeight());
-        info.setFee(tx.getFee());
         info.setType(tx.getType());
         info.setSize(tx.getSize());
         info.setCreateTime(tx.getTime());
@@ -207,6 +208,7 @@ public class AnalysisHandler {
             info.setTxData(toTxData(chainId, tx, resultInfo));
         }
         info.calcValue();
+        info.calcFee();
         return info;
     }
 
@@ -328,7 +330,7 @@ public class AnalysisHandler {
         info.setCreateTime(tx.getTime());
         info.setBlockHeight(tx.getBlockHeight());
         info.setFee(tx.getFee());
-        info.setKey(info.getTxHash() + info.getAddress());
+        info.setKey(DBUtil.getDepositKey(info.getTxHash(), info.getAddress()));
         return info;
     }
 
@@ -395,6 +397,7 @@ public class AnalysisHandler {
         ContractInfo contractInfo = new ContractInfo();
         contractInfo.setCreateTxHash(tx.getHash().toHex());
         contractInfo.setContractAddress(AddressTool.getStringAddressByBytes(data.getContractAddress()));
+        contractInfo.setAlias(data.getAlias());
         contractInfo.setBlockHeight(tx.getBlockHeight());
         contractInfo.setCreateTime(tx.getTime());
         if (tx.getStatus() == TxStatusEnum.CONFIRMED) {
@@ -409,6 +412,7 @@ public class AnalysisHandler {
         data.parse(new NulsByteBuffer(tx.getTxData()));
         ContractInfo contractInfo = new ContractInfo();
         contractInfo.setCreateTxHash(tx.getHash().toHex());
+        contractInfo.setAlias(data.getAlias());
         contractInfo.setContractAddress(AddressTool.getStringAddressByBytes(data.getContractAddress()));
         contractInfo.setBlockHeight(tx.getBlockHeight());
         contractInfo.setCreateTime(tx.getTime());
@@ -627,7 +631,6 @@ public class AnalysisHandler {
         assetInfo.setChainId(txChain.getDefaultAsset().getChainId());
         assetInfo.setSymbol(txChain.getDefaultAsset().getSymbol());
         assetInfo.setInitCoins(txChain.getDefaultAsset().getInitNumber());
-
         chainInfo.setDefaultAsset(assetInfo);
         chainInfo.getAssets().add(assetInfo);
 
@@ -652,17 +655,23 @@ public class AnalysisHandler {
         if (coinBaseTx.getCoinTos() == null) {
             return reward;
         }
-
+        //奖励只计算本链的共识资产
         for (CoinToInfo coinTo : coinBaseTx.getCoinTos()) {
-            reward = reward.add(coinTo.getAmount());
+            if (coinTo.getChainId() == ApiContext.defaultAssetId || coinTo.getAssetsId() == ApiContext.awardAssetId) {
+                reward = reward.add(coinTo.getAmount());
+            }
         }
         return reward;
     }
 
     public static BigInteger calcFee(List<TransactionInfo> txs) {
         BigInteger fee = BigInteger.ZERO;
+        //手续费只计算本链的共识资产
         for (int i = 1; i < txs.size(); i++) {
-            fee = fee.add(txs.get(i).getFee());
+            FeeInfo feeInfo = txs.get(i).getFee();
+            if (feeInfo.getChainId() == ApiContext.defaultChainId && feeInfo.getAssetId() == ApiContext.awardAssetId) {
+                fee = fee.add(feeInfo.getValue());
+            }
         }
         return fee;
     }

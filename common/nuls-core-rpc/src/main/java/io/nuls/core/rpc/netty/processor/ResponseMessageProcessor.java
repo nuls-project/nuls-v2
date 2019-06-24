@@ -1,6 +1,7 @@
 package io.nuls.core.rpc.netty.processor;
 
 import io.netty.channel.Channel;
+import io.nuls.core.constant.CommonCodeConstanst;
 import io.nuls.core.rpc.info.Constants;
 import io.nuls.core.rpc.invoke.BaseInvoke;
 import io.nuls.core.rpc.invoke.KernelInvoke;
@@ -297,7 +298,7 @@ public class ResponseMessageProcessor {
      * @throws Exception 请求超时（1分钟），timeout (1 minute)
      */
     public static String requestOnly(String role, Request request)throws Exception{
-        Message message = MessageUtil.basicMessage(MessageType.Request);
+        Message message = MessageUtil.basicMessage(MessageType.RequestOnly);
         message.setMessageData(request);
         Channel channel = ConnectManager.getConnectByRole(role);
         ConnectManager.sendMessage(channel, JSONUtils.obj2json(message));
@@ -378,7 +379,7 @@ public class ResponseMessageProcessor {
             return responseContainer.getFuture().get(timeOut, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             //Timeout Error
-            return MessageUtil.newFailResponse(responseContainer.getMessageId(), Constants.RESPONSE_TIMEOUT);
+            return MessageUtil.newFailResponse(responseContainer.getMessageId(), CommonCodeConstanst.REQUEST_TIME_OUT);
         } finally {
             RequestContainer.removeResponseContainer(responseContainer.getMessageId());
         }

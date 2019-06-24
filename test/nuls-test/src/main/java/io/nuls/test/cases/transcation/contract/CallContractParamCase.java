@@ -21,24 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package io.nuls.test.cases.transcation.contract;
 
-package io.nuls.transaction.threadpool;
+import io.nuls.test.cases.BaseTestCase;
+
+import java.util.Map;
 
 /**
- * @author: Charlie
- * @date: 2019/5/5
+ * @author: PierreLuo
+ * @date: 2019-06-12
  */
-public interface NetTxThreadPool {
-
-    /**
-     * 有新交易时添加job
-     * @param netTxProcessJob
-     */
-    void execute(NetTxProcessJob netTxProcessJob);
-
-    /**
-     * 重新处理交易, 加入队列最前端(协议升级等)
-     * @param netTxProcessJob
-     */
-    void addFirst(NetTxProcessJob netTxProcessJob);
+public abstract class CallContractParamCase extends BaseTestCase<Map, Map> {
 }

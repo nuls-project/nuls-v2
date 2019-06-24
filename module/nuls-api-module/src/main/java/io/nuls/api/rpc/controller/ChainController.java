@@ -16,6 +16,7 @@ import io.nuls.api.model.rpc.RpcErrorCode;
 import io.nuls.api.model.rpc.RpcResult;
 import io.nuls.api.model.rpc.RpcResultError;
 import io.nuls.api.model.rpc.SearchResultDTO;
+import io.nuls.api.utils.DBUtil;
 import io.nuls.api.utils.LoggerUtil;
 import io.nuls.api.utils.VerifyUtils;
 import io.nuls.base.basic.AddressTool;
@@ -47,12 +48,7 @@ public class ChainController {
 
     @RpcMethod("getChainInfo")
     public RpcResult getChainInfo(List<Object> params) {
-        try {
-            return RpcResult.success(CacheManager.getCache(ApiContext.defaultChainId).getChainInfo());
-        } catch (Exception e) {
-            LoggerUtil.commonLog.error(e);
-            return RpcResult.failed(RpcErrorCode.SYS_UNKNOWN_EXCEPTION);
-        }
+        return RpcResult.success(CacheManager.getCache(ApiContext.defaultChainId).getChainInfo());
     }
 
     @RpcMethod("getOtherChainList")
@@ -62,23 +58,20 @@ public class ChainController {
         try {
             chainId = (int) params.get(0);
         } catch (Exception e) {
-            return RpcResult.paramError();
+            return RpcResult.paramError("[chainId] is invalid");
         }
-        try {
-            List<Map<String, Object>> chainInfoList = new ArrayList<>();
-            for (ChainInfo chainInfo : CacheManager.getChainInfoMap().values()) {
-                if (chainInfo.getChainId() != chainId) {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("chainId", chainInfo.getChainId());
-                    map.put("chainName", chainInfo.getChainName());
-                    chainInfoList.add(map);
-                }
+
+        List<Map<String, Object>> chainInfoList = new ArrayList<>();
+        for (ChainInfo chainInfo : CacheManager.getChainInfoMap().values()) {
+            if (chainInfo.getChainId() != chainId) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("chainId", chainInfo.getChainId());
+                map.put("chainName", chainInfo.getChainName());
+                chainInfoList.add(map);
             }
-            return RpcResult.success(chainInfoList);
-        } catch (Exception e) {
-            LoggerUtil.commonLog.error(e);
-            return RpcResult.failed(RpcErrorCode.SYS_UNKNOWN_EXCEPTION);
         }
+        return RpcResult.success(chainInfoList);
+
     }
 
     @RpcMethod("getInfo")
@@ -88,7 +81,7 @@ public class ChainController {
         try {
             chainId = (int) params.get(0);
         } catch (Exception e) {
-            return RpcResult.paramError();
+            return RpcResult.paramError("[chainId] is invalid");
         }
         if (!CacheManager.isChainExist(chainId)) {
             return RpcResult.dataNotFound();
@@ -98,6 +91,20 @@ public class ChainController {
             return RpcResult.failed(result);
         }
         Map<String, Object> map = result.getData();
+        map.put("chainId", chainId);
+
+
+        Map<String,Object> assetMap = new HashMap<>();
+        assetMap.put("chainId", ApiContext.defaultChainId);
+        assetMap.put("assetId", ApiContext.defaultChainId);
+        assetMap.put("symbol", ApiContext.defaultSymbol);
+        assetMap.put("decimals", ApiContext.defaultDecimals);
+        map.put("defaultAsset", assetMap);
+
+//        AssetInfo assetInfo = CacheManager.getRegisteredAsset(DBUtil.getAssetKey(ApiContext.agentChainId, ApiContext.agentAssetId));
+//        if(assetInfo != null) {
+//            asssetMap.put("symbol", assetInfo.getSymbol());
+//        }
         map.put("isRunCrossChain", ApiContext.isRunCrossChain);
         map.put("isRunSmartContract", ApiContext.isRunSmartContract);
         return RpcResult.success(map);
@@ -106,17 +113,17 @@ public class ChainController {
     @RpcMethod("getCoinInfo")
     public RpcResult getCoinInfo(List<Object> params) {
         VerifyUtils.verifyParams(params, 1);
+        int chainId;
         try {
-            int chainId = (int) params.get(0);
-            if (!CacheManager.isChainExist(chainId)) {
-                return RpcResult.dataNotFound();
-            }
-            ApiCache apiCache = CacheManager.getCache(chainId);
-            return RpcResult.success(apiCache.getCoinContextInfo());
+            chainId = (int) params.get(0);
         } catch (Exception e) {
-            LoggerUtil.commonLog.error(e);
-            return RpcResult.failed(RpcErrorCode.SYS_UNKNOWN_EXCEPTION);
+            return RpcResult.paramError("[chainId] is invalid");
         }
+        if (!CacheManager.isChainExist(chainId)) {
+            return RpcResult.dataNotFound();
+        }
+        ApiCache apiCache = CacheManager.getCache(chainId);
+        return RpcResult.success(apiCache.getCoinContextInfo());
     }
 
     @RpcMethod("search")
@@ -127,52 +134,44 @@ public class ChainController {
         String text;
         try {
             chainId = (int) params.get(0);
-            text = (String) params.get(1);
-            text = text.trim();
         } catch (Exception e) {
-            return RpcResult.paramError();
+            return RpcResult.paramError("[chainId] is invalid");
         }
-
         try {
-            if (!CacheManager.isChainExist(chainId)) {
-                return RpcResult.dataNotFound();
-            }
-
-            int length = text.length();
-            SearchResultDTO result = null;
-            if (length < 20) {
-                result = getBlockByHeight(chainId, text);
-            } else if (length < 40) {
-                boolean isAddress = AddressTool.validAddress(chainId, text);
-                if (isAddress) {
-                    byte[] address = AddressTool.getAddress(text);
-                    if (address[2] == AddressType.CONTRACT_ADDRESS_TYPE) {
-                        result = getContractByAddress(chainId, text);
-                    } else {
-                        result = getAccountByAddress(chainId, text);
-                    }
-                }
-            } else {
-                result = getResultByHash(chainId, text);
-            }
-            if (null == result) {
-                return RpcResult.dataNotFound();
-            }
-            return new RpcResult().setResult(result);
+            text = params.get(1).toString().trim();
         } catch (Exception e) {
-            LoggerUtil.commonLog.error(e);
-            return RpcResult.failed(RpcErrorCode.SYS_UNKNOWN_EXCEPTION);
+            return RpcResult.paramError("[text] is invalid");
         }
+
+        if (!CacheManager.isChainExist(chainId)) {
+            return RpcResult.dataNotFound();
+        }
+        int length = text.length();
+        SearchResultDTO result = null;
+        if (length < 20) {
+            result = getBlockByHeight(chainId, text);
+        } else if (length < 40) {
+            boolean isAddress = AddressTool.validAddress(chainId, text);
+            if (isAddress) {
+                byte[] address = AddressTool.getAddress(text);
+                if (address[2] == AddressType.CONTRACT_ADDRESS_TYPE) {
+                    result = getContractByAddress(chainId, text);
+                } else {
+                    result = getAccountByAddress(chainId, text);
+                }
+            }
+        } else {
+            result = getResultByHash(chainId, text);
+        }
+        if (null == result) {
+            return RpcResult.dataNotFound();
+        }
+        return new RpcResult().setResult(result);
     }
 
     private SearchResultDTO getContractByAddress(int chainId, String text) {
-        ContractInfo contractInfo = null;
-        try {
-            contractInfo = contractService.getContractInfo(chainId, text);
-        } catch (Exception e) {
-            LoggerUtil.commonLog.error(e);
-            throw new JsonRpcException();
-        }
+        ContractInfo contractInfo;
+        contractInfo = contractService.getContractInfo(chainId, text);
         SearchResultDTO dto = new SearchResultDTO();
         dto.setData(contractInfo);
         dto.setType("contract");

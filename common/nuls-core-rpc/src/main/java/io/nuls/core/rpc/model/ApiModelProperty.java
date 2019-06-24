@@ -22,49 +22,22 @@
  * SOFTWARE.
  *
  */
+package io.nuls.core.rpc.model;
 
-package io.nuls.transaction.utils;
-
-import com.google.common.hash.BloomFilter;
-import com.google.common.hash.Funnels;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * 向量清单过滤器
- *
- * @author: qinyifeng
- * @date: 2018/12/26
+ * @author: PierreLuo
+ * @date: 2019-06-18
  */
-public class InventoryFilter {
+@Target({ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ApiModelProperty {
 
-    private final int elements;
-    private AtomicInteger size = new AtomicInteger(0);
+    String description() default "";
 
-    private BloomFilter<byte[]> filter;
-
-    public InventoryFilter(int elements) {
-        this.elements = elements;
-        filter = BloomFilter.create(Funnels.byteArrayFunnel(), elements, 0.00001);
-    }
-
-    public BloomFilter getFilter() {
-        return filter;
-    }
-
-    public void insert(byte[] object) {
-        filter.put(object);
-        int count = size.incrementAndGet();
-        if (count >= elements - 100) {
-            this.clear();
-        }
-    }
-
-    public boolean contains(byte[] object) {
-        return filter.mightContain(object);
-    }
-
-    public void clear() {
-        filter = BloomFilter.create(Funnels.byteArrayFunnel(), elements, 0.00001);
-    }
+    TypeDescriptor type() default @TypeDescriptor();
 }
