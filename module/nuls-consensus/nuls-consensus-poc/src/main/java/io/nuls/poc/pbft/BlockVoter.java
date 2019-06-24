@@ -89,7 +89,8 @@ public class BlockVoter implements Runnable {
     private void doit(MeetingRound pocRound) {
         long now = NulsDateUtils.getCurrentTimeSeconds();
         this.lastHeader = chain.getNewestHeader();
-        long offset = now - this.lastHeader.getTime() - this.timeout;
+        MeetingMember meetingMember = pocRound.getMember(pocRound.getCurrentMemberIndex());
+        long offset = now - meetingMember.getStartTime() - pocRound.getOffset() - this.timeout;
         long round = offset / this.timeout + 1;
         if (this.curRound == null) {
             changeCurrentRound(round);
