@@ -41,7 +41,11 @@ public class VoteMessage extends BaseBusinessMessage {
         stream.writeInt64(height);
         stream.write(SerializeUtils.int16ToBytes(round));
         stream.write(step);
-        stream.write(hash.getBytes());
+        if (null == hash) {
+            stream.write(0);
+        } else {
+            stream.write(hash.getBytes());
+        }
         stream.writeNulsData(header1);
         stream.writeNulsData(header2);
         stream.writeBytesWithLength(sign);
@@ -59,7 +63,11 @@ public class VoteMessage extends BaseBusinessMessage {
                 buffer.writeInt64(height);
                 buffer.write(SerializeUtils.int16ToBytes(round));
                 buffer.write(step);
-                buffer.write(hash.getBytes());
+                if (null == hash) {
+                    buffer.write(0);
+                } else {
+                    buffer.write(hash.getBytes());
+                }
                 buffer.writeNulsData(header1);
                 buffer.writeNulsData(header2);
             }
@@ -89,7 +97,12 @@ public class VoteMessage extends BaseBusinessMessage {
 
     @Override
     public int size() {
-        int size = 43;
+        int size = 11;
+        if (null == hash) {
+            size += 1;
+        } else {
+            size += 32;
+        }
         size += SerializeUtils.sizeOfNulsData(header1);
         size += SerializeUtils.sizeOfNulsData(header2);
         size += SerializeUtils.sizeOfBytes(sign);

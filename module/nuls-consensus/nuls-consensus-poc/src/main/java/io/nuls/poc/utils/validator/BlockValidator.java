@@ -164,7 +164,7 @@ public class BlockValidator {
             chain.getLogger().error("block height " + blockHeader.getHeight() + " packager error! hash :" + blockHeaderHash);
             throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
         }
-        if (member.getEndTime() + currentRound.getOffset() != blockHeader.getTime()) {
+        if (member.getEndTime() + currentRound.getOffset() >= blockHeader.getTime() && member.getEndTime() <= blockHeader.getTime()) {
             chain.getLogger().error("block height " + blockHeader.getHeight() + " time error! hash :" + blockHeaderHash);
             throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
         }
@@ -366,7 +366,7 @@ public class BlockValidator {
             return false;
         }
 
-        Transaction coinBaseTransaction = consensusManager.createCoinBaseTx(chain, member, block.getTxs(), currentRound, 0);
+        Transaction coinBaseTransaction = consensusManager.createCoinBaseTx(chain, member, block.getTxs(), block.getHeader().getTime(), currentRound, 0);
         if (null == coinBaseTransaction || !tx.getHash().equals(coinBaseTransaction.getHash())) {
             chain.getLogger().error("the coin base tx is wrong! height: " + block.getHeader().getHeight() + " , hash : " + blockHeaderHash);
             return false;

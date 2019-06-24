@@ -325,7 +325,7 @@ public class ConsensusProcess {
         Assembly System Transactions (CoinBase/Red/Yellow)+ Create blocks
         */
         ConsensusManager consensusManager = SpringLiteContext.getBean(ConsensusManager.class);
-        consensusManager.addConsensusTx(chain, bestBlock, packingTxList, self, round, extendsData);
+        consensusManager.addConsensusTx(chain, bestBlock, packingTxList, self, round, extendsData,bd.getTime());
         bd.setTxList(packingTxList);
         Block newBlock = consensusManager.createBlock(chain, bd, self.getAgent().getPackingAddress());
         /*

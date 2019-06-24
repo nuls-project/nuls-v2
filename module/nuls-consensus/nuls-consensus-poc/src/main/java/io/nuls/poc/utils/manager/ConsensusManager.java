@@ -47,10 +47,11 @@ public class ConsensusManager {
      * @param txList    all tx of block/需打包的交易列表
      * @param self      agent meeting entity/节点打包信息
      * @param round     latest local round/本地最新轮次信息
+     * @param blockTime
      */
-    public void addConsensusTx(Chain chain, BlockHeader bestBlock, List<Transaction> txList, MeetingMember self, MeetingRound round, BlockExtendsData extendsData) throws Exception {
+    public void addConsensusTx(Chain chain, BlockHeader bestBlock, List<Transaction> txList, MeetingMember self, MeetingRound round, BlockExtendsData extendsData, long blockTime) throws Exception {
         String stateRoot;
-        Transaction coinBaseTransaction = createCoinBaseTx(chain, self, txList, round, 0);
+        Transaction coinBaseTransaction = createCoinBaseTx(chain, self, txList, blockTime, round, 0);
         if (AddressTool.validContractAddress(self.getAgent().getRewardAddress(), chain.getConfig().getChainId())) {
             stateRoot = CallMethodUtils.triggerContract(chain.getConfig().getChainId(), RPCUtil.encode(extendsData.getStateRoot()), bestBlock.getHeight(), AddressTool.getStringAddressByBytes(self.getAgent().getRewardAddress()), RPCUtil.encode(coinBaseTransaction.serialize()));
             extendsData.setStateRoot(RPCUtil.decode(stateRoot));
@@ -75,7 +76,7 @@ public class ConsensusManager {
      * @param unlockHeight 解锁高度/unlock height
      * @return Transaction
      */
-    public Transaction createCoinBaseTx(Chain chain, MeetingMember member, List<Transaction> txList, MeetingRound localRound, long unlockHeight) throws IOException, NulsException {
+    public Transaction createCoinBaseTx(Chain chain, MeetingMember member, List<Transaction> txList, long blockTime, MeetingRound localRound, long unlockHeight) throws IOException, NulsException {
         Transaction tx = new Transaction(TxType.COIN_BASE);
         CoinData coinData = new CoinData();
         /*
@@ -97,7 +98,7 @@ public class ConsensusManager {
             }
             tx.setCoinData(coinData.serialize());
         }
-        tx.setTime(member.getEndTime() + localRound.getOffset());
+        tx.setTime(blockTime);
         tx.setHash(NulsHash.calcHash(tx.serializeForHash()));
         return tx;
     }
