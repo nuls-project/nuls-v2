@@ -75,7 +75,7 @@ public class PbftData {
         if (null != oldData && oldData.getHash() == data.getHash()) {
             return;
         }
-        if (null != oldData && oldData.getHash() != null && oldData.getHash().equals(data.getHash())) {
+        if (null != oldData && oldData.getHash().equals(data.getHash())) {
             return;
         }
         Integer count = resultMap.get(data.getHash());

@@ -25,7 +25,7 @@ public class VoteCenter {
     }
 
     public PbftData addVote1(long height, int round, NulsHash hash, String address, long startTime, boolean bifurcation) {
-        LoggerUtil.commonLog.info("====height:{}, round:{}, hash:{}, address:{}", height, round, null == hash ? null : hash.toString(), address);
+        LoggerUtil.commonLog.info("====height:{}, round:{}, hash:{}, address:{}", height, round, hash.toString(), address);
         PbftData pbftData = getPbftData(height, round, startTime);
         VoteData voteData = pbftData.getVote1ByAddress(address);
         VoteData data;

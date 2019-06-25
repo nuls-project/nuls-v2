@@ -41,6 +41,8 @@ import java.util.List;
  */
 public class NulsHash {
 
+    public static final NulsHash EMPTY_NULS_HASH = new NulsHash(new byte[32]);
+
     public static final int HASH_LENGTH = 32;
 
     private byte[] bytes;
