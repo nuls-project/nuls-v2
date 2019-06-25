@@ -346,8 +346,9 @@ public class RoundManager {
             startTime = bestRoundEndTime + diffRoundCount * consensusMemberCount * packingInterval;
 
             currentIndex = (int) ((nowTime - startTime) / chain.getConfig().getPackingInterval() + 1);
+            offset = 0;
         }
-        return calculationRound(chain, startBlockHeader, index, startTime, 0, currentIndex);
+        return calculationRound(chain, startBlockHeader, index, startTime, offset, currentIndex);
     }
 
     /**

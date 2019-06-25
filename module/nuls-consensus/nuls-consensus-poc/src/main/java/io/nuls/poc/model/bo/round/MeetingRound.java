@@ -30,6 +30,7 @@ import io.nuls.base.data.Address;
 import io.nuls.core.rpc.util.NulsDateUtils;
 import io.nuls.poc.constant.ConsensusErrorCode;
 import io.nuls.poc.model.bo.Chain;
+import io.nuls.poc.pbft.model.VoteRound;
 import io.nuls.poc.rpc.call.CallMethodUtils;
 import io.nuls.core.exception.NulsRuntimeException;
 import io.nuls.core.log.Log;
@@ -92,6 +93,8 @@ public class MeetingRound {
     private int currentMemberIndex = 1;
 
     private long offset;
+
+    private VoteRound curVoteRound;
 
     public MeetingRound getPreRound() {
         return preRound;
@@ -279,5 +282,13 @@ public class MeetingRound {
 
     public void setCurrentMemberIndex(int currentMemberIndex) {
         this.currentMemberIndex = currentMemberIndex;
+    }
+
+    public VoteRound getCurVoteRound() {
+        return curVoteRound;
+    }
+
+    public void setCurVoteRound(VoteRound curVoteRound) {
+        this.curVoteRound = curVoteRound;
     }
 }
