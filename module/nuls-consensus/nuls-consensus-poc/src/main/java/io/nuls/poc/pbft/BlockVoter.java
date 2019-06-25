@@ -20,6 +20,7 @@ import io.nuls.poc.pbft.cache.VoteCenter;
 import io.nuls.poc.pbft.constant.VoteConstant;
 import io.nuls.poc.pbft.message.VoteMessage;
 import io.nuls.poc.pbft.model.PbftData;
+import io.nuls.poc.pbft.model.VoteData;
 import io.nuls.poc.pbft.model.VoteResultItem;
 import io.nuls.poc.pbft.model.VoteRound;
 import io.nuls.poc.rpc.call.CallMethodUtils;
@@ -27,6 +28,8 @@ import io.nuls.poc.utils.LoggerUtil;
 import io.nuls.poc.utils.manager.RoundManager;
 
 import java.io.IOException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
 /**
@@ -46,6 +49,8 @@ public class BlockVoter implements Runnable {
     private VoteRound curRound;
     private BlockHeader lastHeader;
     private MeetingRound pocRound;
+
+    private Lock lock = new ReentrantLock();
 
     public BlockVoter(Chain chain) {
         this.chainId = chain.getConfig().getChainId();
@@ -70,9 +75,14 @@ public class BlockVoter implements Runnable {
                 }
 
                 if (null != pocRound && pocRound.getMyMember() != null) {
-                    doit(pocRound);
+                    try {
+                        lock.lock();
+                        doit(pocRound);
+                    } finally {
+                        lock.unlock();
+                    }
                 } else {
-                    sleep = 5000L;
+                    sleep = 1000L;
                 }
                 Thread.sleep(sleep);
             } catch (Exception e) {
@@ -143,10 +153,37 @@ public class BlockVoter implements Runnable {
     }
 
     public ErrorCode recieveBlock(Block block) {
+        try {
+            lock.lock();
+            return this.realRecieveBlock(block);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private ErrorCode realRecieveBlock(Block block) {
+        long now = NulsDateUtils.getCurrentTimeSeconds();
+        if (this.pocRound == null) {
+            this.pocRound = this.roundManager.getCurrentRound(chain);
+        }
+        if (null == this.curRound) {
+            MeetingMember meetingMember = pocRound.getMember(pocRound.getCurrentMemberIndex());
+            long offset = now - meetingMember.getStartTime() - this.timeout;
+            if (offset < 0) {
+                offset = 0;
+            }
+            long round = offset / this.timeout + 1;
+            if (this.curRound == null) {
+                changeCurrentRound(round, meetingMember.getStartTime() + this.timeout * (round - 1));
+            }
+        }
         ErrorCode code = ConsensusErrorCode.WAIT_BLOCK_VERIFY;
         long height = block.getHeader().getHeight();
+        if (height != this.curRound.getHeight()) {
+            return ConsensusErrorCode.FAILED;
+        }
         NulsHash hash = block.getHeader().getHash();
-        PbftData pbftData = cache.addVote1(height, 1, hash, block.getHeader().getPackingAddress(chainId), block.getHeader().getTime(), false);
+        PbftData pbftData = cache.addVote1(height, this.curRound.getRound(), hash, block.getHeader().getPackingAddress(chainId), block.getHeader().getTime(), false);
 
         int totalCount = pocRound.getMemberCount();
         if (totalCount == 1) {
@@ -155,15 +192,13 @@ public class BlockVoter implements Runnable {
         }
         //判断自己是否需要签名，如果需要就直接进行
         MeetingMember self = pocRound.getMyMember();
-        if (null != self && !pbftData.hasVoted1(self.getAgent().getPackingAddress())) {
-            long now = NulsDateUtils.getCurrentTimeSeconds();
-            long offset = now - block.getHeader().getTime();
-            long round = offset / this.timeout + 1;
+        VoteData voteData = pbftData.hasVoted1(self.getAgent().getPackingAddress());
+        if (null != self && (null == voteData || (voteData.getHash() == null && !voteData.isBifurcation()))) {
             LoggerUtil.commonLog.info("===投票给一个区块：{}, {}", block.getHeader().getHeight(), block.getHeader().getHash());
-            preCommitVote(height, (int) round, block.getHeader().getHash(), block.getHeader(), block.getHeader().getTime() + this.timeout * (round - 1), null, self);
+            preCommitVote(height, this.curRound.getRound(), block.getHeader().getHash(), block.getHeader(), block.getHeader().getTime() + this.timeout * (this.curRound.getRound() - 1), null, self);
         }
         VoteResultItem result = pbftData.getVote1LargestItem();
-        if (result.getCount() > VoteConstant.DEFAULT_RATE * totalCount && !pbftData.hasVoted2(self.getAgent().getPackingAddress())) {
+        if (result.getCount() > VoteConstant.DEFAULT_RATE * totalCount && null == pbftData.hasVoted2(self.getAgent().getPackingAddress())) {
             VoteMessage message = new VoteMessage();
             message.setHeight(height);
             message.setRound(pbftData.getRound());
@@ -212,6 +247,15 @@ public class BlockVoter implements Runnable {
     }
 
     public void recieveVote(String nodeId, VoteMessage message, byte[] address) {
+        try {
+            lock.lock();
+            this.realRecieveVote(nodeId, message, address);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void realRecieveVote(String nodeId, VoteMessage message, byte[] address) {
         LoggerUtil.commonLog.info("=======Vote:{} ,{} address:{}", message.getHeight(), message.getHash(), AddressTool.getStringAddressByBytes(address));
         // 判断是否接受此投票
         if (curRound.getHeight() > message.getHeight() || (curRound.getHeight() == message.getHeight() && curRound.getRound() > message.getRound())) {
@@ -253,7 +297,7 @@ public class BlockVoter implements Runnable {
             VoteResultItem result = pbftData.getVote1LargestItem();
             //判断自己是否需要签名，如果需要就直接进行
             MeetingMember self = pocRound.getMyMember();
-            if (result.getCount() > VoteConstant.DEFAULT_RATE * totalCount && !pbftData.hasVoted2(self.getAgent().getPackingAddress())) {
+            if (result.getCount() > VoteConstant.DEFAULT_RATE * totalCount && null == pbftData.hasVoted2(self.getAgent().getPackingAddress())) {
                 VoteMessage msg = new VoteMessage();
                 msg.setHeight(message.getHeight());
                 msg.setRound(message.getRound());

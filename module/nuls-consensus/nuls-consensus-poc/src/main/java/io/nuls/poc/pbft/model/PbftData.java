@@ -113,22 +113,22 @@ public class PbftData {
         return item;
     }
 
-    public boolean hasVoted1(byte[] address) {
+    public VoteData hasVoted1(byte[] address) {
         for (VoteData vote : this.voteDataList1) {
             if (ArraysTool.arrayEquals(vote.getAddress(), address)) {
-                return true;
+                return vote;
             }
         }
-        return false;
+        return null;
     }
 
-    public boolean hasVoted2(byte[] address) {
+    public VoteData hasVoted2(byte[] address) {
         for (VoteData vote : this.voteDataList2) {
             if (ArraysTool.arrayEquals(vote.getAddress(), address)) {
-                return true;
+                return vote;
             }
         }
-        return false;
+        return null;
     }
 
     public VoteData getVote1ByAddress(byte[] address) {
