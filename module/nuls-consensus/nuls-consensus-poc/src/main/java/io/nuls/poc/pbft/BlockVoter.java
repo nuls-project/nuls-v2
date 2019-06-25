@@ -113,12 +113,12 @@ public class BlockVoter implements Runnable {
             changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
             return;
         }
-        System.out.println("now:" + now);
-        System.out.println("member:" + meetingMember.getEndTime());
-        System.out.println("offsset:" + pocRound.getOffset());
-        System.out.println("round:" + this.pocRound.getCurVoteRound().getRound());
-        System.out.println("end::" + this.pocRound.getCurVoteRound().getEnd());
-        System.out.println("==================================================");
+//        System.out.println("now:" + now);
+//        System.out.println("member:" + meetingMember.getEndTime());
+//        System.out.println("offsset:" + pocRound.getOffset());
+//        System.out.println("round:" + this.pocRound.getCurVoteRound().getRound());
+//        System.out.println("end::" + this.pocRound.getCurVoteRound().getEnd());
+//        System.out.println("==================================================");
 
         if (now < this.pocRound.getCurVoteRound().getStart()) {
             return;
@@ -141,7 +141,7 @@ public class BlockVoter implements Runnable {
             LoggerUtil.commonLog.info("====投票给分叉");
             preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, preCommitCache.getShouldNext(), preCommitCache.getHeader(), start, preCommitCache.getForkHeader(), pocRound.getMyMember());
         } else {
-            pocRound.setOffset(pocRound.getOffset() + this.timeout);
+             pocRound.setOffset(pocRound.getOffset() + this.timeout);
             LoggerUtil.commonLog.info("====投票给空块：{},round:{}", this.pocRound.getCurVoteRound().getHeight(), this.pocRound.getCurVoteRound().getRound());
             this.preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, null, null, start, null, pocRound.getMyMember());
         }

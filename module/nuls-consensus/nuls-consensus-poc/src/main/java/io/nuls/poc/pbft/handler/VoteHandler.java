@@ -40,6 +40,7 @@ public class VoteHandler implements MessageProcessor {
             return;
         }
         if (signature.verifySignature(message.getHash()).isFailed()) {
+            LoggerUtil.commonLog.warn("discard wrong vote.");
             return;
         }
 
