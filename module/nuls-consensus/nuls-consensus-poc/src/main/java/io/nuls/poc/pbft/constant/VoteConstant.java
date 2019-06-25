@@ -5,5 +5,5 @@ package io.nuls.poc.pbft.constant;
  */
 public interface VoteConstant {
 
-    double DEFAULT_RATE = 0.66;s
+    double DEFAULT_RATE = 0.66;
 }
