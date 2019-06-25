@@ -110,7 +110,7 @@ public class BlockVoter implements Runnable {
         }
         long round = offset / this.timeout + 1;
         if (this.pocRound.getCurVoteRound() == null) {
-            changeCurrentRound(round, lastHeader.getTime() + round * this.timeout);
+            changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
             return;
         }
         System.out.println("now:" + now);
@@ -134,7 +134,8 @@ public class BlockVoter implements Runnable {
         if (now < this.pocRound.getCurVoteRound().getEnd()) {
             return;
         }
-        this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout);
+        System.out.println("-_-_-计算：round：" + round + ", start:" + (lastHeader.getTime() + round * this.timeout));
+        this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
         long start = this.pocRound.getCurVoteRound().getEnd();
         if (preCommitCache.getForkHeader() != null) {
             LoggerUtil.commonLog.info("====投票给分叉");
@@ -344,7 +345,9 @@ public class BlockVoter implements Runnable {
             }
             long round = offset / this.timeout + 1;
             if (this.pocRound.getCurVoteRound() == null) {
-                changeCurrentRound(round, lastHeader.getTime() + round * this.timeout);
+                System.out.println("-_-_-memberTime:" + pocRound.getMember(pocRound.getCurrentMemberIndex()));
+                System.out.println("-_-_-计算：round：" + round + ", start:" + (lastHeader.getTime() + round * this.timeout));
+                changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
                 return;
             }
         }
