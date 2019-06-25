@@ -44,6 +44,6 @@ public class VoteHandler implements MessageProcessor {
         }
 
         BlockVoter voter = VoterManager.getVoter(chainId);
-        voter.recieveVote(nodeId, message, AddressTool.getAddress(signature.getPublicKey(), chainId));
+        voter.recieveVote(nodeId, message, AddressTool.getStringAddressByBytes(AddressTool.getAddress(signature.getPublicKey(), chainId)));
     }
 }

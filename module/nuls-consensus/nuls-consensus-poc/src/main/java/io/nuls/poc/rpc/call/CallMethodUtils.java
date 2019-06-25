@@ -783,7 +783,9 @@ public class CallMethodUtils {
             Map<String, Object> params = new HashMap(4);
             params.put(Constants.CHAIN_ID, chainId);
             params.put("blockHeight", height);
-            params.put("blockHash", hash.toHex());
+            if (null != hash) {
+                params.put("blockHash", hash.toHex());
+            }
             ResponseMessageProcessor.requestAndResponse(ModuleE.BL.abbr, "receiveVerifyResult", params);
             return true;
         } catch (Exception e) {

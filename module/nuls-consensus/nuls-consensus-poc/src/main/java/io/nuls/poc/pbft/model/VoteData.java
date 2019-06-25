@@ -12,7 +12,7 @@ public class VoteData {
 
     private NulsHash hash;
 
-    private byte[] address;
+    private String address;
 
     public boolean isBifurcation() {
         return bifurcation;
@@ -48,11 +48,11 @@ public class VoteData {
         this.hash = hash;
     }
 
-    public byte[] getAddress() {
+    public String getAddress() {
         return address;
     }
 
-    public void setAddress(byte[] address) {
+    public void setAddress(String address) {
         this.address = address;
     }
 }

@@ -589,10 +589,13 @@ public class BlockResource extends BaseCmd {
         }
 
         long height = Long.parseLong(map.get("blockHeight").toString());
-        NulsHash blockHash = NulsHash.fromHex(map.get("blockHash").toString());
+        NulsHash blockHash = null;
+        String hex = (String) map.get("blockHash");
+        if (null != hex) {
+            blockHash = NulsHash.fromHex(hex);
+        }
         NulsLogger commonLog = context.getLogger();
         try {
-
             BlockSaver saver = BlockSaverManager.getBlockSaver(chainId);
             if (saver == null) {
                 return failed(BlockErrorCode.DATA_ERROR);

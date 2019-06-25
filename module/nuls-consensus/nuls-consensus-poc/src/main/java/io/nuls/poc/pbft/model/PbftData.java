@@ -1,5 +1,6 @@
 package io.nuls.poc.pbft.model;
 
+import io.nuls.base.basic.AddressTool;
 import io.nuls.base.data.NulsHash;
 import io.nuls.core.model.ArraysTool;
 
@@ -21,8 +22,8 @@ public class PbftData {
 
     private long endTime;
 
-    private List<VoteData> voteDataList1 = new ArrayList<>();
-    private List<VoteData> voteDataList2 = new ArrayList<>();
+    private Map<String, VoteData> voteDataList1 = new HashMap<>();
+    private Map<String, VoteData> voteDataList2 = new HashMap<>();
 
     private Map<NulsHash, Integer> map1 = new HashMap<>();
     private Map<NulsHash, Integer> map2 = new HashMap<>();
@@ -60,21 +61,36 @@ public class PbftData {
     }
 
     public void addVote1Result(VoteData data) {
-        this.voteDataList1.add(data);
-        Integer count = map1.get(data.getHash());
-        if (null == count) {
-            count = 0;
-        }
-        map1.put(data.getHash(), count + 1);
+        this.addVote(this.voteDataList1, map1, data);
     }
 
     public void addVote2Result(VoteData data) {
-        this.voteDataList2.add(data);
-        Integer count = map2.get(data.getHash());
+        this.addVote(this.voteDataList2, map2, data);
+    }
+
+    private void addVote(Map<String, VoteData> dataMap, Map<NulsHash, Integer> resultMap, VoteData data) {
+        VoteData oldData = dataMap.get(data.getAddress());
+        dataMap.put(data.getAddress(), data);
+
+        if (null != oldData && oldData.getHash() == data.getHash()) {
+            return;
+        }
+        if (null != oldData && oldData.getHash() != null && oldData.getHash().equals(data.getHash())) {
+            return;
+        }
+        Integer count = resultMap.get(data.getHash());
         if (null == count) {
             count = 0;
         }
-        map2.put(data.getHash(), count + 1);
+        resultMap.put(data.getHash(), count + 1);
+        if (null == oldData) {
+            return;
+        }
+        count = resultMap.get(oldData.getHash());
+        if (null == count) {
+            count = 1;
+        }
+        resultMap.put(oldData.getHash(), count - 1);
     }
 
     public Map<NulsHash, Integer> getVote1Result() {
@@ -114,8 +130,8 @@ public class PbftData {
     }
 
     public VoteData hasVoted1(byte[] address) {
-        for (VoteData vote : this.voteDataList1) {
-            if (ArraysTool.arrayEquals(vote.getAddress(), address)) {
+        for (VoteData vote : this.voteDataList1.values()) {
+            if (vote.getAddress().equals(AddressTool.getStringAddressByBytes(address))) {
                 return vote;
             }
         }
@@ -123,28 +139,20 @@ public class PbftData {
     }
 
     public VoteData hasVoted2(byte[] address) {
-        for (VoteData vote : this.voteDataList2) {
-            if (ArraysTool.arrayEquals(vote.getAddress(), address)) {
+        for (VoteData vote : this.voteDataList2.values()) {
+            if (vote.getAddress().equals(AddressTool.getStringAddressByBytes(address))) {
                 return vote;
             }
         }
         return null;
     }
 
-    public VoteData getVote1ByAddress(byte[] address) {
-        return getVoteByAddress(address, this.voteDataList1);
+    public VoteData getVote1ByAddress(String address) {
+        return this.voteDataList1.get(address);
     }
 
-    public VoteData getVote2ByAddress(byte[] address) {
-        return getVoteByAddress(address, this.voteDataList2);
+    public VoteData getVote2ByAddress(String address) {
+        return this.voteDataList2.get(address);
     }
 
-    public VoteData getVoteByAddress(byte[] address, List<VoteData> list) {
-        for (VoteData data : list) {
-            if (ArraysTool.arrayEquals(address, data.getAddress())) {
-                return data;
-            }
-        }
-        return null;
-    }
 }

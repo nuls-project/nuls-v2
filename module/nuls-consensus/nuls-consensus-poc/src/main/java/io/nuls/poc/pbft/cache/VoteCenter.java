@@ -1,9 +1,11 @@
 package io.nuls.poc.pbft.cache;
 
+import io.nuls.base.basic.AddressTool;
 import io.nuls.base.data.NulsHash;
 import io.nuls.poc.pbft.message.VoteMessage;
 import io.nuls.poc.pbft.model.PbftData;
 import io.nuls.poc.pbft.model.VoteData;
+import io.nuls.poc.utils.LoggerUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,8 +24,8 @@ public class VoteCenter {
         this.chainId = chainId;
     }
 
-    public PbftData addVote1(long height, int round, NulsHash hash, byte[] address, long startTime, boolean bifurcation) {
-
+    public PbftData addVote1(long height, int round, NulsHash hash, String address, long startTime, boolean bifurcation) {
+        LoggerUtil.commonLog.info("====height:{}, round:{}, hash:{}, address:{}", height, round, null == hash ? null : hash.toString(), address);
         PbftData pbftData = getPbftData(height, round, startTime);
         VoteData voteData = pbftData.getVote1ByAddress(address);
         VoteData data;
@@ -48,8 +50,8 @@ public class VoteCenter {
         return pbftData;
     }
 
-    public PbftData addVote2(long height, int round, NulsHash hash, byte[] address, long startTime) {
-
+    public PbftData addVote2(long height, int round, NulsHash hash, String address, long startTime) {
+        LoggerUtil.commonLog.info("++++height:{}, round:{}, hash:{}, address:{}", height, round, null == hash ? hash : hash.toString(), address);
         PbftData pbftData = getPbftData(height, round, startTime);
 
         //todo 收集恶意数据
@@ -78,7 +80,7 @@ public class VoteCenter {
         return data;
     }
 
-    public boolean contains(VoteMessage message, byte[] address) {
+    public boolean contains(VoteMessage message, String address) {
         String key = message.getRound() + "_" + message.getRound();
         PbftData pbftData = map.get(key);
         if (null == pbftData) {
