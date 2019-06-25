@@ -66,7 +66,7 @@ public class BlockVoter implements Runnable {
                     Thread.sleep(1000L);
                     continue;
                 }
-                long sleep = 500L;
+                long sleep = 100L;
                 if (null == pocRound || pocRound.getMemberCount() <= (1 + pocRound.getCurrentMemberIndex())) {
                     this.pocRound = this.roundManager.getCurrentRound(chain);
                 }

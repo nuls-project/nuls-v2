@@ -100,7 +100,7 @@ cachedBlockSizeLimit=26214400
 dependent=protocol-update,cross-chain
 
 [consensus]
-seedNodes=tNULSeBaMkrt4z9FYEkkR9D6choPVvQr94oYZp
+seedNodes=tNULSeBaMkrt4z9FYEkkR9D6choPVvQr94oYZp,tNULSeBaMoGr2RkLZPfJeS5dFzZeNj1oXmaYNe
 password=nuls123456
 packingInterval=10
 agentAssetId=1
