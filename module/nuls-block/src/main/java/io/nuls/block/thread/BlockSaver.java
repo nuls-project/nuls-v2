@@ -38,7 +38,7 @@ public class BlockSaver implements Runnable {
             try {
                 BlockSure sure = sureQueue.take();
                 NulsHash hash = sure.getHash();
-                if (null == hash) {
+                if (null == hash || hash.equals(NulsHash.EMPTY_NULS_HASH)) {
                     continue;
                 }
                 Map<NulsHash, BlockData> blocksMap = blockMap.get(sure.getHeight());
