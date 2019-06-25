@@ -109,10 +109,11 @@ public class BlockVoter implements Runnable {
                 return;
             }
         }
-        this.changeCurrentRound(round, meetingMember.getEndTime() + this.timeout * (round - 1));
+
         if (now < this.curRound.getEnd()) {
             return;
         }
+        this.changeCurrentRound(round, meetingMember.getEndTime() + this.timeout * (round - 1));
         long start = this.curRound.getEnd();
         if (preCommitCache.getForkHeader() != null) {
             LoggerUtil.commonLog.info("====投票给分叉");
