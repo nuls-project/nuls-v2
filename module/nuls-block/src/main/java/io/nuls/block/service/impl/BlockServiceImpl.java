@@ -202,7 +202,7 @@ public class BlockServiceImpl implements BlockService {
             block.setTxs(transactions);
             return block;
         } catch (Exception e) {
-            commonLog.error("",e);
+            commonLog.error("", e);
             return null;
         }
     }
@@ -368,7 +368,7 @@ public class BlockServiceImpl implements BlockService {
             commonLog.error("ProtocolUtil saveNotice fail!chainId-" + chainId + ",height-" + height);
             return false;
         }
-        CrossChainUtil.heightNotice(chainId, height,header);
+        CrossChainUtil.heightNotice(chainId, height, header);
 
         //6.如果不是第一次启动,则更新主链属性
         if (!localInit) {
@@ -404,6 +404,9 @@ public class BlockServiceImpl implements BlockService {
 
     @Override
     public boolean rollbackBlock(int chainId, BlockHeaderPo blockHeaderPo, boolean needLock) {
+
+        //todo 增加一个判断，在pbft生效时禁止常规意义的回滚（完整性回滚不包括在内）
+
         long startTime = System.nanoTime();
         ChainContext context = ContextManager.getContext(chainId);
         NulsLogger commonLog = context.getLogger();
