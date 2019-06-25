@@ -70,7 +70,7 @@ public class BlockVoter implements Runnable {
                     continue;
                 }
                 long sleep = 200L;
-                if (null == pocRound || pocRound.getMemberCount() == (1 + pocRound.getCurrentMemberIndex())) {
+                if (null == pocRound || pocRound.getMemberCount() <= (1 + pocRound.getCurrentMemberIndex())) {
                     this.pocRound = this.roundManager.getCurrentRound(chain);
                 }
 
@@ -83,6 +83,7 @@ public class BlockVoter implements Runnable {
                     }
                 } else {
                     sleep = 1000L;
+                    this.pocRound = this.roundManager.getCurrentRound(chain);
                 }
                 Thread.sleep(sleep);
             } catch (Exception e) {
@@ -180,16 +181,16 @@ public class BlockVoter implements Runnable {
         ErrorCode code = ConsensusErrorCode.WAIT_BLOCK_VERIFY;
         long height = block.getHeader().getHeight();
         if (height != this.curRound.getHeight()) {
-            return ConsensusErrorCode.FAILED;
+            return code;
         }
         NulsHash hash = block.getHeader().getHash();
         PbftData pbftData = cache.addVote1(height, this.curRound.getRound(), hash, block.getHeader().getPackingAddress(chainId), block.getHeader().getTime(), false);
 
         int totalCount = pocRound.getMemberCount();
-        if (totalCount == 1) {
-            code = ConsensusErrorCode.SUCCESS;
-            return code;
-        }
+//        if (totalCount == 1) {
+//            code = ConsensusErrorCode.SUCCESS;
+//            return code;
+//        }
         //判断自己是否需要签名，如果需要就直接进行
         MeetingMember self = pocRound.getMyMember();
         VoteData voteData = pbftData.hasVoted1(self.getAgent().getPackingAddress());
@@ -207,7 +208,11 @@ public class BlockVoter implements Runnable {
             message.setHash(result.getHash());
             this.signAndBroadcast(self, message);
             LoggerUtil.commonLog.info("====commit轮投票：{} ,{}", height, message.getHash());
-            cache.addVote2(height, pbftData.getRound(), message.getHash(), self.getAgent().getPackingAddress(), block.getHeader().getTime());
+            PbftData pbftData2 = cache.addVote2(height, pbftData.getRound(), message.getHash(), self.getAgent().getPackingAddress(), block.getHeader().getTime());
+            VoteResultItem result2 = pbftData2.getVote2LargestItem();
+            if (result2.getCount() > VoteConstant.DEFAULT_RATE * totalCount) {
+                this.sureResult(height, result2.getHash(), this.pocRound);
+            }
         }
         return code;
     }
