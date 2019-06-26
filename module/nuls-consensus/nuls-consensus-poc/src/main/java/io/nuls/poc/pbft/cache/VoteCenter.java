@@ -24,7 +24,7 @@ public class VoteCenter {
         this.chainId = chainId;
     }
 
-    public PbftData addVote1(long height, int round, NulsHash hash, String address, long startTime, boolean bifurcation) {
+    public PbftData addVote1(long height, long round, NulsHash hash, String address, long startTime, boolean bifurcation) {
         LoggerUtil.commonLog.info("====height:{}, round:{}, hash:{}, address:{}", height, round, hash.toString(), address);
         PbftData pbftData = getPbftData(height, round, startTime);
         VoteData voteData = pbftData.getVote1ByAddress(address);
@@ -50,7 +50,7 @@ public class VoteCenter {
         return pbftData;
     }
 
-    public PbftData addVote2(long height, int round, NulsHash hash, String address, long startTime) {
+    public PbftData addVote2(long height, long round, NulsHash hash, String address, long startTime) {
         LoggerUtil.commonLog.info("++++height:{}, round:{}, hash:{}, address:{}", height, round, null == hash ? hash : hash.toString(), address);
         PbftData pbftData = getPbftData(height, round, startTime);
 
@@ -66,7 +66,7 @@ public class VoteCenter {
         return pbftData;
     }
 
-    private PbftData getPbftData(long height, int round, long startTime) {
+    private PbftData getPbftData(long height, long round, long startTime) {
         String key = height + "_" + round;
         PbftData data = map.get(key);
         if (null == data) {

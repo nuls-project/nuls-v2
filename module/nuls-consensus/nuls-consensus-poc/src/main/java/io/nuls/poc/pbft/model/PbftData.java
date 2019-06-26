@@ -16,7 +16,7 @@ public class PbftData {
 
     private long height;
 
-    private int round;
+    private long round;
 
     private long startTime;
 
@@ -36,11 +36,11 @@ public class PbftData {
         this.height = height;
     }
 
-    public int getRound() {
+    public long getRound() {
         return round;
     }
 
-    public void setRound(int round) {
+    public void setRound(long round) {
         this.round = round;
     }
 
