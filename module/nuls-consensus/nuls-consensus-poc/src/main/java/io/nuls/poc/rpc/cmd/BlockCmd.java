@@ -28,11 +28,8 @@ public class BlockCmd extends BaseCmd {
     @Parameter(parameterName = "chainId", parameterType = "int", parameterDes = "链id")
     @Parameter(parameterName = "blockHeader", parameterType = "String", parameterDes = "区块头")
     @ResponseData(name = "返回值", description = "返回一个Map", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
-            @Key(name = "value",valueType = Boolean.class, description = "接口执行成功与否")
+            @Key(name = "value", valueType = Boolean.class, description = "接口执行成功与否")
     }))
-    public Response addBlock(Map<String,Object> params){
-    @Parameter(parameterName = "chainId", parameterType = "int")
-    @Parameter(parameterName = "blockHeader", parameterType = "String")
     public Response addBlock(Map<String, Object> params) {
         Result result = service.addBlock(params);
         if (result.isFailed()) {
@@ -49,12 +46,8 @@ public class BlockCmd extends BaseCmd {
     @Parameter(parameterName = "download", parameterType = "int", parameterDes = "区块状态")
     @Parameter(parameterName = "block", parameterType = "String", parameterDes = "区块信息")
     @ResponseData(name = "返回值", description = "返回一个Map", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
-            @Key(name = "value",valueType = Boolean.class, description = "验证结果")
+            @Key(name = "value", valueType = Boolean.class, description = "验证结果")
     }))
-    public Response validBlock(Map<String,Object> params){
-    @Parameter(parameterName = "chainId", parameterType = "int")
-    @Parameter(parameterName = "download", parameterType = "int")
-    @Parameter(parameterName = "block", parameterType = "String")
     public Response validBlock(Map<String, Object> params) {
         Result result = service.validBlock(params);
         if (result.isFailed()) {
@@ -67,14 +60,11 @@ public class BlockCmd extends BaseCmd {
      * 接收需缓存的区块
      */
     @CmdAnnotation(cmd = "cs_receiveHeaderList", version = 1.0, description = "verify block correctness 1.0")
-    @Parameter(parameterName = "chainId", parameterType = "int",parameterDes = "链id")
-    @Parameter(parameterName = "headerList", parameterType = "List<String>",parameterDes = "区块头列表")
+    @Parameter(parameterName = "chainId", parameterType = "int", parameterDes = "链id")
+    @Parameter(parameterName = "headerList", parameterType = "List<String>", parameterDes = "区块头列表")
     @ResponseData(name = "返回值", description = "返回一个Map", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
-            @Key(name = "value",valueType = Boolean.class, description = "是否成功接收处理")
+            @Key(name = "value", valueType = Boolean.class, description = "是否成功接收处理")
     }))
-    public Response receiveHeaderList(Map<String,Object> params){
-    @Parameter(parameterName = "chainId", parameterType = "int")
-    @Parameter(parameterName = "headerList", parameterType = "List<String>")
     public Response receiveHeaderList(Map<String, Object> params) {
         Result result = service.receiveHeaderList(params);
         if (result.isFailed()) {
@@ -87,14 +77,11 @@ public class BlockCmd extends BaseCmd {
      * 区块回滚
      */
     @CmdAnnotation(cmd = "cs_chainRollBack", version = 1.0, description = "chain roll back 1.0")
-    @Parameter(parameterName = "chainId", parameterType = "int",parameterDes = "链id")
-    @Parameter(parameterName = "height", parameterType = "int",parameterDes = "区块回滚到的高度")
+    @Parameter(parameterName = "chainId", parameterType = "int", parameterDes = "链id")
+    @Parameter(parameterName = "height", parameterType = "int", parameterDes = "区块回滚到的高度")
     @ResponseData(name = "返回值", description = "返回一个Map", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
-            @Key(name = "value",valueType = Boolean.class, description = "区块回滚结果")
+            @Key(name = "value", valueType = Boolean.class, description = "区块回滚结果")
     }))
-    public Response chainRollBack(Map<String,Object> params){
-    @Parameter(parameterName = "chainId", parameterType = "int")
-    @Parameter(parameterName = "height", parameterType = "int")
     public Response chainRollBack(Map<String, Object> params) {
         Result result = service.chainRollBack(params);
         if (result.isFailed()) {
