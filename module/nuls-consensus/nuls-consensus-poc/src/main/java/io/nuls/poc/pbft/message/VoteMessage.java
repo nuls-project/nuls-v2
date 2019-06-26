@@ -28,7 +28,7 @@ public class VoteMessage extends BaseBusinessMessage {
      */
     private long startTime;
 
-    private NulsHash hash;
+    private NulsHash blockHash;
 
     //恶意分叉时，传递证据。
     private BlockHeader header1;
@@ -41,7 +41,7 @@ public class VoteMessage extends BaseBusinessMessage {
         stream.writeInt64(height);
         stream.write(SerializeUtils.int16ToBytes(round));
         stream.write(step);
-        stream.write(hash.getBytes());
+        stream.write(blockHash.getBytes());
         stream.writeNulsData(header1);
         stream.writeNulsData(header2);
         stream.writeBytesWithLength(sign);
@@ -59,7 +59,7 @@ public class VoteMessage extends BaseBusinessMessage {
                 buffer.writeInt64(height);
                 buffer.write(SerializeUtils.int16ToBytes(round));
                 buffer.write(step);
-                buffer.write(hash.getBytes());
+                buffer.write(blockHash.getBytes());
                 buffer.writeNulsData(header1);
                 buffer.writeNulsData(header2);
             }
@@ -80,7 +80,7 @@ public class VoteMessage extends BaseBusinessMessage {
         this.height = byteBuffer.readInt64();
         this.round = byteBuffer.readShort();
         this.step = byteBuffer.readByte();
-        this.hash = byteBuffer.readHash();
+        this.blockHash = byteBuffer.readHash();
         this.header1 = byteBuffer.readNulsData(new BlockHeader());
         this.header2 = byteBuffer.readNulsData(new BlockHeader());
         this.sign = byteBuffer.readByLengthByte();
@@ -121,12 +121,12 @@ public class VoteMessage extends BaseBusinessMessage {
         this.round = round;
     }
 
-    public NulsHash getHash() {
-        return hash;
+    public NulsHash getBlockHash() {
+        return blockHash;
     }
 
-    public void setHash(NulsHash hash) {
-        this.hash = hash;
+    public void setBlockHash(NulsHash blockHash) {
+        this.blockHash = blockHash;
     }
 
     public byte[] getSign() {

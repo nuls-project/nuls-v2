@@ -2,6 +2,7 @@ package io.nuls.poc.pbft.handler;
 
 import io.nuls.base.RPCUtil;
 import io.nuls.base.basic.AddressTool;
+import io.nuls.base.data.NulsHash;
 import io.nuls.base.protocol.MessageProcessor;
 import io.nuls.base.signture.BlockSignature;
 import io.nuls.core.core.annotation.Component;
@@ -10,6 +11,8 @@ import io.nuls.poc.pbft.BlockVoter;
 import io.nuls.poc.pbft.manager.VoterManager;
 import io.nuls.poc.pbft.message.VoteMessage;
 import io.nuls.poc.utils.LoggerUtil;
+
+import java.io.IOException;
 
 /**
  * @author Niels
@@ -39,9 +42,13 @@ public class VoteHandler implements MessageProcessor {
             LoggerUtil.commonLog.error(e);
             return;
         }
-        if (signature.verifySignature(message.getHash()).isFailed()) {
-            LoggerUtil.commonLog.warn("discard wrong vote.");
-            return;
+        try {
+            if (signature.verifySignature(NulsHash.calcHash(message.serializeForDigest())).isFailed()) {
+                LoggerUtil.commonLog.warn("discard wrong vote.");
+                return;
+            }
+        } catch (IOException e) {
+            LoggerUtil.commonLog.error(e);
         }
 
         BlockVoter voter = VoterManager.getVoter(chainId);

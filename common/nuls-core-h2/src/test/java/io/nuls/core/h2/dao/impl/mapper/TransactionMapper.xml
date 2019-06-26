@@ -32,8 +32,8 @@
     </update>
 
     <insert id="save">
-      insert into TRANSACTION_888 (address, hash, `type`, amount, state, `time`)
+      insert into TRANSACTION_888 (address, blockHash, `type`, amount, state, `time`)
         values
-        (#{address}, #{hash}, #{type}, #{amount}, #{state}, #{time})
+        (#{address}, #{blockHash}, #{type}, #{amount}, #{state}, #{time})
     </insert>
 </mapper>

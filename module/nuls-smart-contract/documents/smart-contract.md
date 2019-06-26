@@ -164,7 +164,7 @@ sc_contract_offline_tx_hash_list
 ================================
 ### scope:public
 ### version:1.0
-contract offline tx hash list
+contract offline tx blockHash list
 
 参数列表
 ----
@@ -360,7 +360,7 @@ contract result
 | 参数名     |  参数类型  | 参数描述 | 是否非空 |
 | ------- |:------:| ---- |:----:|
 | chainId |  int   |      |  是   |
-| hash    | string |      |  是   |
+| blockHash    | string |      |  是   |
 
 返回值
 ---
@@ -627,7 +627,7 @@ contract tx
 | 参数名     |  参数类型  | 参数描述 | 是否非空 |
 | ------- |:------:| ---- |:----:|
 | chainId |  int   |      |  是   |
-| hash    | string |      |  是   |
+| blockHash    | string |      |  是   |
 
 返回值
 ---

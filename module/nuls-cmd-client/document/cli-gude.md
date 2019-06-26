@@ -547,11 +547,11 @@ Enter your password:**********
 
 根据交易hash查询交易详细信息
 
-- **命令：gettx &lt;hash&gt;**
+- **命令：gettx &lt;blockHash&gt;**
 
 | 参数         | 说明           |
 | ------------ | -------------- |
-| &lt;hash&gt; | 交易hash，必填 |
+| &lt;blockHash&gt; | 交易hash，必填 |
 
 返回信息 交易详细信息
 
@@ -563,7 +563,7 @@ Enter your password:**********
   "time" : 1552979783918,
   "transactionSignature" : "IQIRxF8ocQzSaixF+3kIlaD/LglaKQ8YJbMdgOvDCRPEhgBGMEQCICdnNr3HqEg/UZZ6RLBHyGuPChoLdMtcOHXT3Xlb5SC3AiBGAWSPGH3yjtEkaVbLsI5n9UcqDvOfG3Ui1jf672IDCg==",
   "remark" : "6L2s6LSm",
-  "hash" : {
+  "blockHash" : {
     "digestAlgType" : 0,
     "digestBytes" : "CivAIHpVyqNr/h87/FWk7vXsXqBekHJ+3kQc5mZp+H8=", 
     "digestHex" : "00200a2bc0207a55caa36bfe1f3bfc55a4eef5ec5ea05e90727ede441ce66669f87f" 
@@ -605,7 +605,7 @@ nuls>>> gettx 00200a2bc0207a55caa36bfe1f3bfc55a4eef5ec5ea05e90727ede441ce66669f8
   "time" : 1552979783918,
   "transactionSignature" : "IQIRxF8ocQzSaixF+3kIlaD/LglaKQ8YJbMdgOvDCRPEhgBGMEQCICdnNr3HqEg/UZZ6RLBHyGuPChoLdMtcOHXT3Xlb5SC3AiBGAWSPGH3yjtEkaVbLsI5n9UcqDvOfG3Ui1jf672IDCg==",
   "remark" : "6L2s6LSm",
-  "hash" : {
+  "blockHash" : {
     "digestAlgType" : 0,
     "digestBytes" : "CivAIHpVyqNr/h87/FWk7vXsXqBekHJ+3kQc5mZp+H8=", 
     "digestHex" : "00200a2bc0207a55caa36bfe1f3bfc55a4eef5ec5ea05e90727ede441ce66669f87f" 
@@ -687,7 +687,7 @@ nuls>>> gettx 00200a2bc0207a55caa36bfe1f3bfc55a4eef5ec5ea05e90727ede441ce66669f8
 | &lt;commissionRate&gt; | 代理佣金比例，范围：10~100，必填                             |
 | &lt;deposit&gt;        | 创建节点的保证金，不能低于20000NULS，必填                    |
 
-返回信息 返回节点的agent hash
+返回信息 返回节点的agent blockHash
 
 ```json
 "002006a5b7eb1d32ed6d7d54e24e219b112d4fdb8530db5506ee953b6f65a0fdb55e"
@@ -866,9 +866,9 @@ Enter your password:**********
 
 ```json
 {
-  "hash" : "0020b446a0244e4e46f8736f1ab56c33616facb836bc8344367f2f048b703f0c8f57",  //区块hash
+  "blockHash" : "0020b446a0244e4e46f8736f1ab56c33616facb836bc8344367f2f048b703f0c8f57",  //区块hash
   "preHash" : "0020c0dcf9209f66ee7e7778c817ba7c04d67b5e6a056b42dec7fbfe44eb5f91bdfc",  //上一个区块hash
-  "merkleHash" : "00200511ced5779c54aa2170b941a1f9a7ae08dfd009b1dfaacc3679d15da9fb9c3e",  //merkle hash
+  "merkleHash" : "00200511ced5779c54aa2170b941a1f9a7ae08dfd009b1dfaacc3679d15da9fb9c3e",  //merkle blockHash
   "time" : "2019-03-19 18:26:20.020",  //打包时间
   "height" : 1479, //区块高度
   "txCount" : 1,   //包含的交易数
@@ -890,7 +890,7 @@ Enter your password:**********
 ```shell
 nuls>>> getbestblockheader
 {
-  "hash" : "0020b446a0244e4e46f8736f1ab56c33616facb836bc8344367f2f048b703f0c8f57",
+  "blockHash" : "0020b446a0244e4e46f8736f1ab56c33616facb836bc8344367f2f048b703f0c8f57",
   "preHash" : "0020c0dcf9209f66ee7e7778c817ba7c04d67b5e6a056b42dec7fbfe44eb5f91bdfc",
   "merkleHash" : "00200511ced5779c54aa2170b941a1f9a7ae08dfd009b1dfaacc3679d15da9fb9c3e",
   "time" : "2019-03-19 18:26:20.020",
@@ -915,20 +915,20 @@ nuls>>> getbestblockheader
 
 根据区块高度或者区块hash，查询区块信息，必须并且只能选择一种参数作为查询条件。
 
-- **命令：getblock &lt;hash&gt; | &lt;height&gt;**
+- **命令：getblock &lt;blockHash&gt; | &lt;height&gt;**
 
 | 参数           | 说明         |
 | -------------- | ------------ |
-| &lt;hash&gt;   | 区块的hash值 |
+| &lt;blockHash&gt;   | 区块的hash值 |
 | &lt;height&gt; | 区块的高度   |
 
 返回信息
 
 ```json
 {
-  "hash" : "0020b446a0244e4e46f8736f1ab56c33616facb836bc8344367f2f048b703f0c8f57",  //区块hash
+  "blockHash" : "0020b446a0244e4e46f8736f1ab56c33616facb836bc8344367f2f048b703f0c8f57",  //区块hash
   "preHash" : "0020c0dcf9209f66ee7e7778c817ba7c04d67b5e6a056b42dec7fbfe44eb5f91bdfc",  //上一个区块hash
-  "merkleHash" : "00200511ced5779c54aa2170b941a1f9a7ae08dfd009b1dfaacc3679d15da9fb9c3e",  //merkle hash
+  "merkleHash" : "00200511ced5779c54aa2170b941a1f9a7ae08dfd009b1dfaacc3679d15da9fb9c3e",  //merkle blockHash
   "time" : "2019-03-19 18:26:20.020",  //打包时间
   "height" : 1479, //区块高度
   "txCount" : 1,   //包含的交易数
@@ -950,9 +950,9 @@ nuls>>> getbestblockheader
 ```shell
 nuls>>> getblock 28115
 {
-  "hash" : "0020b446a0244e4e46f8736f1ab56c33616facb836bc8344367f2f048b703f0c8f57",  //区块hash
+  "blockHash" : "0020b446a0244e4e46f8736f1ab56c33616facb836bc8344367f2f048b703f0c8f57",  //区块hash
   "preHash" : "0020c0dcf9209f66ee7e7778c817ba7c04d67b5e6a056b42dec7fbfe44eb5f91bdfc",  //上一个区块hash
-  "merkleHash" : "00200511ced5779c54aa2170b941a1f9a7ae08dfd009b1dfaacc3679d15da9fb9c3e",  //merkle hash
+  "merkleHash" : "00200511ced5779c54aa2170b941a1f9a7ae08dfd009b1dfaacc3679d15da9fb9c3e",  //merkle blockHash
   "time" : "2019-03-19 18:26:20.020",  //打包时间
   "height" : 1479, //区块高度
   "txCount" : 1,   //包含的交易数
@@ -975,18 +975,18 @@ nuls>>> getblock 28115
 
 根据区块高度或者区块hash，查询区块头信息，必须并且只能选择一种参数作为查询条件。
 
-- **命令：getblockheader &lt;hash&gt; | &lt;height&gt;**
+- **命令：getblockheader &lt;blockHash&gt; | &lt;height&gt;**
 
 | 参数           | 说明         |
 | -------------- | ------------ |
-| &lt;hash&gt;   | 区块的hash值 |
+| &lt;blockHash&gt;   | 区块的hash值 |
 | &lt;height&gt; | 区块的高度   |
 
 返回信息
 
 ```json
 {
-  "hash" : "0020c40f471756c88e7487fcc0d428545232120071b58f35e450891237d7b41eb817",//区块hash
+  "blockHash" : "0020c40f471756c88e7487fcc0d428545232120071b58f35e450891237d7b41eb817",//区块hash
   "preHash" : "0020fb1fd03cda7e2b6585256f4da85bdac7d8fc8bafa0740b8eb0ed577f3020b954",//前一区块hash
   "merkleHash" : "0020474c5a353f235e8e8514328e1e98d6b653d4a5445473d160691e39121cd8b158",//梅克尔hash
   "time" : "2018-07-16 16:29:30",//区块生成时间
@@ -1010,7 +1010,7 @@ nuls>>> getblock 28115
 ```shell
 nuls>>> getblockheader 28115
 {
-  "hash" : "0020c40f471756c88e7487fcc0d428545232120071b58f35e450891237d7b41eb817",
+  "blockHash" : "0020c40f471756c88e7487fcc0d428545232120071b58f35e450891237d7b41eb817",
   "preHash" : "0020fb1fd03cda7e2b6585256f4da85bdac7d8fc8bafa0740b8eb0ed577f3020b954",
   "merkleHash" : "0020474c5a353f235e8e8514328e1e98d6b653d4a5445473d160691e39121cd8b158",
   "time" : "2018-07-16 16:29:30",
@@ -1303,11 +1303,11 @@ Please enter your account password
 
 获取合约的交易信息, 包含交易详情，合约调用参数，合约执行结果
 
-- **命令：getcontracttx &lt;hash>**
+- **命令：getcontracttx &lt;blockHash>**
 
 | 参数           | 说明         |
 | -------------- | ------------ |
-| &lt;hash>|交易hash|
+| &lt;blockHash>|交易hash|
 
 返回值
 
@@ -1320,7 +1320,7 @@ Please enter your account password
 nuls>>> getcontracttx 00203a48dcfc26426152805be49830c72005b4648d0182bbf6c2e8980380364eb59f
 getcontracttx 00203a48dcfc26426152805be49830c72005b4648d0182bbf6c2e8980380364eb59f
 {
-  "hash" : "00203a48dcfc26426152805be49830c72005b4648d0182bbf6c2e8980380364eb59f",
+  "blockHash" : "00203a48dcfc26426152805be49830c72005b4648d0182bbf6c2e8980380364eb59f",
   "type" : "100",
   "time" : "2019-03-26 09:28:26",
   "blockHeight" : 46,
@@ -1391,11 +1391,11 @@ getcontracttx 00203a48dcfc26426152805be49830c72005b4648d0182bbf6c2e8980380364eb5
 
 获取一个合约的执行结果
 
-- **命令:getcontractresult &lt;hash>**
+- **命令:getcontractresult &lt;blockHash>**
 
 | 参数           | 说明         |
 | -------------- | ------------ |
-|&lt;hash>|交易hash|
+|&lt;blockHash>|交易hash|
 
 返回值
 

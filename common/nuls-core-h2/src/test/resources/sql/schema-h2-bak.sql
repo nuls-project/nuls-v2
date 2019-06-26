@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `punish_log` (
 ) ;
 
 CREATE TABLE IF NOT EXISTS `block_header` (
-  `hash` varchar(70) NOT NULL,
+  `blockHash` varchar(70) NOT NULL,
   `height` bigint(14) NOT NULL,
   `pre_hash` varchar(70) DEFAULT NULL,
   `merkle_hash` varchar(70) NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `block_header` (
   `scriptSig` varbinary(1024) DEFAULT NULL,
   `extend` varbinary(1024) NOT NULL,
   `size` int(9) DEFAULT NULL,
-  PRIMARY KEY (`hash`),
+  PRIMARY KEY (`blockHash`),
   UNIQUE KEY `block_height_idx` (`height`)
 ) ;
 
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS `sub_chain` (
 ) ;
 
 CREATE TABLE IF NOT EXISTS `transaction` (
-  `hash` varchar(70) NOT NULL,
+  `blockHash` varchar(70) NOT NULL,
   `tx_index` int(5) NOT NULL,
   `type` int(5) NOT NULL,
   `create_time` bigint(15) NOT NULL,
@@ -115,11 +115,11 @@ CREATE TABLE IF NOT EXISTS `transaction` (
   `txData` varbinary(307200) DEFAULT NULL,
   `scriptSig` varbinary(255) DEFAULT NULL,
   `size` int(9) DEFAULT NULL,
-  PRIMARY KEY (`hash`)
+  PRIMARY KEY (`blockHash`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `transaction_local` (
-  `hash` varchar(70) NOT NULL,
+  `blockHash` varchar(70) NOT NULL,
   `tx_index` int(5) NOT NULL,
   `type` int(5) NOT NULL,
   `create_time` bigint(15) NOT NULL,
@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS `transaction_local` (
   `scriptSig` varbinary(255) DEFAULT NULL,
   `size` int(9) DEFAULT NULL,
   `txStatus` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`hash`)
+  PRIMARY KEY (`blockHash`)
 ) ;
 
 CREATE TABLE IF NOT EXISTS `tx_account_relation` (
