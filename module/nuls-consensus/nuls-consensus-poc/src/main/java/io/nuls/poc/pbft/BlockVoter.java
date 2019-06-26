@@ -223,12 +223,7 @@ public class BlockVoter implements Runnable {
         message.setRound(round);
         message.setStep((byte) 0);
         message.setStartTime(time);
-        try {
-            message.setBlockHash(NulsHash.calcHash(message.serializeForDigest()));
-        } catch (IOException e) {
-            LoggerUtil.commonLog.error(e);
-            return;
-        }
+        message.setBlockHash(hash);
         boolean bifurcation = false;
         if (null != forkHeader) {
             bifurcation = true;
