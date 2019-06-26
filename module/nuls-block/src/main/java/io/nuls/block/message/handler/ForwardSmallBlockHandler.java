@@ -67,7 +67,7 @@ public class ForwardSmallBlockHandler implements MessageProcessor {
         NulsHash blockHash = message.getRequestHash();
         Long height = context.getCachedHashHeightMap().get(blockHash);
         if (height != null) {
-            NetworkUtil.setHashAndHeight(chainId, blockHash, height, nodeId);
+            NetworkUtil.setHashAndHeight(chainId, blockHash, height-1, nodeId);
         } else {
             context.getLogger().debug("can't set node height, nodeId-" + nodeId + "hash-" + blockHash);
         }

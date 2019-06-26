@@ -98,7 +98,7 @@ public class SmallBlockHandler implements MessageProcessor {
 
         messageLog.debug("recieve smallBlockMessage from node-" + nodeId + ", chainId:" + chainId + ", height:" + header.getHeight() + ", hash:" + header.getHash());
         context.getCachedHashHeightMap().put(blockHash, header.getHeight());
-        NetworkUtil.setHashAndHeight(chainId, blockHash, header.getHeight(), nodeId);
+        NetworkUtil.setHashAndHeight(chainId, blockHash, header.getHeight()-1, nodeId);
         if (context.getStatus().equals(StatusEnum.SYNCHRONIZING)) {
             return;
         }
