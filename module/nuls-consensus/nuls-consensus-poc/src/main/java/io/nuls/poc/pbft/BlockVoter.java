@@ -134,7 +134,7 @@ public class BlockVoter implements Runnable {
         if (now < this.pocRound.getCurVoteRound().getEnd()) {
             return;
         }
-        this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout );
+        this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
         long start = this.pocRound.getCurVoteRound().getEnd();
         if (preCommitCache.getForkHeader() != null) {
 //            LoggerUtil.commonLog.info("====投票给分叉");
@@ -316,7 +316,7 @@ public class BlockVoter implements Runnable {
         byte step = message.getStep();
         PbftData pbftData;
         VoteResultItem realResult;
-        if (step < 1) {
+        if (step == 0) {
             pbftData = cache.addVote1(message.getHeight(), message.getRound(), message.getBlockHash(), address, time, message.getBlockHash() == null && message.getHeader2() != null);
             VoteResultItem result = pbftData.getVote1LargestItem();
             //判断自己是否需要签名，如果需要就直接进行
