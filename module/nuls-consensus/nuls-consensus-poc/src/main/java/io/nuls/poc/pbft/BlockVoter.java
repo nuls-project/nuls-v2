@@ -243,7 +243,7 @@ public class BlockVoter implements Runnable {
             msg.setRound(message.getRound());
             msg.setStep((byte) 1);
             msg.setBlockHash(result.getHash());
-            this.signAndBroadcast(self, message);
+            this.signAndBroadcast(self, msg);
             cache.addVote2(message.getHeight(), message.getRound(), message.getBlockHash(), AddressTool.getStringAddressByBytes(self.getAgent().getPackingAddress()), time);
         }
     }
@@ -327,7 +327,7 @@ public class BlockVoter implements Runnable {
                 msg.setRound(message.getRound());
                 msg.setStep((byte) 1);
                 msg.setBlockHash(result.getHash());
-                this.signAndBroadcast(self, message);
+                this.signAndBroadcast(self, msg);
                 cache.addVote2(message.getHeight(), message.getRound(), message.getBlockHash(), AddressTool.getStringAddressByBytes(self.getAgent().getPackingAddress()), time);
             }
             realResult = pbftData.getVote2LargestItem();

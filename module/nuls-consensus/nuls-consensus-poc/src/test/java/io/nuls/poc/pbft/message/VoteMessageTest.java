@@ -14,7 +14,7 @@ public class VoteMessageTest {
     public void test() throws Exception {
         VoteMessage msg1 = new VoteMessage();
         msg1.setHeight(100L);
-        msg1.setStep((byte) 0);
+        msg1.setStep((byte) 1);
         msg1.setStartTime(1532345123L);
         msg1.setRound(2);
         msg1.setBlockHash(NulsHash.calcHash(new byte[]{1, 1, 0, 1, 0, 1}));
