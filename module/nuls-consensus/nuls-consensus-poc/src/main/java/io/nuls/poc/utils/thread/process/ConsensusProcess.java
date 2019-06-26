@@ -113,13 +113,13 @@ public class ConsensusProcess {
         if (!hasPacking && this.isMyTurn(chain, round, member)) {
             hasPacking = true;
             try {
-                if (consensusLogger.getLogger().isDebugEnabled()) {
-                    consensusLogger.debug("当前网络时间： " + NulsDateUtils.convertDate(new Date(NulsDateUtils.getCurrentTimeMillis())) + " , 我的打包开始时间: " +
-                            NulsDateUtils.convertDate(new Date((round.getOffset() + member.getStartTime()) * 1000)) + " , 我的打包结束时间: " +
-                            NulsDateUtils.convertDate(new Date((round.getOffset() + member.getEndTime()) * 1000)) + " , 当前轮开始时间: " +
-                            NulsDateUtils.convertDate(new Date(round.getStartTime() * 1000)) + " , 当前轮结束开始时间: " +
-                            NulsDateUtils.convertDate(new Date(round.getEndTime() * 1000)));
-                }
+//                if (consensusLogger.getLogger().isDebugEnabled()) {
+//                    consensusLogger.debug("当前网络时间： " + NulsDateUtils.convertDate(new Date(NulsDateUtils.getCurrentTimeMillis())) + " , 我的打包开始时间: " +
+//                            NulsDateUtils.convertDate(new Date((round.getOffset() + member.getStartTime()) * 1000)) + " , 我的打包结束时间: " +
+//                            NulsDateUtils.convertDate(new Date((round.getOffset() + member.getEndTime()) * 1000)) + " , 当前轮开始时间: " +
+//                            NulsDateUtils.convertDate(new Date(round.getStartTime() * 1000)) + " , 当前轮结束开始时间: " +
+//                            NulsDateUtils.convertDate(new Date(round.getEndTime() * 1000)));
+//                }
                 packing(chain, member, round);
             } catch (Exception e) {
                 consensusLogger.error(e);

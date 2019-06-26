@@ -25,7 +25,7 @@ public class VoteCenter {
     }
 
     public PbftData addVote1(long height, long round, NulsHash hash, String address, long startTime, boolean bifurcation) {
-        LoggerUtil.commonLog.info("====height:{}, round:{}, hash:{}, address:{}", height, round, hash.toString(), address);
+//        LoggerUtil.commonLog.info("====height:{}, round:{}, hash:{}, address:{}", height, round, hash.toString(), address);
         PbftData pbftData = getPbftData(height, round, startTime);
         VoteData voteData = pbftData.getVote1ByAddress(address);
         VoteData data;
@@ -51,7 +51,7 @@ public class VoteCenter {
     }
 
     public PbftData addVote2(long height, long round, NulsHash hash, String address, long startTime) {
-        LoggerUtil.commonLog.info("++++height:{}, round:{}, hash:{}, address:{}", height, round, null == hash ? hash : hash.toString(), address);
+//        LoggerUtil.commonLog.info("++++height:{}, round:{}, hash:{}, address:{}", height, round, null == hash ? hash : hash.toString(), address);
         PbftData pbftData = getPbftData(height, round, startTime);
 
         //todo 收集恶意数据

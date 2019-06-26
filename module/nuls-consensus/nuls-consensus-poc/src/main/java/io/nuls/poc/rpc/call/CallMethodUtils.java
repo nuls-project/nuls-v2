@@ -762,7 +762,7 @@ public class CallMethodUtils {
             params.put("messageBody", RPCUtil.encode(message.serialize()));
             params.put("command", command);
             boolean success = ResponseMessageProcessor.requestAndResponse(ModuleE.NW.abbr, "nw_broadcast", params).isSuccess();
-            LoggerUtil.commonLog.debug("broadcast " + message.getClass().getName() + ", chainId:" + chainId + ", success:" + success);
+//            LoggerUtil.commonLog.debug("broadcast " + message.getClass().getName() + ", chainId:" + chainId + ", success:" + success);
             return success;
         } catch (Exception e) {
             LoggerUtil.commonLog.error("", e);

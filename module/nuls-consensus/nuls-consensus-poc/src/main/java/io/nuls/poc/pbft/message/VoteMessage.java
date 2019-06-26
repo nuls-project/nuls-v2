@@ -1,14 +1,17 @@
 package io.nuls.poc.pbft.message;
 
+import io.nuls.base.basic.AddressTool;
 import io.nuls.base.basic.NulsByteBuffer;
 import io.nuls.base.basic.NulsOutputStreamBuffer;
 import io.nuls.base.data.BaseBusinessMessage;
 import io.nuls.base.data.BlockHeader;
 import io.nuls.base.data.NulsHash;
+import io.nuls.base.signture.BlockSignature;
 import io.nuls.core.constant.ToolsConstant;
 import io.nuls.core.crypto.UnsafeByteArrayOutputStream;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.parse.SerializeUtils;
+import io.nuls.poc.utils.LoggerUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,6 +38,7 @@ public class VoteMessage extends BaseBusinessMessage {
     private BlockHeader header2;
 
     private byte[] sign;
+    private String address;
 
     @Override
     protected void serializeToStream(NulsOutputStreamBuffer stream) throws IOException {
@@ -159,5 +163,22 @@ public class VoteMessage extends BaseBusinessMessage {
 
     public void setHeader2(BlockHeader header2) {
         this.header2 = header2;
+    }
+
+    public String getAddress(int chainId) {
+        if (null == address && this.sign != null) {
+            BlockSignature bs = new BlockSignature();
+            try {
+                bs.parse(this.sign, 0);
+            } catch (NulsException e) {
+                LoggerUtil.commonLog.error(e);
+            }
+            this.address = AddressTool.getStringAddressByBytes(AddressTool.getAddress(bs.getPublicKey(), chainId));
+        }
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
