@@ -46,4 +46,5 @@ public interface ConsensusErrorCode extends CommonCodeConstanst {
     ErrorCode DEPOSIT_NEVER_CANCELED = ErrorCode.init("cs_0035");
 
     ErrorCode WAIT_BLOCK_VERIFY = ErrorCode.init("bl_0018");
+    ErrorCode CONFLICT_ERROR = ErrorCode.init("cs_0039");
 }

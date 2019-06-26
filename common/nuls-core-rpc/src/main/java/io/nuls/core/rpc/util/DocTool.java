@@ -3,6 +3,7 @@ package io.nuls.core.rpc.util;
 import io.nuls.core.core.annotation.Component;
 import io.nuls.core.core.annotation.Value;
 import io.nuls.core.core.ioc.SpringLiteContext;
+import io.nuls.core.log.Log;
 import io.nuls.core.rpc.cmd.BaseCmd;
 import io.nuls.core.rpc.model.*;
 import net.steppschuh.markdowngenerator.table.Table;
@@ -70,6 +71,8 @@ public class DocTool {
     @Component
     public static class Gen {
 
+        private static final String NA = "N/A";
+
         @Value("APP_NAME")
         private String appName;
 
@@ -86,7 +89,7 @@ public class DocTool {
                     }
                     CmdAnnotation cmdAnnotation = (CmdAnnotation) annotation;
                     CmdDes cmdDes = new CmdDes();
-                    cmdDes.cmdName = cmdAnnotation.cmd();
+                    cmdDes.cmdName = cmdAnnotation.cmd().replaceAll("_", "\\\\_");
                     cmdDes.des = cmdAnnotation.description();
                     cmdDes.scope = cmdAnnotation.scope();
                     cmdDes.version = cmdAnnotation.version();
@@ -111,6 +114,12 @@ public class DocTool {
 
         public List<ResultDes> buildResultDes(TypeDescriptor typeDescriptor, String des) {
             ResultDes resultDes = new ResultDes();
+            if (typeDescriptor.value() == Void.class){
+                resultDes.type = "void";
+                resultDes.des = des;
+                resultDes.name = NA;
+                return List.of(resultDes);
+            }
             if (baseType.contains(typeDescriptor.value())) {
                 resultDes.des = des;
                 resultDes.type = typeDescriptor.value().getSimpleName().toLowerCase();
@@ -128,10 +137,10 @@ public class DocTool {
                         rd.name = key.name();
                         rd.des = key.description();
                         if(baseType.contains(key.valueElement()) || key.valueElement() == Map.class){
-                            rd.type = "list<" + key.valueElement() + ">";
+                            rd.type = "list&lt;" + key.valueElement().getSimpleName() + ">";
                         }else{
                             rd.list = classToResultDes(key.valueElement());
-                            rd.type = "list<object>";
+                            rd.type = "list&lt;object>";
                         }
                     } else if (Map.class == key.valueType()) {
                         rd.type = "map";
@@ -147,6 +156,11 @@ public class DocTool {
                 });
                 return res;
             } else if (List.class == typeDescriptor.value()) {
+                if(baseType.contains(typeDescriptor.collectionElement())){
+                    resultDes.type = "list&lt;" + typeDescriptor.collectionElement().getSimpleName() + ">";
+                    resultDes.des = des;
+                    return List.of(resultDes);
+                }
                 return classToResultDes(typeDescriptor.collectionElement());
             } else {
                 return classToResultDes(typeDescriptor.value());
@@ -163,6 +177,10 @@ public class DocTool {
             Arrays.stream(fileds).forEach(filed -> {
                 Annotation ann = filed.getAnnotation(ApiModelProperty.class);
                 ApiModelProperty apiModelProperty = (ApiModelProperty) ann;
+                if(apiModelProperty == null){
+                    Log.warn("发现未配置ApiModelProperty注解的filed:{}",clzs.getSimpleName() + "#" + filed.getName());
+                    return ;
+                }
                 ResultDes filedDes = new ResultDes();
                 filedDes.des = apiModelProperty.description();
                 filedDes.name = filed.getName();
@@ -170,7 +188,7 @@ public class DocTool {
                 if(apiModelProperty.type().value() != Void.class ){
                     filedDes.list = buildResultDes(apiModelProperty.type(),filedDes.des);
                     if(apiModelProperty.type().value() == List.class){
-                        filedDes.type = "list<object>";
+                        filedDes.type = "list&lt;object>";
                     }
                 }
                 filedList.add(filedDes);
@@ -254,7 +272,7 @@ public class DocTool {
                     .withAlignments(Table.ALIGN_LEFT, Table.ALIGN_CENTER,Table.ALIGN_LEFT,Table.ALIGN_CENTER)
                     .addRow("参数名", "参数类型","参数描述","是否非空");
             parameters.forEach(p->{
-                tableBuilder.addRow(p.parameterName(),p.parameterType().toLowerCase(),p.parameterDes(),p.canNull() ? "是" : "否");
+                tableBuilder.addRow(p.parameterName(),p.parameterType().toLowerCase(),p.parameterDes(),!p.canNull() ? "是" : "否");
             });
             writer.newLine();
             writer.write(tableBuilder.build().toString());

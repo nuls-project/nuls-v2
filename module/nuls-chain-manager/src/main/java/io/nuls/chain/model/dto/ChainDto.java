@@ -22,71 +22,66 @@
  * SOFTWARE.
  *
  */
+package io.nuls.chain.model.dto;
 
-package io.nuls.transaction.model.dto;
+import io.nuls.core.rpc.model.ApiModel;
+import io.nuls.core.rpc.model.ApiModelProperty;
 
-import io.nuls.base.protocol.TxRegisterDetail;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 各个模块需要向交易管理模块注册自己的每个交易的验证器，整个模块的验证器
- * @author: qinyifeng
- * @date: 2018/11/30
+ * @author lan
+ * @date 2019/06/17
+ * @description
  */
-public class ModuleTxRegisterDTO {
-
-    private Integer chainId;
+@ApiModel(description = "链信息")
+public class ChainDto {
     /**
-     * 模块编码
+     * 链序号
+     * Chain ID
      */
-    private String moduleCode;
+    @ApiModelProperty(description = "链id")
+    private int chainId;
 
-    /**
-     * 交易验证器
-     */
-    private List<TxRegisterDetail> list;
-    private List<Integer> delList;
+    @ApiModelProperty(description = "链名称")
+    private String chainName;
 
-    public List<Integer> getDelList() {
-        return delList;
-    }
+    @ApiModelProperty(description = "最小连接数")
+    private int minAvailableNodeNum;
 
-    public void setDelList(List<Integer> delList) {
-        this.delList = delList;
-    }
+    @ApiModelProperty(description = "资产信息列表")
+    List<AssetDto> assetInfoList = new ArrayList<>();
 
-    public Integer getChainId() {
+    public int getChainId() {
         return chainId;
     }
 
-    public void setChainId(Integer chainId) {
+    public void setChainId(int chainId) {
         this.chainId = chainId;
     }
 
-    public String getModuleCode() {
-        return moduleCode;
+    public String getChainName() {
+        return chainName;
     }
 
-    public void setModuleCode(String moduleCode) {
-        this.moduleCode = moduleCode;
+    public void setChainName(String chainName) {
+        this.chainName = chainName;
     }
 
-
-    public List<TxRegisterDetail> getList() {
-        return list;
+    public int getMinAvailableNodeNum() {
+        return minAvailableNodeNum;
     }
 
-    public void setList(List<TxRegisterDetail> list) {
-        this.list = list;
+    public void setMinAvailableNodeNum(int minAvailableNodeNum) {
+        this.minAvailableNodeNum = minAvailableNodeNum;
     }
 
-    @Override
-    public String toString() {
-        return "ModuleTxRegisterDTO{" +
-                "chainId=" + chainId +
-                ", moduleCode='" + moduleCode + '\'' +
-                ", list=" + list +
-                '}';
+    public List<AssetDto> getAssetInfoList() {
+        return assetInfoList;
+    }
+
+    public void setAssetInfoList(List<AssetDto> assetInfoList) {
+        this.assetInfoList = assetInfoList;
     }
 }
