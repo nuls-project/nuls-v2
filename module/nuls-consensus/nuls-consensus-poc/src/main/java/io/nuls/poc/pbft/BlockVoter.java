@@ -134,7 +134,7 @@ public class BlockVoter implements Runnable {
         if (now < this.pocRound.getCurVoteRound().getEnd()) {
             return;
         }
-        System.out.println("-_-_-计算：round：" + round + ", start:" + (lastHeader.getTime() + round * this.timeout));
+        LoggerUtil.commonLog.info("-_-_-计算：round：" + round + ", start:" + (lastHeader.getTime() + round * this.timeout));
         this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
         long start = this.pocRound.getCurVoteRound().getEnd();
         if (preCommitCache.getForkHeader() != null) {
@@ -272,7 +272,10 @@ public class BlockVoter implements Runnable {
 
     private void realRecieveVote(String nodeId, VoteMessage message, String address) {
         this.initRound();
-        LoggerUtil.commonLog.info("=======Vote:{} ,{} address:{}", message.getHeight(), message.getBlockHash(), address);
+        if (null == this.pocRound || this.pocRound.getCurVoteRound() == null) {
+            return;
+        }
+        LoggerUtil.commonLog.info("======Receive=Vote:{} ,{} address:{}", message.getHeight(), message.getBlockHash(), address);
         // 判断是否接受此投票
         if (pocRound.getCurVoteRound().getHeight() > message.getHeight() || (pocRound.getCurVoteRound().getHeight() == message.getHeight() && pocRound.getCurVoteRound().getRound() > message.getRound())) {
             return;
@@ -338,6 +341,9 @@ public class BlockVoter implements Runnable {
         if (this.pocRound == null) {
             this.pocRound = this.roundManager.getCurrentRound(chain);
         }
+        if (null == this.pocRound) {
+            return;
+        }
         if (null == this.pocRound.getCurVoteRound()) {
             long offset = now - lastHeader.getTime() - this.timeout;
             if (offset < 0) {
@@ -346,7 +352,7 @@ public class BlockVoter implements Runnable {
             long round = offset / this.timeout + 1;
             if (this.pocRound.getCurVoteRound() == null) {
                 System.out.println("-_-_-memberTime:" + pocRound.getMember(pocRound.getCurrentMemberIndex()));
-                System.out.println("-_-_-计算：round：" + round + ", start:" + (lastHeader.getTime() + round * this.timeout));
+                LoggerUtil.commonLog.info("-_-_-计算：round：" + round + ", start:" + (lastHeader.getTime() + round * this.timeout));
                 changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
                 return;
             }
