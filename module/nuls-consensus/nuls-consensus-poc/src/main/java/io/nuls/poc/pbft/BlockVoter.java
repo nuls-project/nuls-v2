@@ -276,6 +276,8 @@ public class BlockVoter implements Runnable {
             return;
         }
         LoggerUtil.commonLog.info("======Receive=Vote:{} ,{} address:{}", message.getHeight(), message.getBlockHash(), address);
+        System.out.println("myRound: height=" + pocRound.getCurVoteRound().getHeight() + ", round:" + pocRound.getCurVoteRound().getRound());
+        System.out.println("receive: height=" + message.getHeight() + ", round:" + message.getRound());
         // 判断是否接受此投票
         if (pocRound.getCurVoteRound().getHeight() > message.getHeight() || (pocRound.getCurVoteRound().getHeight() == message.getHeight() && pocRound.getCurVoteRound().getRound() > message.getRound())) {
             return;
@@ -311,6 +313,7 @@ public class BlockVoter implements Runnable {
 
         byte step = message.getStep();
         PbftData pbftData;
+        VoteResultItem realResult;
         if (step < 1) {
             pbftData = cache.addVote1(message.getHeight(), message.getRound(), message.getBlockHash(), address, time, message.getBlockHash() == null && message.getHeader2() != null);
             VoteResultItem result = pbftData.getVote1LargestItem();
@@ -325,12 +328,14 @@ public class BlockVoter implements Runnable {
                 this.signAndBroadcast(self, message);
                 cache.addVote2(message.getHeight(), message.getRound(), message.getBlockHash(), AddressTool.getStringAddressByBytes(self.getAgent().getPackingAddress()), time);
             }
+            realResult = pbftData.getVote2LargestItem();
         } else {
             pbftData = cache.addVote2(message.getHeight(), message.getRound(), message.getBlockHash(), address, time);
-            VoteResultItem result = pbftData.getVote2LargestItem();
-            if (result.getCount() > VoteConstant.DEFAULT_RATE * totalCount) {
-                this.sureResult(pbftData.getHeight(), result.getHash(), pocRound);
-            }
+            realResult = pbftData.getVote2LargestItem();
+
+        }
+        if (realResult.getCount() > VoteConstant.DEFAULT_RATE * totalCount) {
+            this.sureResult(pbftData.getHeight(), realResult.getHash(), pocRound);
         }
 
     }
