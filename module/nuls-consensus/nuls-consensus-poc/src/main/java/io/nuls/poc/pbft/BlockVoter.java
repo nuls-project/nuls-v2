@@ -134,8 +134,7 @@ public class BlockVoter implements Runnable {
         if (now < this.pocRound.getCurVoteRound().getEnd()) {
             return;
         }
-        LoggerUtil.commonLog.info("-_-_-计算：round：" + round + ", start:" + (lastHeader.getTime() + round * this.timeout));
-        this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
+        this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout / 2);
         long start = this.pocRound.getCurVoteRound().getEnd();
         if (preCommitCache.getForkHeader() != null) {
             LoggerUtil.commonLog.info("====投票给分叉");
@@ -148,6 +147,7 @@ public class BlockVoter implements Runnable {
     }
 
     private void changeCurrentRound(long round, long startTime) {
+        LoggerUtil.commonLog.info("-_-_-计算：round：" + round + ", start:" + startTime);
         VoteRound curRound = new VoteRound();
         curRound.setHeight(this.lastHeader.getHeight() + 1);
         curRound.setRound((int) round);
@@ -332,7 +332,6 @@ public class BlockVoter implements Runnable {
         } else {
             pbftData = cache.addVote2(message.getHeight(), message.getRound(), message.getBlockHash(), address, time);
             realResult = pbftData.getVote2LargestItem();
-
         }
         if (realResult.getCount() > VoteConstant.DEFAULT_RATE * totalCount) {
             this.sureResult(pbftData.getHeight(), realResult.getHash(), pocRound);
@@ -356,9 +355,7 @@ public class BlockVoter implements Runnable {
             }
             long round = offset / this.timeout + 1;
             if (this.pocRound.getCurVoteRound() == null) {
-                System.out.println("-_-_-memberTime:" + pocRound.getMember(pocRound.getCurrentMemberIndex()));
-                LoggerUtil.commonLog.info("-_-_-计算：round：" + round + ", start:" + (lastHeader.getTime() + round * this.timeout));
-                changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
+                changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout / 2);
                 return;
             }
         }
