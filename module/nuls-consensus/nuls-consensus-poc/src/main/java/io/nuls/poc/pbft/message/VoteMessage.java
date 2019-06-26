@@ -20,7 +20,7 @@ public class VoteMessage extends BaseBusinessMessage {
 
     private long height;
 
-    private int round;
+    private long round;
 
     private byte step = 0;
     /**
@@ -39,7 +39,7 @@ public class VoteMessage extends BaseBusinessMessage {
     @Override
     protected void serializeToStream(NulsOutputStreamBuffer stream) throws IOException {
         stream.writeInt64(height);
-        stream.write(SerializeUtils.int16ToBytes(round));
+        stream.writeUint32(round);
         stream.write(step);
         stream.write(blockHash.getBytes());
         stream.writeNulsData(header1);
@@ -57,7 +57,7 @@ public class VoteMessage extends BaseBusinessMessage {
                 bos.write(ToolsConstant.PLACE_HOLDER);
             } else {
                 buffer.writeInt64(height);
-                buffer.write(SerializeUtils.int16ToBytes(round));
+                buffer.writeUint32(round);
                 buffer.write(step);
                 buffer.write(blockHash.getBytes());
                 buffer.writeNulsData(header1);
@@ -78,7 +78,7 @@ public class VoteMessage extends BaseBusinessMessage {
     @Override
     public void parse(NulsByteBuffer byteBuffer) throws NulsException {
         this.height = byteBuffer.readInt64();
-        this.round = byteBuffer.readShort();
+        this.round = byteBuffer.readUint32();
         this.step = byteBuffer.readByte();
         this.blockHash = byteBuffer.readHash();
         this.header1 = byteBuffer.readNulsData(new BlockHeader());
@@ -89,7 +89,7 @@ public class VoteMessage extends BaseBusinessMessage {
 
     @Override
     public int size() {
-        int size = 11;
+        int size = 13;
         size += 32;
         size += SerializeUtils.sizeOfNulsData(header1);
         size += SerializeUtils.sizeOfNulsData(header2);
@@ -113,11 +113,11 @@ public class VoteMessage extends BaseBusinessMessage {
         this.height = height;
     }
 
-    public int getRound() {
+    public long getRound() {
         return round;
     }
 
-    public void setRound(int round) {
+    public void setRound(long round) {
         this.round = round;
     }
 
