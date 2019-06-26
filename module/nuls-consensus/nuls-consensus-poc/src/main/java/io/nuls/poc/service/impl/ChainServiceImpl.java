@@ -190,7 +190,7 @@ public class ChainServiceImpl implements ChainService {
             header.parse(RPCUtil.decode((String) params.get(ConsensusConstant.PARAM_BLOCK_HEADER)), 0);
             BlockHeader evidenceHeader = new BlockHeader();
             evidenceHeader.parse(RPCUtil.decode((String) params.get(ConsensusConstant.PARAM_EVIDENCE_HEADER)), 0);
-            chain.getLogger().info("Received new bifurcation evidence:" + header.getHeight());
+            chain.getLogger().warn("Received new bifurcation evidence:" + header.getHeight());
             punishManager.addEvidenceRecord(chain, header, evidenceHeader);
             Map<String, Object> validResult = new HashMap<>(2);
             validResult.put("value", true);
