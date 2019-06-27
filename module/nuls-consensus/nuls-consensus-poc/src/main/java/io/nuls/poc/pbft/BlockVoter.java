@@ -186,14 +186,13 @@ public class BlockVoter implements Runnable {
         NulsHash hash = block.getHeader().getHash();
         LoggerUtil.commonLog.info("blockVote:" + AddressTool.getStringAddressByBytes(block.getHeader().getPackingAddress(chainId)) + ", hash:" + block.getHeader().getHash().toHex());
         PbftData pbftData = cache.addVote1(height, this.pocRound.getCurVoteRound().getRound(), hash, AddressTool.getStringAddressByBytes(block.getHeader().getPackingAddress(chainId)), block.getHeader().getTime(), false);
-
-        int totalCount = pocRound.getMemberCount();
-//        if (totalCount == 1) {
-//            code = ConsensusErrorCode.SUCCESS;
-//            return code;
-//        }
         //判断自己是否需要签名，如果需要就直接进行
         MeetingMember self = pocRound.getMyMember();
+        if (null != self && ArraysTool.arrayEquals(self.getAgent().getPackingAddress(), block.getHeader().getPackingAddress(chainId))) {
+            this.preCommitCache.change(height, pocRound.getCurVoteRound().getRound(), hash, block.getHeader(), null);
+        }
+        int totalCount = pocRound.getMemberCount();
+
         VoteData voteData = null == self ? null : pbftData.hasVoted1(self.getAgent().getPackingAddress());
         if (null != self && (null == voteData || (voteData.getHash() == null && !voteData.isBifurcation()))) {
             LoggerUtil.commonLog.info("===投票给一个区块：{}, {}", block.getHeader().getHeight(), block.getHeader().getHash().toString());
