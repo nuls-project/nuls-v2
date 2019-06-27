@@ -218,7 +218,7 @@ public class BlockVoter implements Runnable {
     }
 
     private void preCommitVote(long height, int round, NulsHash hash, BlockHeader header, long time, BlockHeader forkHeader, MeetingMember self) {
-        LoggerUtil.commonLog.info("localVote:" + hash.toHex());
+//        LoggerUtil.commonLog.info("localVote:" + hash.toHex());
         VoteMessage message = new VoteMessage();
         message.setHeight(height);
         message.setRound(round);

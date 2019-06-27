@@ -109,11 +109,11 @@ public class BlockValidator {
       /*
       该区块为本地最新区块之前的区块
       * */
-        boolean isBeforeBlock = extendsData.getRoundIndex() < bestExtendsData.getRoundIndex() || (extendsData.getRoundIndex() == bestExtendsData.getRoundIndex() && extendsData.getPackingIndexOfRound() <= bestExtendsData.getPackingIndexOfRound());
-        if (isBeforeBlock) {
-            chain.getLogger().error("new block roundData error, block height : " + blockHeader.getHeight() + " , hash :" + blockHeaderHash);
-            throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
-        }
+//todo        boolean isBeforeBlock = extendsData.getRoundIndex() < bestExtendsData.getRoundIndex() || (extendsData.getRoundIndex() == bestExtendsData.getRoundIndex() && extendsData.getPackingIndexOfRound() <= bestExtendsData.getPackingIndexOfRound());
+//        if (isBeforeBlock) {
+//            chain.getLogger().error("new block roundData error, block height : " + blockHeader.getHeight() + " , hash :" + blockHeaderHash);
+//            throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
+//        }
         if (chain.getNewestHeader().getHeight() == 0) {
             chain.getRoundList().clear();
         }

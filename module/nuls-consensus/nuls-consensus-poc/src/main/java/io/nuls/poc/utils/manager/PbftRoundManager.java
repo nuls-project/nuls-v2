@@ -240,7 +240,7 @@ public class PbftRoundManager implements IRoundManager {
         chain.getRoundLock().lock();
         try {
             MeetingRound round = getCurrentRound(chain);
-            if (isRealTime) {
+            if (isRealTime && chain.getConfig().getPbft() != 1) {
                 /*
                 如果本地最新轮次为空或本地最新轮次打包结束时间小于当前时间则需要计算下一轮次信息
                 If the local latest round is empty or the local latest round is packaged less than the current time,
