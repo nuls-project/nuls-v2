@@ -18,6 +18,7 @@ import io.nuls.poc.model.dto.input.ValidBlockDTO;
 import io.nuls.poc.pbft.manager.VoterManager;
 import io.nuls.poc.rpc.call.CallMethodUtils;
 import io.nuls.poc.service.BlockService;
+import io.nuls.poc.utils.LoggerUtil;
 import io.nuls.poc.utils.manager.BlockManager;
 import io.nuls.poc.utils.manager.ChainManager;
 import io.nuls.poc.utils.validator.BlockValidator;
@@ -166,6 +167,9 @@ public class BlockServiceImpl implements BlockService {
         }
 
         Result result = this.realValidBlock(block, dto, chain, validResult);
+        if (result.isFailed()) {
+            LoggerUtil.commonLog.info("====verify failed:" + block.getHeader().getHash().toHex());
+        }
         if (chain.getConfig().getPbft() == 1 && result.isSuccess()) {
             //添加到投票管理器
             ErrorCode errorCode = VoterManager.getVoter(chainId).recieveBlock(block);

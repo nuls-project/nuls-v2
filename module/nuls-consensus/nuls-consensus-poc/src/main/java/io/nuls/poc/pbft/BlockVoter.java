@@ -137,10 +137,10 @@ public class BlockVoter implements Runnable {
         long start = this.pocRound.getCurVoteRound().getStart();
         if (preCommitCache.getForkHeader() != null) {
 //            LoggerUtil.commonLog.info("====投票给分叉");
-            preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, preCommitCache.getShouldNext(), preCommitCache.getHeader(), start, preCommitCache.getForkHeader(), pocRound.getMyMember());
+            preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, NulsHash.EMPTY_NULS_HASH, preCommitCache.getHeader(), start, preCommitCache.getForkHeader(), pocRound.getMyMember());
         } else {
-            LoggerUtil.commonLog.info("====投票给空块：{},round:{}", this.pocRound.getCurVoteRound().getHeight(), this.pocRound.getCurVoteRound().getRound());
-            this.preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, NulsHash.EMPTY_NULS_HASH, null, start, null, pocRound.getMyMember());
+            LoggerUtil.commonLog.info("====继续投票：{},height: {},round: {}", preCommitCache.getShouldNext().toHex(), this.pocRound.getCurVoteRound().getHeight(), this.pocRound.getCurVoteRound().getRound());
+            this.preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, preCommitCache.getShouldNext(), preCommitCache.getHeader(), start, null, pocRound.getMyMember());
         }
         this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
     }
@@ -184,7 +184,7 @@ public class BlockVoter implements Runnable {
             return code;
         }
         NulsHash hash = block.getHeader().getHash();
-//        LoggerUtil.commonLog.info("blockVote:" + AddressTool.getStringAddressByBytes(block.getHeader().getPackingAddress(chainId)) + ", hash:" + block.getHeader().getHash().toHex());
+        LoggerUtil.commonLog.info("blockVote:" + AddressTool.getStringAddressByBytes(block.getHeader().getPackingAddress(chainId)) + ", hash:" + block.getHeader().getHash().toHex());
         PbftData pbftData = cache.addVote1(height, this.pocRound.getCurVoteRound().getRound(), hash, AddressTool.getStringAddressByBytes(block.getHeader().getPackingAddress(chainId)), block.getHeader().getTime(), false);
 
         int totalCount = pocRound.getMemberCount();
@@ -281,7 +281,7 @@ public class BlockVoter implements Runnable {
         }
 //        LoggerUtil.commonLog.info("======Receive=Vote:{} ,{} address:{}", message.getHeight(), message.getBlockHash(), address);
 //        System.out.println("myRound: height=" + pocRound.getCurVoteRound().getHeight() + ", round:" + pocRound.getCurVoteRound().getRound());
-//        System.out.println("receive: height=" + message.getHeight() + ", round:" + message.getRound() + ",hash:" + message.getBlockHash().toHex() + ", address:" + message.getAddress(this.chainId));
+        System.out.println("receive: height=" + message.getHeight() + ", round:" + message.getRound() + ",hash:" + message.getBlockHash().toHex() + ", address:" + message.getAddress(this.chainId));
         // 判断是否接受此投票
         if (pocRound.getCurVoteRound().getHeight() > message.getHeight() || (pocRound.getCurVoteRound().getHeight() == message.getHeight() && pocRound.getCurVoteRound().getRound() > message.getRound() + 1)) {
             return;

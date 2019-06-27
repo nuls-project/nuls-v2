@@ -22,7 +22,7 @@ public class PreCommitCache {
     private int round;
 
     //下一次可以投票的hash
-    private NulsHash shouldNext;
+    private NulsHash shouldNext = NulsHash.EMPTY_NULS_HASH;
 
     private BlockHeader header;
 
