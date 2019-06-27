@@ -134,16 +134,15 @@ public class BlockVoter implements Runnable {
         if (now < this.pocRound.getCurVoteRound().getEnd()) {
             return;
         }
-        this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
-        long start = this.pocRound.getCurVoteRound().getEnd();
+        long start = this.pocRound.getCurVoteRound().getStart();
         if (preCommitCache.getForkHeader() != null) {
 //            LoggerUtil.commonLog.info("====投票给分叉");
             preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, preCommitCache.getShouldNext(), preCommitCache.getHeader(), start, preCommitCache.getForkHeader(), pocRound.getMyMember());
         } else {
-            pocRound.setOffset(pocRound.getOffset() + this.timeout);
             LoggerUtil.commonLog.info("====投票给空块：{},round:{}", this.pocRound.getCurVoteRound().getHeight(), this.pocRound.getCurVoteRound().getRound());
             this.preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, NulsHash.EMPTY_NULS_HASH, null, start, null, pocRound.getMyMember());
         }
+        this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
     }
 
     private void changeCurrentRound(long round, long startTime) {
@@ -158,6 +157,9 @@ public class BlockVoter implements Runnable {
 
     private void sureResult(long height, NulsHash hash, MeetingRound pocRound) {
         LoggerUtil.commonLog.info("=======确认区块：{}, {}", height, hash.toString());
+        if (hash.equals(NulsHash.EMPTY_NULS_HASH)) {
+            pocRound.setOffset(pocRound.getOffset() + this.timeout);
+        }
         boolean result = CallMethodUtils.sendVerifyResult(chainId, height, hash);
         if (result) {
             this.preCommitCache.clear(hash);
