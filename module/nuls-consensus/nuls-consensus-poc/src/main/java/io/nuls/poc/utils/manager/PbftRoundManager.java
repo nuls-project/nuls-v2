@@ -263,7 +263,7 @@ public class PbftRoundManager implements IRoundManager {
             If the latest local rounds are not empty & the latest local rounds are equal to the latest block rounds & if the latest block is not the last packaged block in this round,
              the latest local rounds will be returned directly to the latest local rounds
             */
-            if (round != null && extendsData.getRoundIndex() == round.getIndex() && extendsData.getPackingIndexOfRound() != extendsData.getConsensusMemberCount()) {
+            if (round != null && extendsData.getRoundIndex() == round.getIndex() && extendsData.getPackingIndexOfRound() != extendsData.getConsensusMemberCount() && round.getCurrentMemberIndex() != round.getMemberCount()) {
                 return round;
             }
             MeetingRound nextRound = getRound(chain, blockHeader, extendsData, false);

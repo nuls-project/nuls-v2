@@ -138,8 +138,7 @@ public class ConsensusProcess {
     private boolean isMyTurn(Chain chain, MeetingRound round, MeetingMember member) {
         boolean pbft = chain.getConfig().getPbft() == 1;
         if (pbft) {
-            return member.getPackingIndexOfRound() == round.getCurrentMemberIndex() && (round.getOffset() + member.getStartTime()) <= NulsDateUtils.getCurrentTimeSeconds()
-                    && (round.getOffset() + member.getEndTime()) > NulsDateUtils.getCurrentTimeSeconds();
+            return member.getPackingIndexOfRound() == round.getCurrentMemberIndex();
         } else {
             return (round.getOffset() + member.getStartTime()) <= NulsDateUtils.getCurrentTimeSeconds()
                     && (round.getOffset() + member.getEndTime()) > NulsDateUtils.getCurrentTimeSeconds();

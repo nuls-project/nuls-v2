@@ -25,6 +25,7 @@ import io.nuls.poc.pbft.model.VoteResultItem;
 import io.nuls.poc.pbft.model.VoteRound;
 import io.nuls.poc.rpc.call.CallMethodUtils;
 import io.nuls.poc.utils.LoggerUtil;
+import io.nuls.poc.utils.enumeration.ConsensusStatus;
 import io.nuls.poc.utils.manager.RoundManager;
 
 import java.io.IOException;
@@ -62,7 +63,7 @@ public class BlockVoter implements Runnable {
     public void run() {
         while (true) {
             try {
-                if (null == this.roundManager) {
+                if (!this.checkConsensusStatus(this.chain) || null == this.roundManager) {
                     Thread.sleep(1000L);
                     continue;
                 }
@@ -92,6 +93,32 @@ public class BlockVoter implements Runnable {
                 }
             }
         }
+    }
+
+    /**
+     * 检查节点状态
+     * Check node packing status
+     */
+    private boolean checkConsensusStatus(Chain chain) throws Exception {
+        if (chain == null) {
+            throw new NulsException(ConsensusErrorCode.CHAIN_NOT_EXIST);
+        }
+        /*
+        检查模块状态是否为运行中
+        Check whether the module status is in operation
+        */
+        if (chain.getConsensusStatus().ordinal() <= ConsensusStatus.WAIT_RUNNING.ordinal()) {
+            return false;
+        }
+
+        /*
+        检查节点状态是否可打包(区块管理模块同步完成之后设置该状态)
+        Check whether the node status can be packaged (set up after the block management module completes synchronization)
+        */
+        if (!chain.isCanPacking()) {
+            return false;
+        }
+        return true;
     }
 
     private void doit(MeetingRound pocRound) {
