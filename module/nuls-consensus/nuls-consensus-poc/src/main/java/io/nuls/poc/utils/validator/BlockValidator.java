@@ -114,6 +114,11 @@ public class BlockValidator {
 //            chain.getLogger().error("new block roundData error, block height : " + blockHeader.getHeight() + " , hash :" + blockHeaderHash);
 //            throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
 //        }
+
+
+
+
+
         if (chain.getNewestHeader().getHeight() == 0) {
             chain.getRoundList().clear();
         }
