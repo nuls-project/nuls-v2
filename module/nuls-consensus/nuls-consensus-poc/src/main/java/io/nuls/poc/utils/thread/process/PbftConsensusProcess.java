@@ -159,10 +159,10 @@ public class PbftConsensusProcess implements IConsensusProcess {
         bd.setPreHash(bestBlock.getHash());
         bd.setTime(key.getEndTime());
         BlockExtendsData extendsData = new BlockExtendsData();
-        extendsData.setRoundIndex(key.getRoundIndex());
-        extendsData.setConsensusMemberCount(key.getMemberCount());
+        extendsData.setRoundIndex(key.getRound().getIndex());
+        extendsData.setConsensusMemberCount(key.getRound().getMemberCount());
         extendsData.setPackingIndexOfRound(key.getIndexOfRound());
-        extendsData.setRoundStartTime(key.getRoundStartTime());
+        extendsData.setRoundStartTime(key.getRound().getStartTime());
         fillProtocol(extendsData, chain.getConfig().getChainId());
 
         Map<String, Object> resultMap = CallMethodUtils.getPackingTxList(chain, bd.getTime(), AddressTool.getStringAddressByBytes(key.getAddress()));
@@ -225,7 +225,7 @@ public class PbftConsensusProcess implements IConsensusProcess {
                 newBlock.getHeader().setExtend(extendsData.serialize());
             }
         }
-        consensusLogger.info("round index :" + key.getRoundIndex());
+        consensusLogger.info("round index :" + key.getRound().getIndex());
         consensusLogger.info("make block height:" + newBlock.getHeader().getHeight() + ",txCount: " + newBlock.getTxs().size() + " , block size: " + newBlock.size() + " , time:" + NulsDateUtils.convertDate(new Date(newBlock.getHeader().getTime() * 1000)) + ",packEndTime:" +
                 NulsDateUtils.convertDate(new Date(key.getEndTime() * 1000)) + ",hash:" + newBlock.getHeader().getHash().toHex() + ",preHash:" + newBlock.getHeader().getPreHash().toHex());
         return newBlock;

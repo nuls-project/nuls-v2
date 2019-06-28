@@ -356,6 +356,7 @@ public class BlockVoter implements Runnable {
         PbftData pbftData;
         VoteResultItem realResult;
         if (step == 0) {
+            //todo 判断是否存在该区块，不存在则下载
             pbftData = cache.addVote1(message.getHeight(), message.getRound(), message.getBlockHash(), address, time, message.getBlockHash() == null && message.getHeader2() != null);
             VoteResultItem result = pbftData.getVote1LargestItem();
             //判断自己是否需要签名，如果需要就直接进行
@@ -371,6 +372,7 @@ public class BlockVoter implements Runnable {
             }
             realResult = pbftData.getVote2LargestItem();
         } else {
+            //todo 判断是否认同，不认同则下载数据
             pbftData = cache.addVote2(message.getHeight(), message.getRound(), message.getBlockHash(), address, time);
             realResult = pbftData.getVote2LargestItem();
         }
