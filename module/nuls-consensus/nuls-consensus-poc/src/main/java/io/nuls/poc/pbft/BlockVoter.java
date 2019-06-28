@@ -15,14 +15,12 @@ import io.nuls.poc.constant.PocMessageType;
 import io.nuls.poc.model.bo.Chain;
 import io.nuls.poc.model.bo.round.MeetingMember;
 import io.nuls.poc.model.bo.round.MeetingRound;
+import io.nuls.poc.pbft.cache.BlockProuceKeyCache;
 import io.nuls.poc.pbft.cache.PreCommitCache;
 import io.nuls.poc.pbft.cache.VoteCenter;
 import io.nuls.poc.pbft.constant.VoteConstant;
 import io.nuls.poc.pbft.message.VoteMessage;
-import io.nuls.poc.pbft.model.PbftData;
-import io.nuls.poc.pbft.model.VoteData;
-import io.nuls.poc.pbft.model.VoteResultItem;
-import io.nuls.poc.pbft.model.VoteRound;
+import io.nuls.poc.pbft.model.*;
 import io.nuls.poc.rpc.call.CallMethodUtils;
 import io.nuls.poc.utils.LoggerUtil;
 import io.nuls.poc.utils.enumeration.ConsensusStatus;
@@ -68,9 +66,6 @@ public class BlockVoter implements Runnable {
                     continue;
                 }
                 long sleep = 100L;
-                if (null == pocRound || pocRound.getMemberCount() <= (1 + pocRound.getCurrentMemberIndex())) {
-                    this.pocRound = this.roundManager.getCurrentRound(chain);
-                }
 
                 if (null != pocRound && pocRound.getMyMember() != null) {
                     try {
@@ -81,7 +76,6 @@ public class BlockVoter implements Runnable {
                     }
                 } else {
                     sleep = 1000L;
-                    this.pocRound = this.roundManager.getCurrentRound(chain);
                 }
                 Thread.sleep(sleep);
             } catch (Exception e) {
@@ -140,12 +134,6 @@ public class BlockVoter implements Runnable {
             changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
             return;
         }
-//        System.out.println("now:" + now);
-//        System.out.println("member:" + meetingMember.getEndTime());
-//        System.out.println("offsset:" + pocRound.getOffset());
-//        System.out.println("round:" + this.pocRound.getCurVoteRound().getRound());
-//        System.out.println("end::" + this.pocRound.getCurVoteRound().getEnd());
-//        System.out.println("==================================================");
 
         if (now < this.pocRound.getCurVoteRound().getStart()) {
             return;
@@ -186,10 +174,35 @@ public class BlockVoter implements Runnable {
     private void sureResult(long height, NulsHash hash, MeetingRound pocRound) {
         LoggerUtil.commonLog.info("=======确认区块：{}, {}", height, hash.toString());
         boolean result = CallMethodUtils.sendVerifyResult(chainId, height, hash);
-        if (result) {
-            this.preCommitCache.clear(hash);
-            pocRound.setCurrentMemberIndex(pocRound.getCurrentMemberIndex() + 1);
+        if (!result) {
+            return;
         }
+        this.preCommitCache.clear(hash);
+        pocRound.setCurrentMemberIndex(pocRound.getCurrentMemberIndex() + 1);
+        if (pocRound.getCurrentMemberIndex() == pocRound.getMemberCount()) {
+            try {
+                roundManager.resetRound(chain, false);
+            } catch (Exception e) {
+                LoggerUtil.commonLog.error(e);
+            }
+        }
+        if (null == pocRound.getMyMember()) {
+            return;
+        }
+        byte[] address = pocRound.getMyMember().getAgent().getPackingAddress();
+        byte[] packer = pocRound.getMember(pocRound.getCurrentMemberIndex()).getAgent().getPackingAddress();
+        if (!ArraysTool.arrayEquals(address, packer)) {
+            return;
+        }
+        ProduceKey key = new ProduceKey();
+        key.setAddress(address);
+        key.setHeight(height + 1);
+        key.setPrehash(hash.equals(NulsHash.EMPTY_NULS_HASH) ? this.lastHeader.getHash() : hash);
+        key.setEndTime(pocRound.getMyMember().getEndTime() + pocRound.getOffset());
+        key.setIndexOfRound(pocRound.getCurrentMemberIndex());
+        key.setSelf(pocRound.getMyMember());
+        key.setRound(pocRound);
+        BlockProuceKeyCache.PRODUCE_KEYS_QUEUE.offer(key);
     }
 
     public ErrorCode recieveBlock(Block block) {

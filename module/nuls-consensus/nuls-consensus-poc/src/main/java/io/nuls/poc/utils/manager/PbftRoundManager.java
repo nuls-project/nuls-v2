@@ -240,20 +240,6 @@ public class PbftRoundManager implements IRoundManager {
         chain.getRoundLock().lock();
         try {
             MeetingRound round = getCurrentRound(chain);
-            if (isRealTime && chain.getConfig().getPbft() != 1) {
-                /*
-                如果本地最新轮次为空或本地最新轮次打包结束时间小于当前时间则需要计算下一轮次信息
-                If the local latest round is empty or the local latest round is packaged less than the current time,
-                the next round of information needs to be calculated.
-                */
-                if (round == null || round.getEndTime() + round.getOffset() < NulsDateUtils.getCurrentTimeSeconds()) {
-                    MeetingRound nextRound = getRound(chain, null, null, true);
-                    nextRound.setPreRound(round);
-                    addRound(chain, nextRound);
-                    round = nextRound;
-                }
-                return round;
-            }
 
             BlockHeader blockHeader = chain.getNewestHeader();
             BlockExtendsData extendsData = new BlockExtendsData(blockHeader.getExtend());
@@ -296,9 +282,7 @@ public class PbftRoundManager implements IRoundManager {
     public MeetingRound getRound(Chain chain, BlockHeader header, BlockExtendsData roundData, boolean isRealTime) throws Exception {
         chain.getRoundLock().lock();
         try {
-            if (isRealTime && roundData == null) {
-                return getRoundByRealTime(chain);
-            } else if (!isRealTime && roundData == null) {
+            if (!isRealTime && roundData == null) {
                 return getRoundByNewestBlock(chain);
             } else {
                 return getRoundByExpectedRound(chain, header, roundData);
@@ -306,59 +290,6 @@ public class PbftRoundManager implements IRoundManager {
         } finally {
             chain.getRoundLock().unlock();
         }
-    }
-
-
-    /**
-     * 根据时间计算下一轮次信息
-     * Calculate the next round of information based on time
-     *
-     * @param chain chain info
-     * @return MeetingRound
-     */
-    private MeetingRound getRoundByRealTime(Chain chain) throws Exception {
-        BlockHeader bestBlockHeader = chain.getNewestHeader();
-        BlockHeader startBlockHeader = bestBlockHeader;
-        BlockExtendsData bestRoundData = new BlockExtendsData(bestBlockHeader.getExtend());
-        long offset = bestBlockHeader.getTime() - bestRoundData.getRoundStartTime() - chain.getConfig().getPackingInterval() * bestRoundData.getPackingIndexOfRound();
-        long bestRoundEndTime = bestRoundData.getRoundEndTime(chain.getConfig().getPackingInterval()) + offset;
-        if (startBlockHeader.getHeight() != 0L) {
-            long roundIndex = bestRoundData.getRoundIndex();
-            /*
-            本地最新区块所在轮次已经打包结束，则轮次下标需要加1,则需找到本地最新区块轮次中出的第一个块来计算下一轮的轮次信息
-            If the latest block in this area has been packaged, the subscription of the round will need to be added 1.
-            */
-            if (bestRoundData.getConsensusMemberCount() == bestRoundData.getPackingIndexOfRound() || NulsDateUtils.getCurrentTimeSeconds() >= bestRoundEndTime) {
-                roundIndex += 1;
-            }
-            startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
-        }
-        long nowTime = NulsDateUtils.getCurrentTimeSeconds();
-        long index;
-        long startTime;
-        long packingInterval = chain.getConfig().getPackingInterval();
-        /*
-        找到需计算的轮次下标及轮次开始时间,如果当前时间<本地最新区块时间，则表示需计算轮次就是本地最新区块轮次
-        Find the rounds subscripts to be calculated and the start time of rounds
-        */
-        int currentIndex = 1;
-        if (nowTime < bestRoundEndTime) {
-            index = bestRoundData.getRoundIndex();
-            startTime = bestRoundData.getRoundStartTime();
-        } else {
-            long diffTime = nowTime - bestRoundEndTime;
-            int consensusMemberCount = bestRoundData.getConsensusMemberCount();
-            if (bestBlockHeader.getHeight() == 0) {
-                consensusMemberCount = chain.getConfig().getSeedNodes().split(",").length;
-            }
-            int diffRoundCount = (int) (diffTime / (consensusMemberCount * packingInterval));
-            index = bestRoundData.getRoundIndex() + diffRoundCount + 1;
-            startTime = bestRoundEndTime + diffRoundCount * consensusMemberCount * packingInterval;
-
-            currentIndex = (int) ((nowTime - startTime) / chain.getConfig().getPackingInterval() + 1);
-            offset = 0;
-        }
-        return calculationRound(chain, startBlockHeader, index, startTime, offset, currentIndex);
     }
 
     /**

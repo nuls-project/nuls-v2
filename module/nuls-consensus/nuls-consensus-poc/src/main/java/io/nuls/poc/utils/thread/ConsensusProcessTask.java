@@ -25,9 +25,9 @@
  */
 package io.nuls.poc.utils.thread;
 
-import io.nuls.poc.constant.ConsensusConstant;
 import io.nuls.poc.model.bo.Chain;
 import io.nuls.poc.utils.thread.process.ConsensusProcess;
+import io.nuls.poc.utils.thread.process.IConsensusProcess;
 
 /**
  * 共识任务
@@ -38,10 +38,10 @@ import io.nuls.poc.utils.thread.process.ConsensusProcess;
  */
 public class ConsensusProcessTask implements Runnable {
 
-    private ConsensusProcess consensusProcess;
+    private IConsensusProcess consensusProcess;
     private Chain chain;
 
-    public ConsensusProcessTask(Chain chain,ConsensusProcess consensusProcess) {
+    public ConsensusProcessTask(Chain chain, IConsensusProcess consensusProcess) {
         this.chain = chain;
         this.consensusProcess = consensusProcess;
     }

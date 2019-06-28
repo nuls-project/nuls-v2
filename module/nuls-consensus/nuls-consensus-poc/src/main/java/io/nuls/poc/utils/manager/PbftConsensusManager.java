@@ -18,21 +18,23 @@ import io.nuls.poc.model.bo.ChargeResultData;
 import io.nuls.poc.model.bo.round.MeetingMember;
 import io.nuls.poc.model.bo.round.MeetingRound;
 import io.nuls.poc.model.bo.tx.txdata.Deposit;
-import io.nuls.poc.pbft.model.ProduceKey;
 import io.nuls.poc.rpc.call.CallMethodUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author tag
  * 2018/11/19
  */
 @Component
-public class ConsensusManager {
+public class PbftConsensusManager {
     @Autowired
     private PunishManager punishManager;
     @Autowired

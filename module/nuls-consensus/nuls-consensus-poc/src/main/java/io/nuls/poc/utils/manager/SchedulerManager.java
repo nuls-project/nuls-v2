@@ -8,6 +8,7 @@ import io.nuls.poc.utils.thread.process.ConsensusProcess;
 import io.nuls.core.core.annotation.Component;
 import io.nuls.core.thread.ThreadUtils;
 import io.nuls.core.thread.commom.NulsThreadFactory;
+import io.nuls.poc.utils.thread.process.PbftConsensusProcess;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -34,8 +35,13 @@ public class SchedulerManager {
         创建链相关的任务
         Chain-related tasks
         */
-        ConsensusProcess consensusProcess = new ConsensusProcess();
-        scheduledThreadPoolExecutor.scheduleAtFixedRate(new ConsensusProcessTask(chain, consensusProcess), 1000L, 100L, TimeUnit.MILLISECONDS);
+        if (chain.getConfig().getPbft() == 1) {
+            PbftConsensusProcess consensusProcess = new PbftConsensusProcess();
+            scheduledThreadPoolExecutor.scheduleAtFixedRate(new ConsensusProcessTask(chain, consensusProcess), 1000L, 10L, TimeUnit.MILLISECONDS);
+        } else {
+            ConsensusProcess consensusProcess = new ConsensusProcess();
+            scheduledThreadPoolExecutor.scheduleAtFixedRate(new ConsensusProcessTask(chain, consensusProcess), 1000L, 100L, TimeUnit.MILLISECONDS);
+        }
         chain.setScheduledThreadPoolExecutor(scheduledThreadPoolExecutor);
 
         BlockVoter voter = new BlockVoter(chain);

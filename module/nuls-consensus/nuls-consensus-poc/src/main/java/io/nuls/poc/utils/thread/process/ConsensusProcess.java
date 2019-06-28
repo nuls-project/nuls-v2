@@ -19,7 +19,6 @@ import io.nuls.poc.model.bo.Chain;
 import io.nuls.poc.model.bo.round.MeetingMember;
 import io.nuls.poc.model.bo.round.MeetingRound;
 import io.nuls.poc.rpc.call.CallMethodUtils;
-import io.nuls.poc.utils.LoggerUtil;
 import io.nuls.poc.utils.enumeration.ConsensusStatus;
 import io.nuls.poc.utils.manager.ConsensusManager;
 import io.nuls.poc.utils.manager.RoundManager;
@@ -33,13 +32,14 @@ import java.util.*;
  * @author tag
  * 2018/11/15
  */
-public class ConsensusProcess {
+public class ConsensusProcess implements IConsensusProcess {
     private RoundManager roundManager = SpringLiteContext.getBean(RoundManager.class);
 
     private NulsLogger consensusLogger;
 
     private boolean hasPacking;
 
+    @Override
     public void process(Chain chain) {
         try {
             boolean canPackage = checkCanPackage(chain);
@@ -165,7 +165,7 @@ public class ConsensusProcess {
             return;
         }
         try {
-            CallMethodUtils.receivePackingBlock(chain.getConfig().getChainId(), RPCUtil.encode(block.serialize()), round.getOffset() + self.getEndTime() - NulsDateUtils.getCurrentTimeSeconds());
+            CallMethodUtils.sendBlock(chain.getConfig().getChainId(), RPCUtil.encode(block.serialize()), round.getOffset() + self.getEndTime() - NulsDateUtils.getCurrentTimeSeconds());
         } catch (Exception e) {
             consensusLogger.error(e);
         }

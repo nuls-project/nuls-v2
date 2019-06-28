@@ -180,12 +180,12 @@ public class CallMethodUtils {
      * @return Successful Sending
      */
     @SuppressWarnings("unchecked")
-    public static void receivePackingBlock(int chainId, String block, long timeOut) throws NulsException {
+    public static void sendBlock(int chainId, String block, long timeOut) throws NulsException {
         Map<String, Object> params = new HashMap(4);
         params.put(Constants.CHAIN_ID, chainId);
         params.put("block", block);
         try {
-            ResponseMessageProcessor.requestAndResponse(ModuleE.BL.abbr, "receivePackingBlock", params, timeOut);
+            ResponseMessageProcessor.requestAndResponse(ModuleE.BL.abbr, "sendBlock", params, timeOut);
         } catch (Exception e) {
             throw new NulsException(e);
         }
