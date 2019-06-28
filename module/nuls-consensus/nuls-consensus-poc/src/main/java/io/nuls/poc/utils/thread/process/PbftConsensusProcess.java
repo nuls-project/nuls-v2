@@ -11,6 +11,7 @@ import io.nuls.base.protocol.ModuleHelper;
 import io.nuls.core.core.ioc.SpringLiteContext;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.log.logback.NulsLogger;
+import io.nuls.core.model.DateUtils;
 import io.nuls.core.model.StringUtils;
 import io.nuls.core.rpc.util.NulsDateUtils;
 import io.nuls.poc.constant.ConsensusErrorCode;
@@ -19,6 +20,7 @@ import io.nuls.poc.model.bo.Chain;
 import io.nuls.poc.pbft.cache.BlockProuceKeyCache;
 import io.nuls.poc.pbft.model.ProduceKey;
 import io.nuls.poc.rpc.call.CallMethodUtils;
+import io.nuls.poc.utils.LoggerUtil;
 import io.nuls.poc.utils.enumeration.ConsensusStatus;
 import io.nuls.poc.utils.manager.PbftConsensusManager;
 
@@ -38,11 +40,13 @@ public class PbftConsensusProcess implements IConsensusProcess {
     @Override
     public void process(Chain chain) {
         try {
-            ProduceKey key = BlockProuceKeyCache.PRODUCE_KEYS_QUEUE.take();
+
             boolean canPackage = checkCanPackage(chain);
             if (!canPackage) {
                 return;
             }
+            ProduceKey key = BlockProuceKeyCache.PRODUCE_KEYS_QUEUE.take();
+            LoggerUtil.commonLog.info("start:" + key.getStartTime() + ", end:" + key.getEndTime() + ", now:" + NulsDateUtils.getCurrentTimeSeconds());
             consensusLogger = chain.getLogger();
             doWork(chain, key);
         } catch (Exception e) {
@@ -83,15 +87,18 @@ public class PbftConsensusProcess implements IConsensusProcess {
         Check node status
         */
         if (chain.getConsensusStatus().ordinal() < ConsensusStatus.RUNNING.ordinal()) {
+            LoggerUtil.commonLog.warn("return 1111111111111111111");
             return;
         }
 
         long now = NulsDateUtils.getCurrentTimeSeconds();
         if (now >= key.getEndTime()) {
+            LoggerUtil.commonLog.warn("return 222222222222222");
             return;
         }
         while (now < key.getStartTime()) {
             Thread.sleep(10L);
+            now = NulsDateUtils.getCurrentTimeSeconds();
         }
 
         /*

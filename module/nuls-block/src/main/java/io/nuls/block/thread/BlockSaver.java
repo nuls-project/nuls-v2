@@ -2,8 +2,11 @@ package io.nuls.block.thread;
 
 import io.nuls.base.data.Block;
 import io.nuls.base.data.NulsHash;
+import io.nuls.block.manager.ContextManager;
 import io.nuls.block.model.BlockData;
 import io.nuls.block.model.BlockSure;
+import io.nuls.block.model.Chain;
+import io.nuls.block.model.ChainContext;
 import io.nuls.block.service.BlockService;
 import io.nuls.block.utils.LoggerUtil;
 import io.nuls.core.core.ioc.SpringLiteContext;
@@ -39,6 +42,11 @@ public class BlockSaver implements Runnable {
                 BlockSure sure = sureQueue.take();
                 NulsHash hash = sure.getHash();
                 if (null == hash || hash.equals(NulsHash.EMPTY_NULS_HASH)) {
+                    continue;
+                }
+                ChainContext context = ContextManager.getContext(chainId);
+                long bestHeight = context.getLatestHeight();
+                if (sure.getHeight() <= bestHeight) {
                     continue;
                 }
                 Map<NulsHash, BlockData> blocksMap = blockMap.get(sure.getHeight());

@@ -56,49 +56,49 @@ public class MeetingRound {
     /**
      * 总权重
      * Total weight
-     * */
+     */
     @ApiModelProperty(description = "当前轮次总权重")
     private double totalWeight;
     /**
      * 本地打包节点在当前轮次的下标
      * Subscription of Local Packing Node in Current Round
-     * */
+     */
     @ApiModelProperty(description = "轮次下标")
     private long index;
     /**
      * 当前轮次开始打包时间
      * Current Round Start Packing Time
-     * */
+     */
     @ApiModelProperty(description = "轮次开始时间")
     private long startTime;
     /**
      * 当前轮次打包结束时间
      * End time of front packing
-     * */
+     */
     @ApiModelProperty(description = "轮次结束时间")
     private long endTime;
     /**
      * 当前轮次打包节点数量
      * Number of Packing Nodes in Current Round
-     * */
+     */
     @ApiModelProperty(description = "本轮次出块节点数")
     private int memberCount;
     /**
      * 当前轮次打包成员列表
      * Current rounds packaged membership list
-     * */
+     */
     @ApiModelProperty(description = "本轮次出块成员信息", type = @TypeDescriptor(value = List.class, collectionElement = MeetingMember.class))
     private List<MeetingMember> memberList;
     /**
      * 上一轮轮次信息
      * Last round of information
-     * */
+     */
     @ApiModelProperty(description = "上一轮信息")
     private MeetingRound preRound;
     /**
      * 本地打包成员信息
      * Locally packaged member information
-     * */
+     */
     @ApiModelProperty(description = "当前节点出块信息")
     private MeetingMember myMember;
 
@@ -272,10 +272,10 @@ public class MeetingRound {
             str.append("\n");
         }
         if (null == this.getPreRound()) {
-            return ("round:index:" + this.getIndex() + " , start:" + new Date(this.getStartTime() * 1000)
+            return ("round:index:" + this.getIndex() + " , start:" + new Date((this.offset + this.getStartTime()) * 1000)
                     + ", netTime:(" + new Date(NulsDateUtils.getCurrentTimeMillis()).toString() + ") , totalWeight : " + totalWeight + " ,members:\n" + str);
         } else {
-            return ("round:index:" + this.getIndex() + " ,preIndex:" + this.getPreRound().getIndex() + " , start:" + new Date(this.getStartTime())
+            return ("round:index:" + this.getIndex() + " ,preIndex:" + this.getPreRound().getIndex() + " , start:" + new Date(1000 * (this.getStartTime() + this.offset))
                     + ", netTime:(" + new Date(NulsDateUtils.getCurrentTimeMillis()).toString() + ") , totalWeight : " + totalWeight + "  , members:\n" + str);
         }
     }
@@ -302,5 +302,18 @@ public class MeetingRound {
 
     public void setCurVoteRound(VoteRound curVoteRound) {
         this.curVoteRound = curVoteRound;
+    }
+
+    public void clear() {
+        this.totalWeight = 0;
+        this.startTime = 0;
+        this.endTime = 0;
+        this.memberCount = 0;
+        this.memberList = null;
+        this.myMember = null;
+        this.currentMemberIndex = 1;
+        this.offset = 0;
+        this.preRound = null;
+        this.curVoteRound = null;
     }
 }

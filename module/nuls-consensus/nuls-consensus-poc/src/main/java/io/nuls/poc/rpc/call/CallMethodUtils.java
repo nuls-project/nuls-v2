@@ -185,7 +185,7 @@ public class CallMethodUtils {
         params.put(Constants.CHAIN_ID, chainId);
         params.put("block", block);
         try {
-            ResponseMessageProcessor.requestAndResponse(ModuleE.BL.abbr, "sendBlock", params, timeOut);
+            ResponseMessageProcessor.requestAndResponse(ModuleE.BL.abbr, "receivePackingBlock", params, timeOut);
         } catch (Exception e) {
             throw new NulsException(e);
         }

@@ -205,7 +205,7 @@ public class PbftRoundManager implements IRoundManager {
     @Override
     public void initRound(Chain chain) throws Exception {
         //resetRound(chain,false);
-        MeetingRound currentRound = resetRound(chain, false);
+        MeetingRound currentRound = resetRound(chain, true);
         /*
         如果当前没有设置它的上一轮次，则找到它的上一轮的轮次并设置
         If the previous round is not currently set, find the previous round and set it.
@@ -252,7 +252,7 @@ public class PbftRoundManager implements IRoundManager {
             if (round != null && extendsData.getRoundIndex() == round.getIndex() && extendsData.getPackingIndexOfRound() != extendsData.getConsensusMemberCount() && round.getCurrentMemberIndex() != round.getMemberCount()) {
                 return round;
             }
-            MeetingRound nextRound = getRound(chain, blockHeader, extendsData, false);
+            MeetingRound nextRound = getRound(chain, blockHeader, extendsData, isRealTime);
             /*
             如果当前轮次不为空且计算出的下一轮次下标小于当前轮次下标则直接返回计算出的下一轮次信息
             If the current round is not empty and the calculated next round subscript is less than the current round subscript,
@@ -282,7 +282,7 @@ public class PbftRoundManager implements IRoundManager {
     public MeetingRound getRound(Chain chain, BlockHeader header, BlockExtendsData roundData, boolean isRealTime) throws Exception {
         chain.getRoundLock().lock();
         try {
-            if (!isRealTime && roundData == null) {
+            if (isRealTime) {
                 return getRoundByNewestBlock(chain);
             } else {
                 return getRoundByExpectedRound(chain, header, roundData);
@@ -301,10 +301,21 @@ public class PbftRoundManager implements IRoundManager {
      */
     private MeetingRound getRoundByNewestBlock(Chain chain) throws Exception {
         BlockHeader bestBlockHeader = chain.getNewestHeader();
-        BlockExtendsData extendsData = new BlockExtendsData(bestBlockHeader.getExtend());
-        extendsData.setRoundStartTime(extendsData.getRoundEndTime(chain.getConfig().getPackingInterval()));
-        extendsData.setRoundIndex(extendsData.getRoundIndex() + 1);
-        return getRoundByExpectedRound(chain, bestBlockHeader, extendsData);
+        BlockExtendsData roundData = new BlockExtendsData(bestBlockHeader.getExtend());
+        long now = NulsDateUtils.getCurrentTimeSeconds();
+        long roundStartTime = bestBlockHeader.getTime() + chain.getConfig().getPackingInterval() * (roundData.getConsensusMemberCount() - roundData.getPackingIndexOfRound() + 1);
+        long offset = now - roundStartTime;
+        BlockHeader startBlockHeader = chain.getNewestHeader();
+        long roundIndex = roundData.getRoundIndex();
+        int currentIndexOfRound = roundData.getPackingIndexOfRound();
+        if (roundData.getPackingIndexOfRound() == roundData.getConsensusMemberCount()) {
+            roundIndex++;
+            currentIndexOfRound = 1;
+        }
+        if (startBlockHeader.getHeight() != 0L) {
+            startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
+        }
+        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, offset, currentIndexOfRound);
     }
 
     /**
@@ -317,14 +328,15 @@ public class PbftRoundManager implements IRoundManager {
      * @return MeetingRound
      */
     private MeetingRound getRoundByExpectedRound(Chain chain, BlockHeader bestBlockHeader, BlockExtendsData roundData) throws Exception {
+
         long offset = bestBlockHeader.getTime() - roundData.getRoundStartTime() - chain.getConfig().getPackingInterval() * roundData.getPackingIndexOfRound();
+        offset = offset - offset % chain.getConfig().getPackingInterval();
         BlockHeader startBlockHeader = chain.getNewestHeader();
         long roundIndex = roundData.getRoundIndex();
-        long roundStartTime = roundData.getRoundStartTime();
         if (startBlockHeader.getHeight() != 0L) {
             startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
         }
-        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, offset, roundData.getPackingIndexOfRound());
+        return calculationRound(chain, startBlockHeader, roundIndex, roundData.getRoundStartTime(), offset, roundData.getPackingIndexOfRound());
     }
 
     @Override
@@ -346,7 +358,14 @@ public class PbftRoundManager implements IRoundManager {
      * @param startTime        轮次开始打包时间/start time
      */
     private MeetingRound calculationRound(Chain chain, BlockHeader startBlockHeader, long index, long startTime, long offset, int currentMemberIndex) throws Exception {
-        MeetingRound round = new MeetingRound();
+        MeetingRound currentRound = this.getCurrentRound(chain);
+        MeetingRound round;
+        if (null == currentRound || currentRound.getIndex() != index) {
+            round = new MeetingRound();
+        } else {
+            round = currentRound;
+            round.clear();
+        }
         round.setIndex(index);
         round.setStartTime(startTime);
         round.setOffset(offset);

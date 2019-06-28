@@ -50,7 +50,7 @@ public class BlockExtendsDataTest {
         data.setConsensusMemberCount(1);
         data.setPackingIndexOfRound(1);
         data.setRoundIndex(1);
-        data.setRoundStartTime(1L);
+        data.setRoundStartTime(1531324800L);
         data.setMainVersion((short)1);
         data.setBlockVersion((short) 1);
         data.setEffectiveRatio((byte) 60);

@@ -202,7 +202,8 @@ public class BlockSynchronizer implements Runnable {
                 count = 0;
             }
             commonLog.info("minNodeAmount = " + minNodeAmount + ", current nodes amount=" + nodeAmount + ", count = " + count + ", wait Until Network Stable......");
-            if (count >= 6) {
+            //todo 临时减少等待时间
+            if (count >= 2) {
                 return;
             }
             Thread.sleep(waitNetworkInterval);
