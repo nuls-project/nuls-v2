@@ -100,8 +100,13 @@ public class PbftConsensusProcess implements IConsensusProcess {
             Thread.sleep(10L);
             now = NulsDateUtils.getCurrentTimeSeconds();
         }
-        while (chain.getNewestHeader().getHeight() != key.getHeight() - 1) {
-            Thread.sleep(10L);
+        while (true) {
+            if (chain.getNewestHeader().getHeight() == key.getHeight() - 1) {
+                break;
+            }
+            if (chain.getNewestHeader().getHeight() >= key.getHeight()) {
+                return;
+            }
         }
         if (!chain.getNewestHeader().getHash().equals(key.getPrehash())) {
             return;
