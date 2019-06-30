@@ -28,6 +28,7 @@ import io.nuls.poc.utils.manager.RoundManager;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -79,6 +80,10 @@ public class BlockVoter implements Runnable {
                         lock.unlock();
                     }
                 } else {
+                    List<byte[]> packingAddressList = CallMethodUtils.getEncryptedAddressList(chain);
+                    if (!packingAddressList.isEmpty()) {
+                        this.pocRound.calcLocalPacker(packingAddressList, chain);
+                    }
                     sleep = 1000L;
                 }
                 Thread.sleep(sleep);
