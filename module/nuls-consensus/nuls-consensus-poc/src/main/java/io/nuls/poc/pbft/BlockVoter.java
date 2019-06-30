@@ -6,7 +6,6 @@ import io.nuls.base.data.BlockHeader;
 import io.nuls.base.data.NulsHash;
 import io.nuls.core.constant.ErrorCode;
 import io.nuls.core.core.ioc.SpringLiteContext;
-import io.nuls.core.crypto.Sha256Hash;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.model.ArraysTool;
 import io.nuls.core.rpc.util.NulsDateUtils;
@@ -74,7 +73,7 @@ public class BlockVoter implements Runnable {
                 if (null != pocRound && pocRound.getMyMember() != null) {
                     try {
                         lock.lock();
-                        doit(pocRound);
+                        doit();
                     } finally {
                         lock.unlock();
                     }
@@ -119,7 +118,7 @@ public class BlockVoter implements Runnable {
         return true;
     }
 
-    private void doit(MeetingRound pocRound) {
+    private void doit() {
         if (this.pocRound.getCurrentMemberIndex() > this.pocRound.getMemberCount()) {
             return;
         }
@@ -134,8 +133,8 @@ public class BlockVoter implements Runnable {
             if (offset < 0) {
                 offset = 0;
             }
-            long round = offset / this.timeout + 1;
-            changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
+            long round = offset / this.timeout;
+            changeCurrentRound(round, lastHeader.getTime() + round * this.timeout);
             return;
         }
 
@@ -160,7 +159,7 @@ public class BlockVoter implements Runnable {
             LoggerUtil.commonLog.info("====投票给分叉");
             preCommitVote(this.pocRound.getCurVoteRound().getHeight(), round, NulsHash.EMPTY_NULS_HASH, preCommitCache.getHeader(), start, preCommitCache.getForkHeader(), pocRound.getMyMember());
         } else {
-            LoggerUtil.commonLog.info("====超时投票：{},height: {},round: {}", preCommitCache.getShouldNext().toHex(), this.pocRound.getCurVoteRound().getHeight(), this.pocRound.getCurVoteRound().getRound());
+//            LoggerUtil.commonLog.info("====超时投票：{},height: {},round: {}", preCommitCache.getShouldNext().toHex(), this.pocRound.getCurVoteRound().getHeight(), this.pocRound.getCurVoteRound().getRound());
             this.preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, preCommitCache.getShouldNext(), preCommitCache.getHeader(), start, null, pocRound.getMyMember());
         }
         now = NulsDateUtils.getCurrentTimeSeconds();
@@ -168,8 +167,8 @@ public class BlockVoter implements Runnable {
         if (offset < 0) {
             offset = 0;
         }
-        round = (int) (offset / this.timeout + 1);
-        this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
+        round = (int) (offset / this.timeout);
+        this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout);
     }
 
     private void changeCurrentRound(long round, long startTime) {
@@ -337,7 +336,7 @@ public class BlockVoter implements Runnable {
         }
 //        LoggerUtil.commonLog.info("======Receive=Vote:{} ,{} address:{}", message.getHeight(), message.getBlockHash(), address);
 //        System.out.println("myRound: height=" + pocRound.getCurVoteRound().getHeight() + ", round:" + pocRound.getCurVoteRound().getRound());
-        LoggerUtil.commonLog.info("receive: height=" + message.getHeight() + ", round:" + message.getRound() + ",hash:" + message.getBlockHash().toHex() + ", address:" + message.getAddress(this.chainId));
+//        LoggerUtil.commonLog.info("receive: height=" + message.getHeight() + ", round:" + message.getRound() + ",hash:" + message.getBlockHash().toHex() + ", address:" + message.getAddress(this.chainId));
         // 判断是否接受此投票
         if (pocRound.getCurVoteRound().getHeight() > message.getHeight() || (pocRound.getCurVoteRound().getHeight() == message.getHeight() && pocRound.getCurVoteRound().getRound() > message.getRound() + 1)) {
             return;
@@ -415,9 +414,9 @@ public class BlockVoter implements Runnable {
             if (offset < 0) {
                 offset = 0;
             }
-            long round = offset / this.timeout + 1;
+            long round = offset / this.timeout;
             if (this.pocRound.getCurVoteRound() == null) {
-                changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
+                changeCurrentRound(round, lastHeader.getTime() + round * this.timeout);
                 return;
             }
         }
