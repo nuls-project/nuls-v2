@@ -130,7 +130,7 @@ public class BlockVoter implements Runnable {
         }
 
         if (this.pocRound.getCurVoteRound() == null) {
-            long offset = now - lastHeader.getTime() - this.timeout;
+            long offset = now - lastHeader.getTime();
             if (offset < 0) {
                 offset = 0;
             }
@@ -164,7 +164,7 @@ public class BlockVoter implements Runnable {
             this.preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, preCommitCache.getShouldNext(), preCommitCache.getHeader(), start, null, pocRound.getMyMember());
         }
         now = NulsDateUtils.getCurrentTimeSeconds();
-        long offset = now - lastHeader.getTime() - this.timeout;
+        long offset = now - lastHeader.getTime();
         if (offset < 0) {
             offset = 0;
         }
@@ -411,7 +411,7 @@ public class BlockVoter implements Runnable {
             return;
         }
         if (null == this.pocRound.getCurVoteRound()) {
-            long offset = now - lastHeader.getTime() - this.timeout;
+            long offset = now - lastHeader.getTime();
             if (offset < 0) {
                 offset = 0;
             }
