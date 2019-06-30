@@ -128,12 +128,13 @@ public class BlockVoter implements Runnable {
         if (now < this.timeout + this.lastHeader.getTime()) {
             return;
         }
-        long offset = now - lastHeader.getTime() - this.timeout;
-        if (offset < 0) {
-            offset = 0;
-        }
-        long round = offset / this.timeout + 1;
+
         if (this.pocRound.getCurVoteRound() == null) {
+            long offset = now - lastHeader.getTime() - this.timeout;
+            if (offset < 0) {
+                offset = 0;
+            }
+            long round = offset / this.timeout + 1;
             changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
             return;
         }
@@ -154,13 +155,20 @@ public class BlockVoter implements Runnable {
         }
         long start = this.pocRound.getCurVoteRound().getStart();
         pocRound.setOffset(pocRound.getOffset() + this.timeout);
+        int round = this.pocRound.getCurVoteRound().getRound();
         if (preCommitCache.getForkHeader() != null) {
             LoggerUtil.commonLog.info("====投票给分叉");
-            preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, NulsHash.EMPTY_NULS_HASH, preCommitCache.getHeader(), start, preCommitCache.getForkHeader(), pocRound.getMyMember());
+            preCommitVote(this.pocRound.getCurVoteRound().getHeight(), round, NulsHash.EMPTY_NULS_HASH, preCommitCache.getHeader(), start, preCommitCache.getForkHeader(), pocRound.getMyMember());
         } else {
             LoggerUtil.commonLog.info("====超时投票：{},height: {},round: {}", preCommitCache.getShouldNext().toHex(), this.pocRound.getCurVoteRound().getHeight(), this.pocRound.getCurVoteRound().getRound());
             this.preCommitVote(this.pocRound.getCurVoteRound().getHeight(), (int) round, preCommitCache.getShouldNext(), preCommitCache.getHeader(), start, null, pocRound.getMyMember());
         }
+        now = NulsDateUtils.getCurrentTimeSeconds();
+        long offset = now - lastHeader.getTime() - this.timeout;
+        if (offset < 0) {
+            offset = 0;
+        }
+        round = (int) (offset / this.timeout + 1);
         this.changeCurrentRound(round, lastHeader.getTime() + round * this.timeout + timeout);
     }
 
