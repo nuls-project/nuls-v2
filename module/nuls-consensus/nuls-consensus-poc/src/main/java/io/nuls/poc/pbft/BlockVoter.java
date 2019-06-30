@@ -128,7 +128,6 @@ public class BlockVoter implements Runnable {
         if (now < this.timeout + this.lastHeader.getTime()) {
             return;
         }
-        MeetingMember meetingMember = pocRound.getMember(pocRound.getCurrentMemberIndex());
         long offset = now - lastHeader.getTime() - this.timeout;
         if (offset < 0) {
             offset = 0;
@@ -150,7 +149,7 @@ public class BlockVoter implements Runnable {
             }
         }
 
-        if (now < this.pocRound.getCurVoteRound().getEnd()) {
+        if (now < this.pocRound.getCurVoteRound().getEnd() + this.timeout / 2) {
             return;
         }
         long start = this.pocRound.getCurVoteRound().getStart();
@@ -171,7 +170,7 @@ public class BlockVoter implements Runnable {
         curRound.setHeight(this.lastHeader.getHeight() + 1);
         curRound.setRound((int) round);
         curRound.setStart(startTime - 1);
-        curRound.setEnd(startTime - 1 + this.timeout * 3 / 2);
+        curRound.setEnd(startTime - 1 + this.timeout);
         LoggerUtil.commonLog.info("NEW ROUND==height:{},round:{},startTime:{}, endtime:{}", curRound.getHeight(), curRound.getRound(), new Date(curRound.getStart() * 1000).toLocaleString(), new Date(curRound.getEnd() * 1000).toLocaleString());
         pocRound.setCurVoteRound(curRound);
     }
