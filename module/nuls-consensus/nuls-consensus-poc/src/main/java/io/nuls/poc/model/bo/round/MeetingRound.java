@@ -269,12 +269,11 @@ public class MeetingRound {
             str.append(" ,order:" + member.getPackingIndexOfRound());
             str.append(",packTime:" + new Date((member.getEndTime() + this.offset) * 1000));
             str.append(",creditVal:" + member.getAgent().getRealCreditVal());
-            str.append(",currentIndex:" + this.currentMemberIndex);
             str.append("\n");
         }
         if (null == this.getPreRound()) {
             return ("round:index:" + this.getIndex() + " , start:" + new Date((this.offset + this.getStartTime()) * 1000)
-                    + ", netTime:(" + new Date(NulsDateUtils.getCurrentTimeMillis()).toString() + ") , totalWeight : " + totalWeight + " ,members:\n" + str);
+                    + ", netTime:(" + new Date(NulsDateUtils.getCurrentTimeMillis()).toString() + ") , currentIndex: " + currentMemberIndex + ", totalWeight : " + totalWeight + " ,members:\n" + str);
         } else {
             return ("round:index:" + this.getIndex() + " ,preIndex:" + this.getPreRound().getIndex() + " , start:" + new Date(1000 * (this.getStartTime() + this.offset))
                     + ", netTime:(" + new Date(NulsDateUtils.getCurrentTimeMillis()).toString() + ") , totalWeight : " + totalWeight + "  , members:\n" + str);
