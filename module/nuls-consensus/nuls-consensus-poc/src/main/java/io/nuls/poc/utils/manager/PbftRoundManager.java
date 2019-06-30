@@ -250,6 +250,10 @@ public class PbftRoundManager implements IRoundManager {
              the latest local rounds will be returned directly to the latest local rounds
             */
             if (round != null && extendsData.getRoundIndex() == round.getIndex() && extendsData.getPackingIndexOfRound() != extendsData.getConsensusMemberCount() && round.getCurrentMemberIndex() != round.getMemberCount()) {
+                List<byte[]> packingAddressList = CallMethodUtils.getEncryptedAddressList(chain);
+                if (!packingAddressList.isEmpty()) {
+                    round.calcLocalPacker(packingAddressList, chain);
+                }
                 return round;
             }
             MeetingRound nextRound = getRound(chain, blockHeader, extendsData, isRealTime);
