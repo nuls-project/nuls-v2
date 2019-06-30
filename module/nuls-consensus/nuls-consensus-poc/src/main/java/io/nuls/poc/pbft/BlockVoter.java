@@ -154,7 +154,6 @@ public class BlockVoter implements Runnable {
             return;
         }
         long start = this.pocRound.getCurVoteRound().getStart();
-        pocRound.setOffset(pocRound.getOffset() + this.timeout);
         int round = this.pocRound.getCurVoteRound().getRound();
         if (preCommitCache.getForkHeader() != null) {
             LoggerUtil.commonLog.info("====投票给分叉");
@@ -180,6 +179,12 @@ public class BlockVoter implements Runnable {
         curRound.setStart(startTime - 1);
         curRound.setEnd(startTime - 1 + this.timeout);
         LoggerUtil.commonLog.info("NEW ROUND==height:{},round:{},startTime:{}, endtime:{}", curRound.getHeight(), curRound.getRound(), new Date(curRound.getStart() * 1000).toLocaleString(), new Date(curRound.getEnd() * 1000).toLocaleString());
+        LoggerUtil.commonLog.info("POC ROUND::index:{},start:{}, offset:{}", pocRound.getIndex(), DateUtils.timeStamp2DateStr((pocRound.getStartTime() + pocRound.getOffset()) * 1000), pocRound.getOffset());
+        int add = 0;
+        if (null != pocRound && pocRound.getCurVoteRound() != null) {
+            add = (int) (round - pocRound.getCurVoteRound().getRound());
+            pocRound.setOffset(pocRound.getOffset() + this.timeout * add);
+        }
         pocRound.setCurVoteRound(curRound);
     }
 
@@ -417,10 +422,7 @@ public class BlockVoter implements Runnable {
                 offset = 0;
             }
             long round = offset / this.timeout;
-            if (this.pocRound.getCurVoteRound() == null) {
-                changeCurrentRound(round, lastHeader.getTime() + round * this.timeout);
-                return;
-            }
+            changeCurrentRound(round, lastHeader.getTime() + round * this.timeout);
         }
     }
 }
