@@ -266,7 +266,7 @@ public class BlockVoter implements Runnable {
         int totalCount = pocRound.getMemberCount();
 
         VoteData voteData = null == self ? null : pbftData.hasVoted1(self.getAgent().getPackingAddress());
-        if (null != self && (null == voteData || (voteData.getHash() == null && !voteData.isBifurcation()))) {
+        if (null != self && (null == voteData || (voteData.getHash() == NulsHash.EMPTY_NULS_HASH && !voteData.isBifurcation()))) {
             LoggerUtil.commonLog.info("===投票给一个区块：{}, {}", block.getHeader().getHeight(), block.getHeader().getHash().toString());
             preCommitVote(height, this.pocRound.getCurVoteRound().getRound(), block.getHeader().getHash(), block.getHeader(), this.lastHeader.getTime() + this.timeout * (this.pocRound.getCurVoteRound().getRound() - 1), null, self);
         }
