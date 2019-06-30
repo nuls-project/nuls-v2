@@ -429,7 +429,7 @@ public class BlockVoter implements Runnable {
         if (null == this.pocRound) {
             return;
         }
-        if (null == this.pocRound.getCurVoteRound()) {
+        if (null == this.pocRound.getCurVoteRound() || this.pocRound.getCurVoteRound().getHeight() <= this.lastHeader.getHeight()) {
             long offset = now - lastHeader.getTime();
             if (offset < 0) {
                 offset = 0;
