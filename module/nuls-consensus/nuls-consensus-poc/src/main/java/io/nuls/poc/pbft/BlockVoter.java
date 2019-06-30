@@ -8,6 +8,7 @@ import io.nuls.core.constant.ErrorCode;
 import io.nuls.core.core.ioc.SpringLiteContext;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.model.ArraysTool;
+import io.nuls.core.model.DateUtils;
 import io.nuls.core.rpc.util.NulsDateUtils;
 import io.nuls.poc.constant.ConsensusErrorCode;
 import io.nuls.poc.constant.PocMessageType;
@@ -215,6 +216,7 @@ public class BlockVoter implements Runnable {
         key.setIndexOfRound(pocRound.getCurrentMemberIndex());
         key.setSelf(pocRound.getMyMember());
         key.setRound(pocRound);
+        LoggerUtil.commonLog.info("key info:height:{}, startTime:{} ,end:{}", key.getHeight(), DateUtils.timeStamp2DateStr(key.getStartTime() * 1000), DateUtils.timeStamp2DateStr(key.getEndTime() * 1000));
         BlockProuceKeyCache.PRODUCE_KEYS_QUEUE.offer(key);
     }
 
