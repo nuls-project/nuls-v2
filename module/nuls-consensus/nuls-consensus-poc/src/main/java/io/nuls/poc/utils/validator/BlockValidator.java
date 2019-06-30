@@ -70,7 +70,10 @@ public class BlockValidator {
         try {
             roundValidResult = roundValidate(isDownload, chain, blockHeader, blockHeaderHash);
         } catch (Exception e) {
-            throw new NulsException(e);
+            if (e instanceof NulsException) {
+                throw (NulsException) e;
+            }
+            throw new NulsException(ConsensusErrorCode.DATA_ERROR, e);
         }
         MeetingRound currentRound = roundValidResult.getRound();
         BlockExtendsData extendsData = new BlockExtendsData(blockHeader.getExtend());

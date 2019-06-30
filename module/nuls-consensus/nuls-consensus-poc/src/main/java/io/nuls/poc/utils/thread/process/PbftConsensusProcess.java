@@ -100,6 +100,12 @@ public class PbftConsensusProcess implements IConsensusProcess {
             Thread.sleep(10L);
             now = NulsDateUtils.getCurrentTimeSeconds();
         }
+        while (chain.getNewestHeader().getHeight() != key.getHeight() - 1) {
+            Thread.sleep(10L);
+        }
+        if (!chain.getNewestHeader().getHash().equals(key.getPrehash())) {
+            return;
+        }
 
         /*
         如果是共识节点则判断是否轮到自己出块
@@ -123,7 +129,7 @@ public class PbftConsensusProcess implements IConsensusProcess {
         */
         long start = System.currentTimeMillis();
         Block block = doPacking(chain, key);
-        consensusLogger.info("doPacking use:" + (System.currentTimeMillis() - start) + "ms" + "\n\n");
+        consensusLogger.info("doPacking use:" + (System.currentTimeMillis() - start) + "ms");
 
         /*
          * 打包完成之后，查看打包区块和主链最新区块是否连续，如果不连续表示打包过程中收到了上一个共识节点打包的区块，此时本地节点需要重新打包区块

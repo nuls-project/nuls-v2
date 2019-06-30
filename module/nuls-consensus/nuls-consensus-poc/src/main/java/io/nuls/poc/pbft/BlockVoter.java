@@ -202,7 +202,7 @@ public class BlockVoter implements Runnable {
         }
         ProduceKey key = new ProduceKey();
         key.setAddress(address);
-        key.setHeight(height + 1);
+        key.setHeight(hash.equals(NulsHash.EMPTY_NULS_HASH) ? height : height + 1);
         key.setPrehash(hash.equals(NulsHash.EMPTY_NULS_HASH) ? this.lastHeader.getHash() : hash);
         key.setStartTime(pocRound.getMyMember().getEndTime() + pocRound.getOffset());
         key.setEndTime(pocRound.getMyMember().getEndTime() + pocRound.getOffset() + this.timeout);
@@ -213,6 +213,7 @@ public class BlockVoter implements Runnable {
     }
 
     public ErrorCode recieveBlock(Block block) {
+        LoggerUtil.commonLog.info("receive block:" + block.getHeader().getHash().toHex());
         try {
             lock.lock();
             return this.realRecieveBlock(block);
