@@ -309,6 +309,7 @@ public class PbftRoundManager implements IRoundManager {
         long now = NulsDateUtils.getCurrentTimeSeconds();
         long roundStartTime = bestBlockHeader.getTime() + chain.getConfig().getPackingInterval() * (roundData.getConsensusMemberCount() - roundData.getPackingIndexOfRound() + 1);
         long offset = now - roundStartTime;
+        offset = offset - offset % chain.getConfig().getPackingInterval();
         BlockHeader startBlockHeader = chain.getNewestHeader();
         long roundIndex = roundData.getRoundIndex();
         int currentIndexOfRound = roundData.getPackingIndexOfRound();
@@ -334,7 +335,6 @@ public class PbftRoundManager implements IRoundManager {
     private MeetingRound getRoundByExpectedRound(Chain chain, BlockHeader bestBlockHeader, BlockExtendsData roundData) throws Exception {
 
         long offset = bestBlockHeader.getTime() - roundData.getRoundStartTime() - chain.getConfig().getPackingInterval() * roundData.getPackingIndexOfRound();
-        offset = offset - offset % chain.getConfig().getPackingInterval();
         BlockHeader startBlockHeader = chain.getNewestHeader();
         long roundIndex = roundData.getRoundIndex();
         if (startBlockHeader.getHeight() != 0L) {
