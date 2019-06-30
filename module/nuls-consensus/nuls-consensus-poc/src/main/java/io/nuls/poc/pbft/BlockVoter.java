@@ -151,7 +151,7 @@ public class BlockVoter implements Runnable {
         if (null != pbftData) {
             VoteResultItem result = pbftData.getVote2LargestItem();
             if (result.getCount() > VoteConstant.DEFAULT_RATE * pocRound.getMemberCount() && result.getHash() != null) {
-                if (this.lastHeader.getHeight() >= pocRound.getCurVoteRound().getHeight()) {
+                if ((result.getHash().equals(NulsHash.EMPTY_NULS_HASH) && pocRound.getCurVoteRound().getEnd() <= NulsDateUtils.getCurrentTimeSeconds()) || this.lastHeader.getHeight() >= pocRound.getCurVoteRound().getHeight()) {
                     long offset = now - lastHeader.getTime();
                     if (offset < 0) {
                         offset = 0;
