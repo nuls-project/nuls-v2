@@ -172,7 +172,7 @@ public class BlockVoter implements Runnable {
         curRound.setRound((int) round);
         curRound.setStart(startTime - 1);
         curRound.setEnd(startTime - 1 + this.timeout * 3 / 2);
-        LoggerUtil.commonLog.info("=======height:{},round:{},time:{}", curRound.getHeight(), curRound.getRound(), new Date(curRound.getEnd() * 1000).toLocaleString());
+        LoggerUtil.commonLog.info("NEW ROUND==height:{},round:{},startTime:{}, endtime:{}", curRound.getHeight(), curRound.getRound(), new Date(curRound.getStart() * 1000).toLocaleString(), new Date(curRound.getEnd() * 1000).toLocaleString());
         pocRound.setCurVoteRound(curRound);
     }
 
