@@ -269,6 +269,7 @@ public class MeetingRound {
             str.append(" ,order:" + member.getPackingIndexOfRound());
             str.append(",packTime:" + new Date((member.getEndTime() + this.offset) * 1000));
             str.append(",creditVal:" + member.getAgent().getRealCreditVal());
+            str.append(",currentIndex:" + this.currentMemberIndex);
             str.append("\n");
         }
         if (null == this.getPreRound()) {
