@@ -26,7 +26,9 @@ import io.nuls.base.data.Block;
 import io.nuls.base.data.BlockHeader;
 import io.nuls.base.data.NulsHash;
 import io.nuls.base.data.po.BlockHeaderPo;
+import io.nuls.block.cache.SmallBlockCacher;
 import io.nuls.block.constant.BlockErrorCode;
+import io.nuls.block.constant.BlockForwardEnum;
 import io.nuls.block.manager.BlockSaverManager;
 import io.nuls.block.manager.ContextManager;
 import io.nuls.block.model.BlockSure;
@@ -556,6 +558,7 @@ public class BlockResource extends BaseCmd {
         try {
             Block block = new Block();
             block.parse(new NulsByteBuffer(RPCUtil.decode((String) map.get("block"))));
+            SmallBlockCacher.setStatus(chainId, block.getHeader().getHash(), BlockForwardEnum.COMPLETE);
             commonLog.info("recieve block from local node, chainId:" + chainId + ", height:" + block.getHeader().getHeight() + ", hash:" + block.getHeader().getHash());
             if (service.saveBlock(chainId, block, 1, true, true, false)) {
                 return success();

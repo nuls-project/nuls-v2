@@ -91,6 +91,7 @@ public class TxGroupHandler implements MessageProcessor {
             }
 
             Block block = BlockUtil.assemblyBlock(header, txMap, smallBlock.getTxHashList());
+            SmallBlockCacher.setStatus(chainId, blockHash, BlockForwardEnum.COMPLETE);
             blockService.saveBlock(chainId, block, 1, true, false, true);
             return;
         }
