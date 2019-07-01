@@ -168,7 +168,7 @@ public class BlockVoter implements Runnable {
         }
         long start = this.pocRound.getCurVoteRound().getStart();
         int round = this.pocRound.getCurVoteRound().getRound();
-        if(preCommitCache.getHeight() != this.pocRound.getCurVoteRound().getHeight()){
+        if (preCommitCache.getHeight() != this.pocRound.getCurVoteRound().getHeight()) {
             preCommitCache.clear();
         }
         if (preCommitCache.getForkHeader() != null) {
@@ -204,7 +204,7 @@ public class BlockVoter implements Runnable {
         pocRound.setCurVoteRound(curRound);
     }
 
-    private void sureResult(long height, NulsHash hash) {
+    private void sureResult(long height, NulsHash hash, BlockHeader bestBlockHeader) {
         LoggerUtil.commonLog.info("=======确认区块：{}, {}", height, hash.toString());
         boolean result = CallMethodUtils.sendVerifyResult(chainId, height, hash);
         if (!result) {
@@ -214,7 +214,10 @@ public class BlockVoter implements Runnable {
         pocRound.setCurrentMemberIndex(pocRound.getCurrentMemberIndex() + 1);
         if (pocRound.getCurrentMemberIndex() > pocRound.getMemberCount()) {
             try {
-                this.pocRound = roundManager.createNextRound(chain);
+                if (null == bestBlockHeader) {
+                    bestBlockHeader = chain.getNewestHeader();
+                }
+                this.pocRound = roundManager.createNextRound(chain, bestBlockHeader, pocRound);
             } catch (Exception e) {
                 LoggerUtil.commonLog.error(e);
             }
@@ -257,6 +260,7 @@ public class BlockVoter implements Runnable {
         if (height != this.pocRound.getCurVoteRound().getHeight()) {
             return code;
         }
+        this.cache.putBlockHeader(block.getHeader());
         NulsHash hash = block.getHeader().getHash();
         LoggerUtil.commonLog.info("blockVote:height:" + this.pocRound.getCurVoteRound().getHeight() + ",round:" + pocRound.getCurVoteRound().getRound() + ",address:" + AddressTool.getStringAddressByBytes(block.getHeader().getPackingAddress(chainId)) + ", hash:" + block.getHeader().getHash().toHex());
         PbftData pbftData = cache.addVote1(height, this.pocRound.getCurVoteRound().getRound(), hash, AddressTool.getStringAddressByBytes(block.getHeader().getPackingAddress(chainId)), block.getHeader().getTime(), false);
@@ -288,7 +292,7 @@ public class BlockVoter implements Runnable {
         result = pbftData.getVote2LargestItem();
 
         if (result.getCount() > VoteConstant.DEFAULT_RATE * totalCount) {
-            this.sureResult(height, result.getHash());
+            this.sureResult(height, result.getHash(), cache.getBlockHeader(height, result.getHash()));
         }
         return code;
     }
@@ -323,7 +327,7 @@ public class BlockVoter implements Runnable {
         }
         result = pbftData.getVote2LargestItem();
         if (result.getCount() > VoteConstant.DEFAULT_RATE * this.pocRound.getMemberCount()) {
-            this.sureResult(height, result.getHash());
+            this.sureResult(height, result.getHash(), cache.getBlockHeader(height, result.getHash()));
         }
     }
 
@@ -417,7 +421,7 @@ public class BlockVoter implements Runnable {
             realResult = pbftData.getVote2LargestItem();
         }
         if (realResult.getCount() > VoteConstant.DEFAULT_RATE * totalCount) {
-            this.sureResult(pbftData.getHeight(), realResult.getHash());
+            this.sureResult(pbftData.getHeight(), realResult.getHash(), cache.getBlockHeader(pbftData.getHeight(), realResult.getHash()));
         }
 
     }

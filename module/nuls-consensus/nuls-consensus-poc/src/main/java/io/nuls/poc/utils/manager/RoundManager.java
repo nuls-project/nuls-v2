@@ -130,8 +130,8 @@ public class RoundManager {
         return getRoundManager(chain).resetRound(chain, isRealTime);
     }
 
-    public MeetingRound createNextRound(Chain chain) throws Exception {
-        return getRoundManager(chain).createNextRound(chain);
+    public MeetingRound createNextRound(Chain chain, BlockHeader bestBlockheader, MeetingRound round) throws Exception {
+        return getRoundManager(chain).createNextRound(chain, bestBlockheader, round);
     }
 
     /**

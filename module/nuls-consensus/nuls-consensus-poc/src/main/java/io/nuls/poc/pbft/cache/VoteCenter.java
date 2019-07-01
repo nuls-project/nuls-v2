@@ -1,6 +1,7 @@
 package io.nuls.poc.pbft.cache;
 
 import io.nuls.base.basic.AddressTool;
+import io.nuls.base.data.BlockHeader;
 import io.nuls.base.data.NulsHash;
 import io.nuls.poc.pbft.message.VoteMessage;
 import io.nuls.poc.pbft.model.PbftData;
@@ -17,6 +18,8 @@ import java.util.Map;
 public class VoteCenter {
 
     private final int chainId;
+
+    private Map<Long, Map<NulsHash, BlockHeader>> headerMap = new HashMap<>();
 
     private Map<String, PbftData> map = new HashMap<>();
 
@@ -97,5 +100,26 @@ public class VoteCenter {
     public PbftData getCurrentResult(long height, int round) {
         String key = height + "_" + round;
         return map.get(key);
+    }
+
+    public void putBlockHeader(BlockHeader header) {
+        Map<NulsHash, BlockHeader> map = headerMap.get(header.getHeight());
+        if (null == map) {
+            map = new HashMap<>();
+            headerMap.put(header.getHeight(), map);
+        }
+        map.put(header.getHash(), header);
+    }
+
+    public BlockHeader getBlockHeader(long height, NulsHash hash) {
+        Map<NulsHash, BlockHeader> map = headerMap.get(height);
+        if (null == map) {
+            return null;
+        }
+        return map.get(hash);
+    }
+
+    public void clearBlockHeader(long height) {
+        headerMap.remove(height);
     }
 }
