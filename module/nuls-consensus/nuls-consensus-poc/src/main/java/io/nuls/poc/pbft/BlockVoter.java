@@ -168,6 +168,9 @@ public class BlockVoter implements Runnable {
         }
         long start = this.pocRound.getCurVoteRound().getStart();
         int round = this.pocRound.getCurVoteRound().getRound();
+        if(preCommitCache.getHeight() != this.pocRound.getCurVoteRound().getHeight()){
+            preCommitCache.clear();
+        }
         if (preCommitCache.getForkHeader() != null) {
             LoggerUtil.commonLog.info("====投票给分叉");
             preCommitVote(this.pocRound.getCurVoteRound().getHeight(), round, NulsHash.EMPTY_NULS_HASH, preCommitCache.getHeader(), start, preCommitCache.getForkHeader(), pocRound.getMyMember());
@@ -207,7 +210,7 @@ public class BlockVoter implements Runnable {
         if (!result) {
             return;
         }
-        this.preCommitCache.clear(hash);
+        this.preCommitCache.clear();
         pocRound.setCurrentMemberIndex(pocRound.getCurrentMemberIndex() + 1);
         if (pocRound.getCurrentMemberIndex() > pocRound.getMemberCount()) {
             try {

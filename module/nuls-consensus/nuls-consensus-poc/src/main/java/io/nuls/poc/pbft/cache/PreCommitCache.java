@@ -76,12 +76,11 @@ public class PreCommitCache {
         this.shouldNext = shouldNext;
     }
 
-    public void clear(NulsHash hash) {
-        if (null != hash) {
-            this.height = 0;
-            this.round = 0;
-            this.header = null;
-            this.forkHeader = null;
-        }
+    public void clear() {
+        this.height = 0;
+        this.round = 0;
+        this.shouldNext = NulsHash.EMPTY_NULS_HASH;
+        this.header = null;
+        this.forkHeader = null;
     }
 }
