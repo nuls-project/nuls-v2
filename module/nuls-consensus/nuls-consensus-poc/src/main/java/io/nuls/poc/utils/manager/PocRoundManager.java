@@ -283,6 +283,11 @@ public class PocRoundManager implements IRoundManager {
         }
     }
 
+    @Override
+    public MeetingRound createNextRound(Chain chain) throws Exception {
+        return this.resetRound(chain, true);
+    }
+
     /**
      * 获取下一轮的轮次信息
      * Get the next round of round objects

@@ -191,8 +191,8 @@ public class BlockVoter implements Runnable {
         curRound.setRound((int) round);
         curRound.setStart(startTime - 1);
         curRound.setEnd(startTime - 1 + this.timeout);
-        LoggerUtil.commonLog.info("NEW ROUND==height:{},round:{},startTime:{}, endtime:{}", curRound.getHeight(), curRound.getRound(), new Date(curRound.getStart() * 1000).toLocaleString(), new Date(curRound.getEnd() * 1000).toLocaleString());
-        LoggerUtil.commonLog.info("POC ROUND::index:{},start:{}, offset:{}", pocRound.getIndex(), DateUtils.timeStamp2DateStr((pocRound.getStartTime() + pocRound.getOffset()) * 1000), pocRound.getOffset());
+        LoggerUtil.commonLog.info("{}--NEW ROUND==height:{},round:{},startTime:{}, endtime:{}", DateUtils.timeStamp2DateStr(NulsDateUtils.getCurrentTimeMillis()), curRound.getHeight(), curRound.getRound(), new Date(curRound.getStart() * 1000).toLocaleString(), new Date(curRound.getEnd() * 1000).toLocaleString());
+        LoggerUtil.commonLog.info("{}--POC ROUND::index:{},start:{}, offset:{}", DateUtils.timeStamp2DateStr(NulsDateUtils.getCurrentTimeMillis()), pocRound.getIndex(), DateUtils.timeStamp2DateStr((pocRound.getStartTime() + pocRound.getOffset()) * 1000), pocRound.getOffset());
         int add = 0;
         if (null != pocRound && pocRound.getCurVoteRound() != null) {
             add = (int) (round - pocRound.getCurVoteRound().getRound());
@@ -211,8 +211,7 @@ public class BlockVoter implements Runnable {
         pocRound.setCurrentMemberIndex(pocRound.getCurrentMemberIndex() + 1);
         if (pocRound.getCurrentMemberIndex() > pocRound.getMemberCount()) {
             try {
-                roundManager.resetRound(chain, true);
-                this.pocRound = roundManager.getCurrentRound(chain);
+                this.pocRound = roundManager.createNextRound(chain);
             } catch (Exception e) {
                 LoggerUtil.commonLog.error(e);
             }

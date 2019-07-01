@@ -130,6 +130,10 @@ public class RoundManager {
         return getRoundManager(chain).resetRound(chain, isRealTime);
     }
 
+    public MeetingRound createNextRound(Chain chain) throws Exception {
+        return getRoundManager(chain).createNextRound(chain);
+    }
+
     /**
      * 获取下一轮的轮次信息
      * Get the next round of round objects

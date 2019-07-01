@@ -273,6 +273,20 @@ public class PbftRoundManager implements IRoundManager {
         }
     }
 
+    @Override
+    public MeetingRound createNextRound(Chain chain) throws Exception {
+        chain.getRoundLock().lock();
+        try {
+            MeetingRound round = getCurrentRound(chain);
+            MeetingRound nextRound = this.calculationRound(chain, chain.getNewestHeader(), round.getIndex() + 1, round.getEndTime() + round.getOffset(), 0L, 1);
+            nextRound.setPreRound(round);
+            addRound(chain, nextRound);
+            return nextRound;
+        } finally {
+            chain.getRoundLock().unlock();
+        }
+    }
+
     /**
      * 获取下一轮的轮次信息
      * Get the next round of round objects
