@@ -295,8 +295,9 @@ public class BlockVoter implements Runnable {
             this.signAndBroadcast(self, message);
             LoggerUtil.commonLog.info("====commit轮投票：{} ,{}", height, message.getBlockHash().toString());
             pbftData = cache.addVote2(height, pbftData.getTimes(), message.getBlockHash(), AddressTool.getStringAddressByBytes(self.getAgent().getPackingAddress()), message.getRoundIndex(), message.getRoundStartTime(), extendsData.getConsensusMemberCount());
-            this.mkSureRound(message.getRoundIndex(), message.getRoundStartTime(), message.getCurrentMemberIndex());
-
+        }
+        if (result.getCount() > VoteConstant.DEFAULT_RATE * totalCount) {
+            this.mkSureRound(result.getRoundIndex(), extendsData.getRoundStartTime(), extendsData.getPackingIndexOfRound());
         }
         result = pbftData.getVote2LargestItem();
 
@@ -362,7 +363,10 @@ public class BlockVoter implements Runnable {
             msg.setCurrentMemberIndex(message.getCurrentMemberIndex());
             this.signAndBroadcast(self, msg);
             cache.addVote2(message.getHeight(), message.getTimes(), message.getBlockHash(), AddressTool.getStringAddressByBytes(self.getAgent().getPackingAddress()), msg.getRoundIndex(), msg.getRoundStartTime(), msg.getCurrentMemberIndex());
-            this.mkSureRound(message.getRoundIndex(), message.getRoundStartTime(), message.getCurrentMemberIndex());
+        }
+
+        if (result.getCount() > VoteConstant.DEFAULT_RATE * this.pocRound.getMemberCount()) {
+            this.mkSureRound(result.getRoundIndex(), message.getRoundStartTime(), message.getCurrentMemberIndex());
         }
         result = pbftData.getVote2LargestItem();
         if (result.getCount() > VoteConstant.DEFAULT_RATE * this.pocRound.getMemberCount()) {
@@ -451,6 +455,8 @@ public class BlockVoter implements Runnable {
                 msg.setCurrentMemberIndex(message.getCurrentMemberIndex());
                 this.signAndBroadcast(self, msg);
                 cache.addVote2(message.getHeight(), message.getTimes(), message.getBlockHash(), AddressTool.getStringAddressByBytes(self.getAgent().getPackingAddress()), message.getRoundIndex(), message.getRoundStartTime(), message.getCurrentMemberIndex());
+            }
+            if (null != self && result.getCount() > VoteConstant.DEFAULT_RATE * totalCount) {
                 this.mkSureRound(message.getRoundIndex(), message.getRoundStartTime(), message.getCurrentMemberIndex());
             }
             realResult = pbftData.getVote2LargestItem();
