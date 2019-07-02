@@ -364,7 +364,7 @@ public class PunishManager {
                 redPunishData.setAddress(address);
                 redPunishData.setReasonCode(PunishReasonEnum.TOO_MUCH_YELLOW_PUNISH.getCode());
                 redPunishTransaction.setTxData(redPunishData.serialize());
-                redPunishTransaction.setTime(self.getEndTime() + round.getOffset());
+                redPunishTransaction.setTime(self.getEndTime());
                 CoinData coinData = coinDataManager.getStopAgentCoinData(chain, redPunishData.getAddress(), redPunishTransaction.getTime() + chain.getConfig().getRedPublishLockTime());
                 if (coinData != null) {
                     redPunishTransaction.setCoinData(coinData.serialize());
@@ -459,8 +459,7 @@ public class PunishManager {
                     } else {
                         BlockHeader preRoundHeader = roundManager.getFirstBlockOfPreRound(chain, round.getIndex() - 1);
                         BlockExtendsData preRoundExtendsData = new BlockExtendsData(preRoundHeader.getExtend());
-                        long offset = preRoundHeader.getTime() - preBlockRoundData.getRoundStartTime() - chain.getConfig().getPackingInterval() * preBlockRoundData.getPackingIndexOfRound();
-                        preRound = roundManager.getRoundByRoundIndex(chain, preRoundExtendsData.getRoundIndex(), preRoundExtendsData.getRoundStartTime(), offset, 1);
+                        preRound = roundManager.getRoundByRoundIndex(chain, preRoundExtendsData.getRoundIndex(), preRoundExtendsData.getRoundStartTime(), 1);
                     }
                 }
                 member = preRound.getMember(index + preRound.getMemberCount());
@@ -477,7 +476,7 @@ public class PunishManager {
         YellowPunishData data = new YellowPunishData();
         data.setAddressList(addressList);
         punishTx.setTxData(data.serialize());
-        punishTx.setTime(self.getEndTime() + round.getOffset());
+        punishTx.setTime(self.getEndTime());
         punishTx.setHash(NulsHash.calcHash(punishTx.serializeForHash()));
         return punishTx;
     }

@@ -7,7 +7,7 @@ public class VoteRound {
 
     private long height;
 
-    private int round;
+    private int times;
 
     private long start;
 
@@ -21,12 +21,12 @@ public class VoteRound {
         this.height = height;
     }
 
-    public int getRound() {
-        return round;
+    public int getTimes() {
+        return times;
     }
 
-    public void setRound(int round) {
-        this.round = round;
+    public void setTimes(int times) {
+        this.times = times;
     }
 
     public long getStart() {

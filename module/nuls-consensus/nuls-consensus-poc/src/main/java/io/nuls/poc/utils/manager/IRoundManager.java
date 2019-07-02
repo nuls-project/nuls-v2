@@ -31,7 +31,7 @@ public interface IRoundManager {
 
     MeetingRound getRound(Chain chain, BlockHeader header, BlockExtendsData roundData, boolean isRealTime) throws Exception;
 
-    MeetingRound getRoundByRoundIndex(Chain chain, long roundIndex, long roundStartTime, long offset, int currentMemberIndex) throws Exception;
+    MeetingRound getRoundByRoundIndex(Chain chain, long roundIndex, long roundStartTime, int currentMemberIndex) throws Exception;
 
     BlockHeader getFirstBlockOfPreRound(Chain chain, long roundIndex);
 

@@ -104,8 +104,6 @@ public class MeetingRound {
 
     private int currentMemberIndex = 1;
 
-    private long offset;
-
     private VoteRound curVoteRound;
 
     public MeetingRound getPreRound() {
@@ -267,25 +265,17 @@ public class MeetingRound {
         for (MeetingMember member : this.getMemberList()) {
             str.append(Address.fromHashs(member.getAgent().getPackingAddress()).getBase58());
             str.append(" ,order:" + member.getPackingIndexOfRound());
-            str.append(",packTime:" + new Date((member.getEndTime() + this.offset) * 1000));
+            str.append(",packTime:" + new Date((member.getEndTime()) * 1000));
             str.append(",creditVal:" + member.getAgent().getRealCreditVal());
             str.append("\n");
         }
         if (null == this.getPreRound()) {
-            return ("round:index:" + this.getIndex() + " , start:" + new Date((this.offset + this.getStartTime()) * 1000)
+            return ("round:index:" + this.getIndex() + " , start:" + new Date((this.getStartTime()) * 1000)
                     + ", netTime:(" + new Date(NulsDateUtils.getCurrentTimeMillis()).toString() + ") , currentIndex: " + currentMemberIndex + ", totalWeight : " + totalWeight + " ,members:\n" + str);
         } else {
-            return ("round:index:" + this.getIndex() + " ,preIndex:" + this.getPreRound().getIndex() + " , start:" + new Date(1000 * (this.getStartTime() + this.offset))
+            return ("round:index:" + this.getIndex() + " ,preIndex:" + this.getPreRound().getIndex() + " , start:" + new Date(1000 * (this.getStartTime()))
                     + ", netTime:(" + new Date(NulsDateUtils.getCurrentTimeMillis()).toString() + ") , totalWeight : " + totalWeight + "  , members:\n" + str);
         }
-    }
-
-    public long getOffset() {
-        return offset;
-    }
-
-    public void setOffset(long offset) {
-        this.offset = offset;
     }
 
     public int getCurrentMemberIndex() {
@@ -312,7 +302,6 @@ public class MeetingRound {
         this.memberList = null;
         this.myMember = null;
         this.currentMemberIndex = 1;
-        this.offset = 0;
         this.preRound = null;
         this.curVoteRound = null;
     }

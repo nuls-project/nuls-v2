@@ -130,7 +130,7 @@ public class RoundManager {
         return getRoundManager(chain).resetRound(chain, isRealTime);
     }
 
-    public MeetingRound createNextRound(Chain chain, BlockHeader bestBlockHeader, long roundIndex, long startTime,  MeetingRound preRound) throws Exception {
+    public MeetingRound createNextRound(Chain chain, BlockHeader bestBlockHeader, long roundIndex, long startTime, MeetingRound preRound) throws Exception {
         return getRoundManager(chain).createNextRound(chain, bestBlockHeader, roundIndex, startTime, preRound);
     }
 
@@ -148,8 +148,8 @@ public class RoundManager {
     }
 
 
-    public MeetingRound getRoundByRoundIndex(Chain chain, long roundIndex, long roundStartTime, long offset, int currentMemberIndex) throws Exception {
-        return this.getRoundManager(chain).getRoundByRoundIndex(chain, roundIndex, roundStartTime, offset, currentMemberIndex);
+    public MeetingRound getRoundByRoundIndex(Chain chain, long roundIndex, long roundStartTime, int currentMemberIndex) throws Exception {
+        return this.getRoundManager(chain).getRoundByRoundIndex(chain, roundIndex, roundStartTime, currentMemberIndex);
     }
 
 

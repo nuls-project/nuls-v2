@@ -278,7 +278,7 @@ public class PbftRoundManager implements IRoundManager {
         chain.getRoundLock().lock();
         try {
 
-            MeetingRound nextRound = this.calculationRound(chain, bestBlockHeader, roundIndex, startTime, 0, 1);
+            MeetingRound nextRound = this.calculationRound(chain, bestBlockHeader, roundIndex, startTime, 1);
             nextRound.setPreRound(preRound);
             addRound(chain, nextRound);
             return nextRound;
@@ -337,7 +337,7 @@ public class PbftRoundManager implements IRoundManager {
         if (startBlockHeader.getHeight() != 0L) {
             startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
         }
-        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, offset, currentIndexOfRound);
+        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, currentIndexOfRound);
     }
 
     /**
@@ -360,16 +360,16 @@ public class PbftRoundManager implements IRoundManager {
         if (startBlockHeader.getHeight() != 0L) {
             startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
         }
-        return calculationRound(chain, startBlockHeader, roundIndex, roundData.getRoundStartTime(), offset, roundData.getPackingIndexOfRound());
+        return calculationRound(chain, startBlockHeader, roundIndex, roundData.getRoundStartTime(), roundData.getPackingIndexOfRound());
     }
 
     @Override
-    public MeetingRound getRoundByRoundIndex(Chain chain, long roundIndex, long roundStartTime, long offset, int currentMemberIndex) throws Exception {
+    public MeetingRound getRoundByRoundIndex(Chain chain, long roundIndex, long roundStartTime, int currentMemberIndex) throws Exception {
         BlockHeader startBlockHeader = chain.getNewestHeader();
         if (startBlockHeader.getHeight() != 0L) {
             startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
         }
-        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, offset, currentMemberIndex);
+        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, currentMemberIndex);
     }
 
     /**
@@ -381,7 +381,7 @@ public class PbftRoundManager implements IRoundManager {
      * @param index            轮次下标/round index
      * @param startTime        轮次开始打包时间/start time
      */
-    private MeetingRound calculationRound(Chain chain, BlockHeader startBlockHeader, long index, long startTime, long offset, int currentMemberIndex) throws Exception {
+    private MeetingRound calculationRound(Chain chain, BlockHeader startBlockHeader, long index, long startTime, int currentMemberIndex) throws Exception {
         MeetingRound currentRound = this.getCurrentRound(chain);
         MeetingRound round;
         if (null == currentRound || currentRound.getIndex() != index) {
@@ -392,15 +392,14 @@ public class PbftRoundManager implements IRoundManager {
         }
         round.setIndex(index);
         round.setStartTime(startTime);
-        round.setOffset(offset);
         round.setCurrentMemberIndex(currentMemberIndex);
         setMemberList(chain, round, startBlockHeader);
         List<byte[]> packingAddressList = CallMethodUtils.getEncryptedAddressList(chain);
         if (!packingAddressList.isEmpty()) {
             round.calcLocalPacker(packingAddressList, chain);
         }
-        chain.getLogger().debug("当前轮次为：" + round.getIndex() + ";offset:" + round.getOffset() + ", 当前轮次开始打包时间：" + NulsDateUtils.convertDate(new Date(startTime * 1000)));
-        chain.getLogger().debug("\ncalculation||index:{},startTime:{},startHeight:{},hash:{}\n" + round.toString() + "\n\n", index, startTime * 1000, startBlockHeader.getHeight(), startBlockHeader.getHash());
+//        chain.getLogger().debug("当前轮次为：" + round.getIndex() + ";offset:" + round.getOffset() + ", 当前轮次开始打包时间：" + NulsDateUtils.convertDate(new Date(startTime * 1000)));
+//        chain.getLogger().debug("\ncalculation||index:{},startTime:{},startHeight:{},hash:{}\n" + round.toString() + "\n\n", index, startTime * 1000, startBlockHeader.getHeight(), startBlockHeader.getHash());
         return round;
     }
 

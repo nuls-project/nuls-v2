@@ -115,8 +115,8 @@ public class ConsensusProcess implements IConsensusProcess {
             try {
                 if (consensusLogger.getLogger().isDebugEnabled()) {
                     consensusLogger.debug("当前网络时间： " + NulsDateUtils.convertDate(new Date(NulsDateUtils.getCurrentTimeMillis())) + " , 我的打包开始时间: " +
-                            NulsDateUtils.convertDate(new Date((round.getOffset() + member.getStartTime()) * 1000)) + " , 我的打包结束时间: " +
-                            NulsDateUtils.convertDate(new Date((round.getOffset() + member.getEndTime()) * 1000)) + " , 当前轮开始时间: " +
+                            NulsDateUtils.convertDate(new Date((member.getStartTime()) * 1000)) + " , 我的打包结束时间: " +
+                            NulsDateUtils.convertDate(new Date((member.getEndTime()) * 1000)) + " , 当前轮开始时间: " +
                             NulsDateUtils.convertDate(new Date(round.getStartTime() * 1000)) + " , 当前轮结束开始时间: " +
                             NulsDateUtils.convertDate(new Date(round.getEndTime() * 1000)));
                 }
@@ -124,7 +124,7 @@ public class ConsensusProcess implements IConsensusProcess {
             } catch (Exception e) {
                 consensusLogger.error(e);
             }
-            while ((round.getOffset() + member.getEndTime()) > NulsDateUtils.getCurrentTimeSeconds()) {
+            while ((member.getEndTime()) > NulsDateUtils.getCurrentTimeSeconds()) {
                 try {
                     Thread.sleep(500L);
                 } catch (InterruptedException e) {
@@ -140,8 +140,8 @@ public class ConsensusProcess implements IConsensusProcess {
         if (pbft) {
             return member.getPackingIndexOfRound() == round.getCurrentMemberIndex();
         } else {
-            return (round.getOffset() + member.getStartTime()) <= NulsDateUtils.getCurrentTimeSeconds()
-                    && (round.getOffset() + member.getEndTime()) > NulsDateUtils.getCurrentTimeSeconds();
+            return (member.getStartTime()) <= NulsDateUtils.getCurrentTimeSeconds()
+                    && (member.getEndTime()) > NulsDateUtils.getCurrentTimeSeconds();
         }
     }
 
@@ -165,7 +165,7 @@ public class ConsensusProcess implements IConsensusProcess {
             return;
         }
         try {
-            CallMethodUtils.sendBlock(chain.getConfig().getChainId(), RPCUtil.encode(block.serialize()), round.getOffset() + self.getEndTime() - NulsDateUtils.getCurrentTimeSeconds());
+            CallMethodUtils.sendBlock(chain.getConfig().getChainId(), RPCUtil.encode(block.serialize()), self.getEndTime() - NulsDateUtils.getCurrentTimeSeconds());
         } catch (Exception e) {
             consensusLogger.error(e);
         }
@@ -178,7 +178,7 @@ public class ConsensusProcess implements IConsensusProcess {
      */
     private void waitReceiveNewestBlock(Chain chain, MeetingMember self, MeetingRound round) {
         long timeout = chain.getConfig().getPackingInterval() / 2;
-        long endTime = self.getStartTime() + round.getOffset() + timeout;
+        long endTime = self.getStartTime() + timeout;
         boolean hasReceiveNewestBlock;
         if (NulsDateUtils.getCurrentTimeSeconds() >= endTime) {
             return;
@@ -273,7 +273,7 @@ public class ConsensusProcess implements IConsensusProcess {
         BlockData bd = new BlockData();
         bd.setHeight(packageHeight);
         bd.setPreHash(bestBlock.getHash());
-        bd.setTime(self.getEndTime() + round.getOffset());
+        bd.setTime(self.getEndTime());
         BlockExtendsData extendsData = new BlockExtendsData();
         extendsData.setRoundIndex(round.getIndex());
         extendsData.setConsensusMemberCount(round.getMemberCount());
@@ -341,9 +341,9 @@ public class ConsensusProcess implements IConsensusProcess {
                 newBlock.getHeader().setExtend(extendsData.serialize());
             }
         }
-        consensusLogger.info("round index :" + round.getIndex() + ", offset :" + round.getOffset());
+        consensusLogger.info("round index :" + round.getIndex());
         consensusLogger.info("make block height:" + newBlock.getHeader().getHeight() + ",txCount: " + newBlock.getTxs().size() + " , block size: " + newBlock.size() + " , time:" + NulsDateUtils.convertDate(new Date(newBlock.getHeader().getTime() * 1000)) + ",packEndTime:" +
-                NulsDateUtils.convertDate(new Date((round.getOffset() + self.getEndTime()) * 1000)) + ",hash:" + newBlock.getHeader().getHash().toHex() + ",preHash:" + newBlock.getHeader().getPreHash().toHex());
+                NulsDateUtils.convertDate(new Date((self.getEndTime()) * 1000)) + ",hash:" + newBlock.getHeader().getHash().toHex() + ",preHash:" + newBlock.getHeader().getPreHash().toHex());
         return newBlock;
     }
 }
