@@ -12,7 +12,7 @@ public class VoteResultItem {
     private int count;
 
     private long roundIndex;
-    private long roundOffset;
+    private int currentMemberIndex;
     private long roundStartTime;
 
     public long getRoundIndex() {
@@ -23,12 +23,12 @@ public class VoteResultItem {
         this.roundIndex = roundIndex;
     }
 
-    public long getRoundOffset() {
-        return roundOffset;
+    public int getCurrentMemberIndex() {
+        return currentMemberIndex;
     }
 
-    public void setRoundOffset(long roundOffset) {
-        this.roundOffset = roundOffset;
+    public void setCurrentMemberIndex(int currentMemberIndex) {
+        this.currentMemberIndex = currentMemberIndex;
     }
 
     public long getRoundStartTime() {

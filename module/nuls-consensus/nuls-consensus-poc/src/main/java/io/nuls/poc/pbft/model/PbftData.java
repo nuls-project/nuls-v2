@@ -15,7 +15,7 @@ public class PbftData {
 
     private long times;
     private long roundIndex;
-    private long currentMemberIndex;
+    private int currentMemberIndex;
     private long roundStartTime;
 
     private Map<String, VoteData> voteDataList1 = new HashMap<>();
@@ -48,11 +48,11 @@ public class PbftData {
         this.roundIndex = roundIndex;
     }
 
-    public long getCurrentMemberIndex() {
+    public int getCurrentMemberIndex() {
         return currentMemberIndex;
     }
 
-    public void setCurrentMemberIndex(long currentMemberIndex) {
+    public void setCurrentMemberIndex(int currentMemberIndex) {
         this.currentMemberIndex = currentMemberIndex;
     }
 
@@ -114,6 +114,9 @@ public class PbftData {
         }
         item.setCount(max);
         item.setHash(hash);
+        item.setRoundIndex(this.roundIndex);
+        item.setRoundStartTime(this.roundStartTime);
+        item.setCurrentMemberIndex(currentMemberIndex);
         return item;
     }
 
@@ -130,6 +133,9 @@ public class PbftData {
         }
         item.setCount(max);
         item.setHash(hash);
+        item.setRoundIndex(this.roundIndex);
+        item.setRoundStartTime(this.roundStartTime);
+        item.setCurrentMemberIndex(currentMemberIndex);
         return item;
     }
 

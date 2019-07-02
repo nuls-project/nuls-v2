@@ -27,23 +27,33 @@ public class VoteMessage extends BaseBusinessMessage {
 
     private byte step = 0;
 
-    private long roundIndex;
-    /**
-     * 精确到秒
-     */
-    private long roundStartTime;
-    private int currentMemberIndex;
-
     private NulsHash blockHash;
 
-    //恶意分叉时，传递证据。
+    private byte[] sign;
+//    /**
+//     * 投空块时需要
+//     */
+//    private long roundIndex;
+//    /**
+//     * 投空块时需要
+//     * 精确到秒
+//     */
+//    private long roundStartTime;
+//    /**
+//     * 投空块时需要
+//     */
+//    private int currentMemberIndex;
+
+    /**
+     * 恶意分叉时，传递证据。
+     */
     private BlockHeader header1;
     private BlockHeader header2;
 
-    private byte[] sign;
 
-
-    //非序列化字段
+    /**
+     * 非序列化字段
+     */
     private String address;
 
     @Override
@@ -52,6 +62,9 @@ public class VoteMessage extends BaseBusinessMessage {
         stream.writeUint32(times);
         stream.write(step);
         stream.write(blockHash.getBytes());
+//        stream.writeInt64(roundIndex);
+//        stream.writeUint32(roundStartTime);
+//        stream.writeUint32(currentMemberIndex);
         stream.writeNulsData(header1);
         stream.writeNulsData(header2);
         stream.writeBytesWithLength(sign);
@@ -70,6 +83,9 @@ public class VoteMessage extends BaseBusinessMessage {
                 buffer.writeUint32(times);
                 buffer.write(step);
                 buffer.write(blockHash.getBytes());
+//                buffer.writeInt64(roundIndex);
+//                buffer.writeUint32(roundStartTime);
+//                buffer.writeUint32(currentMemberIndex);
                 buffer.writeNulsData(header1);
                 buffer.writeNulsData(header2);
             }
@@ -91,6 +107,9 @@ public class VoteMessage extends BaseBusinessMessage {
         this.times = byteBuffer.readUint32();
         this.step = byteBuffer.readByte();
         this.blockHash = byteBuffer.readHash();
+//        this.roundIndex = byteBuffer.readInt64();
+//        this.roundStartTime = byteBuffer.readUint32();
+//        this.currentMemberIndex = (int) byteBuffer.readUint32();
         this.header1 = byteBuffer.readNulsData(new BlockHeader());
         this.header2 = byteBuffer.readNulsData(new BlockHeader());
         this.sign = byteBuffer.readByLengthByte();
@@ -101,6 +120,9 @@ public class VoteMessage extends BaseBusinessMessage {
     public int size() {
         int size = 13;
         size += 32;
+        size += SerializeUtils.sizeOfInt64();
+        size += SerializeUtils.sizeOfUint32();
+        size += SerializeUtils.sizeOfUint32();
         size += SerializeUtils.sizeOfNulsData(header1);
         size += SerializeUtils.sizeOfNulsData(header2);
         size += SerializeUtils.sizeOfBytes(sign);
@@ -147,29 +169,29 @@ public class VoteMessage extends BaseBusinessMessage {
         this.sign = sign;
     }
 
-    public long getRoundIndex() {
-        return roundIndex;
-    }
-
-    public void setRoundIndex(long roundIndex) {
-        this.roundIndex = roundIndex;
-    }
-
-    public long getRoundStartTime() {
-        return roundStartTime;
-    }
-
-    public void setRoundStartTime(long roundStartTime) {
-        this.roundStartTime = roundStartTime;
-    }
-
-    public int getCurrentMemberIndex() {
-        return currentMemberIndex;
-    }
-
-    public void setCurrentMemberIndex(int currentMemberIndex) {
-        this.currentMemberIndex = currentMemberIndex;
-    }
+//    public long getRoundIndex() {
+//        return roundIndex;
+//    }
+//
+//    public void setRoundIndex(long roundIndex) {
+//        this.roundIndex = roundIndex;
+//    }
+//
+//    public long getRoundStartTime() {
+//        return roundStartTime;
+//    }
+//
+//    public void setRoundStartTime(long roundStartTime) {
+//        this.roundStartTime = roundStartTime;
+//    }
+//
+//    public int getCurrentMemberIndex() {
+//        return currentMemberIndex;
+//    }
+//
+//    public void setCurrentMemberIndex(int currentMemberIndex) {
+//        this.currentMemberIndex = currentMemberIndex;
+//    }
 
     public BlockHeader getHeader1() {
         return header1;

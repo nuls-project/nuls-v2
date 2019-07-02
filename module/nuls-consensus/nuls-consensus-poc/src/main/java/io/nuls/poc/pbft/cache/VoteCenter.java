@@ -51,9 +51,9 @@ public class VoteCenter {
         return pbftData;
     }
 
-    public PbftData addVote2(long height, long round, NulsHash hash, String address, long roundIndex, long roundStartTime, int currentMemberIndex) {
+    public PbftData addVote2(long height, long round, NulsHash hash, String address) {
         LoggerUtil.commonLog.info("step 2 : height:{}, round:{}, hash:{}, address:{}", height, round, null == hash ? hash : hash.toString(), address);
-        PbftData pbftData = getPbftData(height, round, roundIndex, roundStartTime, currentMemberIndex);
+        PbftData pbftData = getPbftData(height, round);
 
         //todo 收集恶意数据
 
@@ -68,15 +68,20 @@ public class VoteCenter {
     }
 
     private PbftData getPbftData(long height, long times, long roundIndex, long roundStartTime, int currentMemberIndex) {
+        PbftData pbftData = getPbftData(height, times);
+        pbftData.setCurrentMemberIndex(currentMemberIndex);
+        pbftData.setRoundStartTime(roundStartTime);
+        pbftData.setRoundIndex(roundIndex);
+        return pbftData;
+    }
+
+    private PbftData getPbftData(long height, long times) {
         String key = height + "_" + times;
         PbftData data = map.get(key);
         if (null == data) {
             data = new PbftData();
             data.setHeight(height);
             data.setTimes(times);
-            data.setRoundIndex(roundIndex);
-            data.setRoundStartTime(roundStartTime);
-            data.setCurrentMemberIndex(currentMemberIndex);
             map.put(key, data);
         }
         return data;
