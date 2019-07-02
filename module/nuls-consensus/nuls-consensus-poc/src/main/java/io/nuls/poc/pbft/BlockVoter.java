@@ -202,6 +202,8 @@ public class BlockVoter implements Runnable {
     }
 
     private void sureResult(long height, NulsHash hash, BlockHeader bestBlockHeader, long time) {
+        //因为投票轮次和poc轮次有1s的偏移
+        long startTime = time + 1;
         LoggerUtil.commonLog.info("=======确认区块：{}, {}", height, hash.toString());
         boolean result = CallMethodUtils.sendVerifyResult(chainId, height, hash);
         if (!result) {
@@ -214,7 +216,7 @@ public class BlockVoter implements Runnable {
                 if (null == bestBlockHeader) {
                     bestBlockHeader = chain.getNewestHeader();
                 }
-                this.pocRound = roundManager.createNextRound(chain, bestBlockHeader, pocRound.getIndex() + 1, time, pocRound);
+                this.pocRound = roundManager.createNextRound(chain, bestBlockHeader, pocRound.getIndex() + 1, startTime, pocRound);
             } catch (Exception e) {
                 LoggerUtil.commonLog.error(e);
             }
@@ -231,7 +233,7 @@ public class BlockVoter implements Runnable {
         key.setAddress(address);
         key.setHeight(hash.equals(NulsHash.EMPTY_NULS_HASH) ? height : height + 1);
         key.setPrehash(hash.equals(NulsHash.EMPTY_NULS_HASH) ? this.lastHeader.getHash() : hash);
-        key.setStartTime(pocRound.getCurVoteRound().getStart() + 1);
+        key.setStartTime(startTime + 1);
         key.setEndTime(key.getStartTime() + this.timeout);
         key.setIndexOfRound(pocRound.getCurrentMemberIndex());
         key.setSelf(pocRound.getMyMember());

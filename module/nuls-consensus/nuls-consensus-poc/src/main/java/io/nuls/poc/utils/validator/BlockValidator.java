@@ -105,7 +105,7 @@ public class BlockValidator {
     private RoundValidResult roundValidate(boolean isDownload, Chain chain, BlockHeader blockHeader, String blockHeaderHash) throws Exception {
         BlockExtendsData extendsData = new BlockExtendsData(blockHeader.getExtend());
         BlockHeader bestBlockHeader = chain.getNewestHeader();
-        BlockExtendsData bestExtendsData = new BlockExtendsData(bestBlockHeader.getExtend());
+//        BlockExtendsData bestExtendsData = new BlockExtendsData(bestBlockHeader.getExtend());
 
         RoundValidResult roundValidResult = new RoundValidResult();
 
@@ -154,10 +154,10 @@ public class BlockValidator {
             }
             currentRound = tempRound;
         }
-        if (extendsData.getRoundIndex() != currentRound.getIndex() || extendsData.getRoundStartTime() != currentRound.getStartTime()) {
-            chain.getLogger().error("block height " + blockHeader.getHeight() + " round startTime is error! hash :" + blockHeaderHash);
-            throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
-        }
+//        if (extendsData.getRoundIndex() != currentRound.getIndex() || extendsData.getRoundStartTime() != currentRound.getStartTime()) {
+//            chain.getLogger().error("block height " + blockHeader.getHeight() + " round startTime is error! hash :" + blockHeaderHash);
+//            throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
+//        }
         if (extendsData.getConsensusMemberCount() != currentRound.getMemberCount()) {
             chain.getLogger().error("block height " + blockHeader.getHeight() + " packager count is error! hash :" + blockHeaderHash);
             throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
@@ -168,10 +168,10 @@ public class BlockValidator {
             chain.getLogger().error("block height " + blockHeader.getHeight() + " packager error! hash :" + blockHeaderHash);
             throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
         }
-        if (member.getStartTime() > blockHeader.getTime()) {
-            chain.getLogger().error("block height " + blockHeader.getHeight() + " time error! hash :" + blockHeaderHash);
-            throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
-        }
+//        if (member.getStartTime() > blockHeader.getTime()) {
+//            chain.getLogger().error("block height " + blockHeader.getHeight() + " time error! hash :" + blockHeaderHash);
+//            throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
+//        }
         if (hasChangeRound) {
             roundManager.addRound(chain, currentRound);
             roundValidResult.setValidResult(true);
