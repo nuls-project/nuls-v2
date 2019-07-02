@@ -231,7 +231,7 @@ public class BlockVoter implements Runnable {
         key.setAddress(address);
         key.setHeight(hash.equals(NulsHash.EMPTY_NULS_HASH) ? height : height + 1);
         key.setPrehash(hash.equals(NulsHash.EMPTY_NULS_HASH) ? this.lastHeader.getHash() : hash);
-        key.setStartTime(key.getStartTime() + 1);
+        key.setStartTime(pocRound.getCurVoteRound().getStart() + 1);
         key.setEndTime(key.getStartTime() + this.timeout);
         key.setIndexOfRound(pocRound.getCurrentMemberIndex());
         key.setSelf(pocRound.getMyMember());
@@ -295,7 +295,7 @@ public class BlockVoter implements Runnable {
             pbftData = cache.addVote2(height, pbftData.getTimes(), message.getBlockHash(), AddressTool.getStringAddressByBytes(self.getAgent().getPackingAddress()));
         }
         if (result.getCount() > VoteConstant.DEFAULT_RATE * totalCount) {
-            this.mkSureRound(result.getRoundIndex(), extendsData.getRoundStartTime(), extendsData.getPackingIndexOfRound());
+            this.mkSureRound(result.getRoundIndex(), result.getRoundStartTime(), result.getCurrentMemberIndex());
         }
         result = pbftData.getVote2LargestItem();
 
