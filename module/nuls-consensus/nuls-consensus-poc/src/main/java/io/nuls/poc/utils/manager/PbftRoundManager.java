@@ -283,7 +283,7 @@ public class PbftRoundManager implements IRoundManager {
             int currentMemberIndex = 1;
             long now = NulsDateUtils.getCurrentTimeSeconds();
             for (MeetingMember meetingMember : nextRound.getMemberList()) {
-                if (meetingMember.getStartTime() <= (now - offset) && meetingMember.getEndTime() >= (now - offset)) {
+                if (meetingMember.getEndTime() >= (now - offset)) {
                     break;
                 }
                 currentMemberIndex++;
