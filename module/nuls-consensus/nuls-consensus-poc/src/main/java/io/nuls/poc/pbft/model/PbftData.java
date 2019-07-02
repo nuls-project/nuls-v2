@@ -2,11 +2,8 @@ package io.nuls.poc.pbft.model;
 
 import io.nuls.base.basic.AddressTool;
 import io.nuls.base.data.NulsHash;
-import io.nuls.core.model.ArraysTool;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,11 +13,10 @@ public class PbftData {
 
     private long height;
 
-    private long round;
-
-    private long startTime;
-
-    private long endTime;
+    private long times;
+    private long roundIndex;
+    private long currentMemberIndex;
+    private long roundStartTime;
 
     private Map<String, VoteData> voteDataList1 = new HashMap<>();
     private Map<String, VoteData> voteDataList2 = new HashMap<>();
@@ -36,28 +32,36 @@ public class PbftData {
         this.height = height;
     }
 
-    public long getRound() {
-        return round;
+    public long getTimes() {
+        return times;
     }
 
-    public void setRound(long round) {
-        this.round = round;
+    public void setTimes(long times) {
+        this.times = times;
     }
 
-    public long getStartTime() {
-        return startTime;
+    public long getRoundIndex() {
+        return roundIndex;
     }
 
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
+    public void setRoundIndex(long roundIndex) {
+        this.roundIndex = roundIndex;
     }
 
-    public long getEndTime() {
-        return endTime;
+    public long getCurrentMemberIndex() {
+        return currentMemberIndex;
     }
 
-    public void setEndTime(long endTime) {
-        this.endTime = endTime;
+    public void setCurrentMemberIndex(long currentMemberIndex) {
+        this.currentMemberIndex = currentMemberIndex;
+    }
+
+    public long getRoundStartTime() {
+        return roundStartTime;
+    }
+
+    public void setRoundStartTime(long roundStartTime) {
+        this.roundStartTime = roundStartTime;
     }
 
     public void addVote1Result(VoteData data) {

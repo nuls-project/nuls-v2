@@ -15,8 +15,7 @@ public class VoteMessageTest {
         VoteMessage msg1 = new VoteMessage();
         msg1.setHeight(100L);
         msg1.setStep((byte) 1);
-        msg1.setStartTime(1532345123L);
-        msg1.setRound(2);
+        msg1.setTimes(2);
         msg1.setBlockHash(NulsHash.calcHash(new byte[]{1, 1, 0, 1, 0, 1}));
         msg1.setSign(new byte[]{0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1});
         NulsHash hash1 = (NulsHash.calcHash(msg1.serializeForDigest()));

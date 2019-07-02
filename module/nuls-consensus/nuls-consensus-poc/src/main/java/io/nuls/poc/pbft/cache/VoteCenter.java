@@ -1,6 +1,5 @@
 package io.nuls.poc.pbft.cache;
 
-import io.nuls.base.basic.AddressTool;
 import io.nuls.base.data.BlockHeader;
 import io.nuls.base.data.NulsHash;
 import io.nuls.poc.pbft.message.VoteMessage;
@@ -8,7 +7,6 @@ import io.nuls.poc.pbft.model.PbftData;
 import io.nuls.poc.pbft.model.VoteData;
 import io.nuls.poc.utils.LoggerUtil;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,9 +25,9 @@ public class VoteCenter {
         this.chainId = chainId;
     }
 
-    public PbftData addVote1(long height, long round, NulsHash hash, String address, long startTime, boolean bifurcation) {
+    public PbftData addVote1(long height, long round, NulsHash hash, String address, boolean bifurcation, long roundIndex, long roundStartTime, int currentMemberIndex) {
 //        LoggerUtil.commonLog.info("====height:{}, round:{}, hash:{}, address:{}", height, round, hash.toString(), address);
-        PbftData pbftData = getPbftData(height, round, startTime);
+        PbftData pbftData = getPbftData(height, round, roundIndex, roundStartTime, currentMemberIndex);
         VoteData voteData = pbftData.getVote1ByAddress(address);
         VoteData data;
         if (null != voteData) {
@@ -53,9 +51,9 @@ public class VoteCenter {
         return pbftData;
     }
 
-    public PbftData addVote2(long height, long round, NulsHash hash, String address, long startTime) {
+    public PbftData addVote2(long height, long round, NulsHash hash, String address, long roundIndex, long roundStartTime, int currentMemberIndex) {
         LoggerUtil.commonLog.info("step 2 : height:{}, round:{}, hash:{}, address:{}", height, round, null == hash ? hash : hash.toString(), address);
-        PbftData pbftData = getPbftData(height, round, startTime);
+        PbftData pbftData = getPbftData(height, round, roundIndex, roundStartTime, currentMemberIndex);
 
         //todo 收集恶意数据
 
@@ -69,22 +67,23 @@ public class VoteCenter {
         return pbftData;
     }
 
-    private PbftData getPbftData(long height, long round, long startTime) {
-        String key = height + "_" + round;
+    private PbftData getPbftData(long height, long times, long roundIndex, long roundStartTime, int currentMemberIndex) {
+        String key = height + "_" + times;
         PbftData data = map.get(key);
         if (null == data) {
             data = new PbftData();
             data.setHeight(height);
-            data.setRound(round);
-            data.setStartTime(startTime);
-            data.setEndTime(startTime + 10);
+            data.setTimes(times);
+            data.setRoundIndex(roundIndex);
+            data.setRoundStartTime(roundStartTime);
+            data.setCurrentMemberIndex(currentMemberIndex);
             map.put(key, data);
         }
         return data;
     }
 
     public boolean contains(VoteMessage message, String address) {
-        String key = message.getRound() + "_" + message.getRound();
+        String key = message.getTimes() + "_" + message.getTimes();
         PbftData pbftData = map.get(key);
         if (null == pbftData) {
             return false;

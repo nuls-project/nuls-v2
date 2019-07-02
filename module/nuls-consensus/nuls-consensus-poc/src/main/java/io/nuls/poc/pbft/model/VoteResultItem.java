@@ -11,6 +11,34 @@ public class VoteResultItem {
 
     private int count;
 
+    private long roundIndex;
+    private long roundOffset;
+    private long roundStartTime;
+
+    public long getRoundIndex() {
+        return roundIndex;
+    }
+
+    public void setRoundIndex(long roundIndex) {
+        this.roundIndex = roundIndex;
+    }
+
+    public long getRoundOffset() {
+        return roundOffset;
+    }
+
+    public void setRoundOffset(long roundOffset) {
+        this.roundOffset = roundOffset;
+    }
+
+    public long getRoundStartTime() {
+        return roundStartTime;
+    }
+
+    public void setRoundStartTime(long roundStartTime) {
+        this.roundStartTime = roundStartTime;
+    }
+
     public NulsHash getHash() {
         return hash;
     }

@@ -23,13 +23,16 @@ public class VoteMessage extends BaseBusinessMessage {
 
     private long height;
 
-    private long round;
+    private long times;
 
     private byte step = 0;
+
+    private long roundIndex;
     /**
      * 精确到秒
      */
-    private long startTime;
+    private long roundStartTime;
+    private int currentMemberIndex;
 
     private NulsHash blockHash;
 
@@ -38,12 +41,15 @@ public class VoteMessage extends BaseBusinessMessage {
     private BlockHeader header2;
 
     private byte[] sign;
+
+
+    //非序列化字段
     private String address;
 
     @Override
     protected void serializeToStream(NulsOutputStreamBuffer stream) throws IOException {
         stream.writeInt64(height);
-        stream.writeUint32(round);
+        stream.writeUint32(times);
         stream.write(step);
         stream.write(blockHash.getBytes());
         stream.writeNulsData(header1);
@@ -61,7 +67,7 @@ public class VoteMessage extends BaseBusinessMessage {
                 bos.write(ToolsConstant.PLACE_HOLDER);
             } else {
                 buffer.writeInt64(height);
-                buffer.writeUint32(round);
+                buffer.writeUint32(times);
                 buffer.write(step);
                 buffer.write(blockHash.getBytes());
                 buffer.writeNulsData(header1);
@@ -82,7 +88,7 @@ public class VoteMessage extends BaseBusinessMessage {
     @Override
     public void parse(NulsByteBuffer byteBuffer) throws NulsException {
         this.height = byteBuffer.readInt64();
-        this.round = byteBuffer.readUint32();
+        this.times = byteBuffer.readUint32();
         this.step = byteBuffer.readByte();
         this.blockHash = byteBuffer.readHash();
         this.header1 = byteBuffer.readNulsData(new BlockHeader());
@@ -117,12 +123,12 @@ public class VoteMessage extends BaseBusinessMessage {
         this.height = height;
     }
 
-    public long getRound() {
-        return round;
+    public long getTimes() {
+        return times;
     }
 
-    public void setRound(long round) {
-        this.round = round;
+    public void setTimes(long times) {
+        this.times = times;
     }
 
     public NulsHash getBlockHash() {
@@ -141,12 +147,28 @@ public class VoteMessage extends BaseBusinessMessage {
         this.sign = sign;
     }
 
-    public long getStartTime() {
-        return startTime;
+    public long getRoundIndex() {
+        return roundIndex;
     }
 
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
+    public void setRoundIndex(long roundIndex) {
+        this.roundIndex = roundIndex;
+    }
+
+    public long getRoundStartTime() {
+        return roundStartTime;
+    }
+
+    public void setRoundStartTime(long roundStartTime) {
+        this.roundStartTime = roundStartTime;
+    }
+
+    public int getCurrentMemberIndex() {
+        return currentMemberIndex;
+    }
+
+    public void setCurrentMemberIndex(int currentMemberIndex) {
+        this.currentMemberIndex = currentMemberIndex;
     }
 
     public BlockHeader getHeader1() {
