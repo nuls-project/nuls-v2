@@ -274,21 +274,12 @@ public class PbftRoundManager implements IRoundManager {
     }
 
     @Override
-    public MeetingRound createNextRound(Chain chain, BlockHeader bestBlockHeader, long roundIndex, long startTime, long offset, MeetingRound preRound) throws Exception {
+    public MeetingRound createNextRound(Chain chain, BlockHeader bestBlockHeader, long roundIndex, long startTime, MeetingRound preRound) throws Exception {
         chain.getRoundLock().lock();
         try {
 
-            MeetingRound nextRound = this.calculationRound(chain, bestBlockHeader, roundIndex, startTime, offset, 1);
+            MeetingRound nextRound = this.calculationRound(chain, bestBlockHeader, roundIndex, startTime, 0, 1);
             nextRound.setPreRound(preRound);
-            int currentMemberIndex = 1;
-            long now = NulsDateUtils.getCurrentTimeSeconds();
-            for (MeetingMember meetingMember : nextRound.getMemberList()) {
-                if (meetingMember.getEndTime() >= (now - offset)) {
-                    break;
-                }
-                currentMemberIndex++;
-            }
-            nextRound.setCurrentMemberIndex(currentMemberIndex);
             addRound(chain, nextRound);
             return nextRound;
         } finally {

@@ -26,8 +26,8 @@ public interface IRoundManager {
     void initRound(Chain chain) throws Exception;
 
     MeetingRound resetRound(Chain chain, boolean isRealTime) throws Exception;
-    
-    MeetingRound createNextRound(Chain chain, BlockHeader bestBlockHeader, long roundIndex, long startTime, long offset, MeetingRound preRound) throws Exception;
+
+    MeetingRound createNextRound(Chain chain, BlockHeader bestBlockHeader, long roundIndex, long startTime, MeetingRound preRound) throws Exception;
 
     MeetingRound getRound(Chain chain, BlockHeader header, BlockExtendsData roundData, boolean isRealTime) throws Exception;
 

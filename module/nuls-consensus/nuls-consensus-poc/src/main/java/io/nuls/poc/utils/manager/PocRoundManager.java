@@ -284,7 +284,7 @@ public class PocRoundManager implements IRoundManager {
     }
 
     @Override
-    public MeetingRound createNextRound(Chain chain, BlockHeader bestBlockHeader, long roundIndex, long startTime, long offset, MeetingRound preRound) throws Exception {
+    public MeetingRound createNextRound(Chain chain, BlockHeader bestBlockHeader, long roundIndex, long startTime, MeetingRound preRound) throws Exception {
         return this.resetRound(chain, true);
     }
 

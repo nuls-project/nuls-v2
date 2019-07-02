@@ -218,7 +218,7 @@ public class BlockVoter implements Runnable {
                 if (null == bestBlockHeader) {
                     bestBlockHeader = chain.getNewestHeader();
                 }
-                this.pocRound = roundManager.createNextRound(chain, bestBlockHeader, pocRound.getIndex() + 1, pocRound.getEndTime() + pocRound.getOffset(), 0, pocRound);
+                this.pocRound = roundManager.createNextRound(chain, bestBlockHeader, pocRound.getIndex() + 1, pocRound.getEndTime() + pocRound.getOffset(), pocRound);
             } catch (Exception e) {
                 LoggerUtil.commonLog.error(e);
             }
@@ -316,10 +316,10 @@ public class BlockVoter implements Runnable {
         }
         if (pocRound.getIndex() == roundIndex) {
             this.roundManager.clearRound(chain, pocRound.getIndex());
-
         }
         try {
-            this.pocRound = roundManager.createNextRound(chain, chain.getNewestHeader(), roundIndex, roundStartTime, 0, pocRound);
+            LoggerUtil.commonLog.info("@@@@@index:{},start:{},");
+            this.pocRound = roundManager.createNextRound(chain, chain.getNewestHeader(), roundIndex, roundStartTime, pocRound);
         } catch (Exception e) {
             LoggerUtil.commonLog.error(e);
             return;
