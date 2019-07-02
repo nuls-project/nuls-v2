@@ -120,9 +120,9 @@ public class VoteMessage extends BaseBusinessMessage {
     public int size() {
         int size = 13;
         size += 32;
-        size += SerializeUtils.sizeOfInt64();
-        size += SerializeUtils.sizeOfUint32();
-        size += SerializeUtils.sizeOfUint32();
+//        size += SerializeUtils.sizeOfInt64();
+//        size += SerializeUtils.sizeOfUint32();
+//        size += SerializeUtils.sizeOfUint32();
         size += SerializeUtils.sizeOfNulsData(header1);
         size += SerializeUtils.sizeOfNulsData(header2);
         size += SerializeUtils.sizeOfBytes(sign);
