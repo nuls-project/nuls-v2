@@ -203,7 +203,7 @@ public class BlockVoter implements Runnable {
 
     private void sureResult(long height, NulsHash hash, BlockHeader bestBlockHeader, long time) {
         //因为投票轮次和poc轮次有1s的偏移
-        long startTime = time + 1;
+        long startTime = time + 1 + this.timeout;
         LoggerUtil.commonLog.info("=======确认区块：{}, {}", height, hash.toString());
         boolean result = CallMethodUtils.sendVerifyResult(chainId, height, hash);
         if (!result) {
