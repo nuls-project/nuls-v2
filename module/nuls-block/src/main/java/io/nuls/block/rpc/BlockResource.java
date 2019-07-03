@@ -577,7 +577,7 @@ public class BlockResource extends BaseCmd {
      * @param map
      * @return
      */
-    @CmdAnnotation(cmd = RECEIVE_VERIFY_RESULT, version = 1.0, description = "receive the result of the block validater.")
+    @CmdAnnotation(cmd = RECEIVE_VERIFY_RESULT, priority = CmdPriority.HIGH, version = 1.0, description = "receive the result of the block validater.")
     @Parameters({
             @Parameter(parameterName = "chainId", parameterType = "int", parameterDes = "链ID", canNull = false),
             @Parameter(parameterName = "blockHash", parameterType = "string", parameterDes = "本次验证结果对应的正确的区块HASH字符串(HEX)", canNull = false),
