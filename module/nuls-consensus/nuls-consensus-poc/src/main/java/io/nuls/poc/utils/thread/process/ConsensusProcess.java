@@ -180,7 +180,7 @@ public class ConsensusProcess implements IConsensusProcess {
     private void waitReceiveNewestBlock(Chain chain, MeetingMember self, MeetingRound round) {
         int waitRatio = 60;
         long timeout = chain.getConfig().getPackingInterval() * waitRatio / ConsensusConstant.VALUE_OF_ONE_HUNDRED;
-        long endTime = self.getPackStartTime() + timeout;
+        long endTime = self.getStartTime() + timeout;
         boolean hasReceiveNewestBlock;
         if (NulsDateUtils.getCurrentTimeSeconds() >= endTime) {
             return;
