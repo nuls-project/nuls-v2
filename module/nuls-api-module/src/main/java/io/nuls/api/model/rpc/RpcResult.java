@@ -32,7 +32,7 @@ public class RpcResult<T> {
 
     private String jsonrpc = "2.0";
 
-    private long id;
+    private String id;
 
     private T result;
 
@@ -46,11 +46,11 @@ public class RpcResult<T> {
         this.jsonrpc = jsonrpc;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -117,6 +117,13 @@ public class RpcResult<T> {
     public static RpcResult dataNotFound() {
         RpcResult rpcResult = new RpcResult();
         RpcResultError error = new RpcResultError(RpcErrorCode.DATA_NOT_EXISTS.getCode(), RpcErrorCode.DATA_NOT_EXISTS.getMessage(), null);
+        rpcResult.setError(error);
+        return rpcResult;
+    }
+
+    public static RpcResult chainNotReady() {
+        RpcResult rpcResult = new RpcResult();
+        RpcResultError error = new RpcResultError(RpcErrorCode.CHAIN_NOT_READY.getCode(), RpcErrorCode.CHAIN_NOT_READY.getMessage(), null);
         rpcResult.setError(error);
         return rpcResult;
     }

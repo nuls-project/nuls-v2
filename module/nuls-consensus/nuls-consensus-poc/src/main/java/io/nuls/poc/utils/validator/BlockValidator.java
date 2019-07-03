@@ -221,12 +221,11 @@ public class BlockValidator {
       */
         try {
             Transaction newYellowPunishTX = punishManager.createYellowPunishTx(chain, chain.getNewestHeader(), member, currentRound);
-            if (yellowPunishTx == null && newYellowPunishTX == null) {
-
-            } else if (yellowPunishTx == null || newYellowPunishTX == null) {
+            boolean isMatch = (yellowPunishTx == null && newYellowPunishTX == null) || (yellowPunishTx != null && newYellowPunishTX != null);
+            if(!isMatch){
                 chain.getLogger().debug("The yellow punish tx is wrong! height: " + block.getHeader().getHeight() + " , hash : " + blockHeaderHash);
                 return false;
-            } else if (!yellowPunishTx.getHash().equals(newYellowPunishTX.getHash())) {
+            }else if(yellowPunishTx != null && !yellowPunishTx.getHash().equals(newYellowPunishTX.getHash())){
                 chain.getLogger().debug("The yellow punish tx's hash is wrong! height: " + block.getHeader().getHeight() + " , hash : " + blockHeaderHash);
                 return false;
             }
@@ -271,7 +270,7 @@ public class BlockValidator {
                 }
                 boolean result = verifyRedPunish(chain, redTx);
                 if (!result) {
-                    return result;
+                    return false;
                 }
             }
             if (countOfTooMuchYP != punishAddress.size()) {

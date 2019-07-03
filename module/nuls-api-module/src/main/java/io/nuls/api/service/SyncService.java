@@ -1,7 +1,6 @@
 package io.nuls.api.service;
 
 
-import io.nuls.api.ApiContext;
 import io.nuls.api.cache.ApiCache;
 import io.nuls.api.constant.ApiConstant;
 import io.nuls.api.constant.ApiErrorCode;
@@ -19,7 +18,8 @@ import io.nuls.core.exception.NulsRuntimeException;
 import java.math.BigInteger;
 import java.util.*;
 
-import static io.nuls.api.constant.ApiConstant.*;
+import static io.nuls.api.constant.ApiConstant.DISABLE;
+import static io.nuls.api.constant.ApiConstant.TRANSFER_TO_TYPE;
 
 @Component
 public class SyncService {
@@ -322,7 +322,7 @@ public class SyncService {
 
         AccountInfo accountInfo = queryAccountInfo(chainId, input.getAddress());
         accountInfo.setTxCount(accountInfo.getTxCount() + 1);
-        AccountLedgerInfo ledgerInfo = calcBalance(input.getChainId(), input.getChainId(), input.getAssetsId(), accountInfo, tx.getFee().getValue());
+        AccountLedgerInfo ledgerInfo = calcBalance(chainId, input.getChainId(), input.getAssetsId(), accountInfo, tx.getFee().getValue());
         txRelationInfoSet.add(new TxRelationInfo(input, tx, tx.getFee().getValue(), ledgerInfo.getTotalBalance()));
 
         AgentInfo agentInfo = (AgentInfo) tx.getTxData();
@@ -587,8 +587,8 @@ public class SyncService {
                 break;
             }
         }
-        AccountLedgerInfo ledgerInfo = calcBalance(input.getChainId(), input.getChainId(), input.getAssetsId(), accountInfo, output.getAmount().add(tx.getFee().getValue()));
-        txRelationInfoSet.add(new TxRelationInfo(input, tx, ledgerInfo.getTotalBalance()));
+        AccountLedgerInfo ledgerInfo = calcBalance(chainId, input.getChainId(), input.getAssetsId(), accountInfo, output.getAmount().add(tx.getFee().getValue()));
+        txRelationInfoSet.add(new TxRelationInfo(input, tx, output.getAmount(), ledgerInfo.getTotalBalance()));
 
         AccountInfo destroyAccount = queryAccountInfo(chainId, output.getAddress());
         accountInfo.setTxCount(destroyAccount.getTxCount() + 1);
@@ -628,7 +628,7 @@ public class SyncService {
                 break;
             }
         }
-        AccountLedgerInfo ledgerInfo = calcBalance(input.getChainId(), input.getChainId(), input.getAssetsId(), accountInfo, output.getAmount().add(tx.getFee().getValue()));
+        AccountLedgerInfo ledgerInfo = calcBalance(chainId, input.getChainId(), input.getAssetsId(), accountInfo, output.getAmount().add(tx.getFee().getValue()));
         txRelationInfoSet.add(new TxRelationInfo(input, tx, ledgerInfo.getTotalBalance()));
 
         AccountInfo destroyAccount = queryAccountInfo(chainId, output.getAddress());
@@ -782,8 +782,13 @@ public class SyncService {
         long height = blockInfo.getHeader().getHeight();
 
         SyncInfo syncInfo = chainService.saveNewSyncInfo(chainId, height);
+
+        BlockHexInfo blockHexInfo = new BlockHexInfo();
+        blockHexInfo.setHeight(blockInfo.getHeader().getHeight());
+        blockHexInfo.setBlockHex(blockInfo.getBlockHex());
         //存储区块头信息
         blockService.saveBLockHeaderInfo(chainId, blockInfo.getHeader());
+        blockService.saveBlockHexInfo(chainId, blockHexInfo);
         //存储交易记录
         txService.saveTxList(chainId, blockInfo.getTxList());
         // txService.saveCoinDataList(chainId, coinDataList);
