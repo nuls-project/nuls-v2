@@ -135,24 +135,24 @@ public class BlockValidator {
                 hasChangeRound = true;
             }
         } else if (extendsData.getRoundIndex() > currentRound.getIndex()) {
-            if (extendsData.getRoundStartTime() < currentRound.getEndTime()) {
-                chain.getLogger().error("block height " + blockHeader.getHeight() + " round index and start time not match! hash :" + blockHeaderHash);
-                throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
-            }
-            if (extendsData.getRoundStartTime() > NulsDateUtils.getCurrentTimeSeconds() + chain.getConfig().getPackingInterval()) {
-                chain.getLogger().error("block height " + blockHeader.getHeight() + " round startTime is error, greater than current time! hash :" + blockHeaderHash);
-                throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
-            }
-            if (extendsData.getRoundStartTime() + (extendsData.getPackingIndexOfRound() - 1) * chain.getConfig().getPackingInterval() > NulsDateUtils.getCurrentTimeSeconds() + chain.getConfig().getPackingInterval()) {
-                chain.getLogger().error("block height " + blockHeader.getHeight() + " is the block of the future and received in advance! hash :" + blockHeaderHash);
-                throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
-            }
-            MeetingRound tempRound = roundManager.getRound(chain, blockHeader, extendsData, !isDownload);
-            if (tempRound.getIndex() > currentRound.getIndex()) {
-                tempRound.setPreRound(currentRound);
-                hasChangeRound = true;
-            }
-            currentRound = tempRound;
+//            if (extendsData.getRoundStartTime() < currentRound.getEndTime()) {
+//                chain.getLogger().error("block height " + blockHeader.getHeight() + " round index and start time not match! hash :" + blockHeaderHash);
+//                throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
+//            }
+//            if (extendsData.getRoundStartTime() > NulsDateUtils.getCurrentTimeSeconds() + chain.getConfig().getPackingInterval()) {
+//                chain.getLogger().error("block height " + blockHeader.getHeight() + " round startTime is error, greater than current time! hash :" + blockHeaderHash);
+//                throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
+//            }
+//            if (extendsData.getRoundStartTime() + (extendsData.getPackingIndexOfRound() - 1) * chain.getConfig().getPackingInterval() > NulsDateUtils.getCurrentTimeSeconds() + chain.getConfig().getPackingInterval()) {
+//                chain.getLogger().error("block height " + blockHeader.getHeight() + " is the block of the future and received in advance! hash :" + blockHeaderHash);
+//                throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
+//            }
+//            MeetingRound tempRound = roundManager.getRound(chain, blockHeader, extendsData, !isDownload);
+//            if (tempRound.getIndex() > currentRound.getIndex()) {
+//                tempRound.setPreRound(currentRound);
+//                hasChangeRound = true;
+//            }
+//            currentRound = tempRound;
         }
 //        if (extendsData.getRoundIndex() != currentRound.getIndex() || extendsData.getRoundStartTime() != currentRound.getStartTime()) {
 //            chain.getLogger().error("block height " + blockHeader.getHeight() + " round startTime is error! hash :" + blockHeaderHash);
