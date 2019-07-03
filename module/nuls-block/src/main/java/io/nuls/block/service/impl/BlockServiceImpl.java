@@ -272,11 +272,18 @@ public class BlockServiceImpl implements BlockService {
             //1.验证区块
             long startTime1 = System.nanoTime();
             Result result = verifyBlock(chainId, block, localInit, download);
+            LoggerUtil.COMMON_LOG.info("response=====" + result.getErrorCode().getCode());
             long elapsedNanos1 = System.nanoTime() - startTime1;
             commonLog.debug("1. verifyBlock time-" + elapsedNanos1);
             if (result.isFailed()) {
                 commonLog.debug("verifyBlock fail!chainId-" + chainId + ",height-" + height);
                 return false;
+            }
+            if (broadcast) {
+                broadcastBlock(chainId, block);
+            }
+            if (forward) {
+                forwardBlock(chainId, header.getHash(), null);
             }
             // 需要等待确认
             if (download == 1 && null != result.getErrorCode() && BlockErrorCode.WAIT_BLOCK_VERIFY.equals(result.getErrorCode())) {
@@ -286,13 +293,6 @@ public class BlockServiceImpl implements BlockService {
                 //todo
                 LoggerUtil.COMMON_LOG.info("没有进行投票：" + result.getErrorCode().getMsg() + ", hash:" + block.getHeader().getHash());
             }
-            if (broadcast) {
-                broadcastBlock(chainId, block);
-            }
-            if (forward) {
-                forwardBlock(chainId, header.getHash(), null);
-            }
-
 
             //99.确认区块
             return sureBlock(block, chainId, localInit, (List) result.getData(), download, broadcast, forward);

@@ -1,12 +1,14 @@
 package io.nuls.poc.rpc.cmd;
 
 import io.nuls.core.rpc.model.*;
+import io.nuls.poc.constant.ConsensusErrorCode;
 import io.nuls.poc.service.BlockService;
 import io.nuls.core.rpc.cmd.BaseCmd;
 import io.nuls.core.rpc.model.message.Response;
 import io.nuls.core.basic.Result;
 import io.nuls.core.core.annotation.Autowired;
 import io.nuls.core.core.annotation.Component;
+import io.nuls.poc.utils.LoggerUtil;
 
 import java.util.Map;
 
@@ -53,7 +55,7 @@ public class BlockCmd extends BaseCmd {
         if (result.isFailed()) {
             return failed(result.getErrorCode());
         }
-        return success(result.getData());
+        return success(result.getData(), result.getErrorCode().getCode());
     }
 
     /**

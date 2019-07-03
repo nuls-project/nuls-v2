@@ -252,6 +252,9 @@ public class BlockVoter implements Runnable {
         } catch (NulsException e) {
             LoggerUtil.commonLog.error(e);
             return e.getErrorCode();
+        } catch (Exception e) {
+            LoggerUtil.commonLog.error(e);
+            return null;
         } finally {
             lock.unlock();
         }
@@ -302,6 +305,7 @@ public class BlockVoter implements Runnable {
         result = pbftData.getVote2LargestItem();
 
         if (result.getCount() > VoteConstant.DEFAULT_RATE * totalCount) {
+            LoggerUtil.commonLog.info("=====准备确认；" + result.getHash());
             this.sureResult(height, result.getHash(), cache.getBlockHeader(height, result.getHash()), this.pocRound.getCurVoteRound().getStart());
         }
         return code;
@@ -381,6 +385,8 @@ public class BlockVoter implements Runnable {
         try {
             lock.lock();
             this.realRecieveVote(nodeId, message, address);
+        } catch (Exception e) {
+            LoggerUtil.commonLog.error(e);
         } finally {
             lock.unlock();
         }
