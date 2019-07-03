@@ -39,6 +39,7 @@ import io.nuls.block.storage.ChainStorageService;
 import io.nuls.block.thread.BlockSaver;
 import io.nuls.block.utils.BlockUtil;
 import io.nuls.block.utils.ChainGenerator;
+import io.nuls.block.utils.LoggerUtil;
 import io.nuls.core.basic.Result;
 import io.nuls.core.constant.TxType;
 import io.nuls.core.core.annotation.Autowired;
@@ -258,12 +259,10 @@ public class BlockServiceImpl implements BlockService {
     }
 
     private boolean saveBlock(int chainId, Block block, boolean localInit, int download, boolean needLock, boolean broadcast, boolean forward) {
-        long startTime = System.nanoTime();
         ChainContext context = ContextManager.getContext(chainId);
         NulsLogger commonLog = context.getLogger();
         BlockHeader header = block.getHeader();
         long height = header.getHeight();
-        NulsHash hash = header.getHash();
         StampedLock lock = context.getLock();
         long l = 0;
         if (needLock) {
@@ -282,14 +281,18 @@ public class BlockServiceImpl implements BlockService {
             // 需要等待确认
             if (download == 1 && null != result.getErrorCode() && BlockErrorCode.WAIT_BLOCK_VERIFY.equals(result.getErrorCode())) {
                 BlockSaverManager.getBlockSaver(chainId).addBlock(block, (List) result.getData());
-                if (broadcast) {
-                    broadcastBlock(chainId, block);
-                }
-                if (forward) {
-                    forwardBlock(chainId, header.getHash(), null);
-                }
                 return true;
+            } else {
+                //todo
+                LoggerUtil.COMMON_LOG.info("没有进行投票：" + result.getErrorCode().getMsg() + ", hash:" + block.getHeader().getHash());
             }
+            if (broadcast) {
+                broadcastBlock(chainId, block);
+            }
+            if (forward) {
+                forwardBlock(chainId, header.getHash(), null);
+            }
+
 
             //99.确认区块
             return sureBlock(block, chainId, localInit, (List) result.getData(), download, broadcast, forward);
