@@ -163,11 +163,11 @@ public class BlockValidator {
             throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
         }
         // 验证打包人是否正确
-        MeetingMember member = currentRound.getMember(extendsData.getPackingIndexOfRound());
-        if (!Arrays.equals(member.getAgent().getPackingAddress(), blockHeader.getPackingAddress(chain.getConfig().getChainId()))) {
-            chain.getLogger().error("block height " + blockHeader.getHeight() + " packager error! hash :" + blockHeaderHash);
-            throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
-        }
+//        MeetingMember member = currentRound.getMember(extendsData.getPackingIndexOfRound());
+//        if (!Arrays.equals(member.getAgent().getPackingAddress(), blockHeader.getPackingAddress(chain.getConfig().getChainId()))) {
+//            chain.getLogger().error("block height " + blockHeader.getHeight() + " packager error! hash :" + blockHeaderHash);
+//            throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
+//        }
 //        if (member.getStartTime() > blockHeader.getTime()) {
 //            chain.getLogger().error("block height " + blockHeader.getHeight() + " time error! hash :" + blockHeaderHash);
 //            throw new NulsException(ConsensusErrorCode.BLOCK_ROUND_VALIDATE_ERROR);
