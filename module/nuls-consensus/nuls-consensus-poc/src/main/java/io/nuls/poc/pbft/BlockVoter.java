@@ -233,7 +233,7 @@ public class BlockVoter implements Runnable {
         key.setAddress(address);
         key.setHeight(hash.equals(NulsHash.EMPTY_NULS_HASH) ? height : height + 1);
         key.setPrehash(hash.equals(NulsHash.EMPTY_NULS_HASH) ? this.lastHeader.getHash() : hash);
-        key.setStartTime(startTime + 1);
+        key.setStartTime(startTime);
         key.setEndTime(key.getStartTime() + this.timeout);
         key.setIndexOfRound(pocRound.getCurrentMemberIndex());
         key.setSelf(pocRound.getMyMember());
