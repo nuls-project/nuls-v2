@@ -1,7 +1,7 @@
 /**
  * MIT License
  * <p>
- * Copyright (c) 2017-2019 nuls.io
+ * Copyright (c) 2017-2018 nuls.io
  * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,36 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package io.nuls.contract.model.dto;
 
-import io.nuls.contract.vm.program.ProgramMethod;
-import io.nuls.core.rpc.model.ApiModel;
-import io.nuls.core.rpc.model.ApiModelProperty;
+package io.nuls.transaction.token;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 /**
- * @author: PierreLuo
- * @date: 2018/8/15
+ * @author: Charlie
+ * @date: 2019/7/4
  */
-@ApiModel
-public class ContractConstructorInfoDto {
-    @ApiModelProperty(description = "合约构造函数详情")
-    private ProgramMethod constructor;
-    @ApiModelProperty(description = "是否是NRC20合约")
-    private boolean nrc20;
+@JsonAutoDetect
+public class AccountDataBetaOne {
 
-    public ProgramMethod getConstructor() {
-        return constructor;
+    private String addressV1;
+
+    private long balance;
+
+    private String addressV2;
+
+    public String getAddressV1() {
+        return addressV1;
     }
 
-    public void setConstructor(ProgramMethod constructor) {
-        this.constructor = constructor;
+    public void setAddressV1(String addressV1) {
+        this.addressV1 = addressV1;
     }
 
-    public boolean isNrc20() {
-        return nrc20;
+    public long getBalance() {
+        return balance;
     }
 
-    public void setNrc20(boolean nrc20) {
-        this.nrc20 = nrc20;
+    public void setBalance(long balance) {
+        this.balance = balance;
+    }
+
+    public String getAddressV2() {
+        return addressV2;
+    }
+
+    public void setAddressV2(String addressV2) {
+        this.addressV2 = addressV2;
     }
 }

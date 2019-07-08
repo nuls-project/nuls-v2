@@ -47,4 +47,5 @@ public interface ConsensusErrorCode extends CommonCodeConstanst {
 
     ErrorCode WAIT_BLOCK_VERIFY = ErrorCode.init("bl_0018");
     ErrorCode CONFLICT_ERROR = ErrorCode.init("cs_0039");
+    ErrorCode FEE_NOT_ENOUGH = ErrorCode.init("cs_0040");
 }

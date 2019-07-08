@@ -290,12 +290,7 @@ public class ConsensusProcess implements IConsensusProcess {
          * 检查组装交易过程中是否收到新区块
          * Verify that new blocks are received halfway through packaging
          * */
-        bestBlock = chain.getNewestHeader();
         long realPackageHeight = bestBlock.getHeight() + 1;
-        if (!(bd.getPreHash().equals(bestBlock.getHash()) && realPackageHeight > packageHeight)) {
-            bd.setHeight(realPackageHeight);
-            bd.setPreHash(bestBlock.getHash());
-        }
 
         BlockExtendsData bestExtendsData = new BlockExtendsData(bestBlock.getExtend());
         boolean stateRootIsNull = false;
@@ -336,7 +331,7 @@ public class ConsensusProcess implements IConsensusProcess {
         bestBlock = chain.getNewestHeader();
         if (!newBlock.getHeader().getPreHash().equals(bestBlock.getHash())) {
             newBlock.getHeader().setPreHash(bestBlock.getHash());
-            newBlock.getHeader().setHeight(bestBlock.getHeight());
+            newBlock.getHeader().setHeight(bestBlock.getHeight()+1);
             if (stateRootIsNull) {
                 bestExtendsData = new BlockExtendsData(bestBlock.getExtend());
                 extendsData.setStateRoot(bestExtendsData.getStateRoot());
