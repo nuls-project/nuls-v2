@@ -22,10 +22,7 @@ import io.nuls.poc.utils.enumeration.PunishType;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * 轮次信息管理类
@@ -36,6 +33,7 @@ import java.util.List;
  */
 @Component
 public class PocRoundManager implements IRoundManager {
+
     /**
      * 添加轮次信息到轮次列表中
      * Add Round Information to Round List
@@ -64,7 +62,6 @@ public class PocRoundManager implements IRoundManager {
      * @param roundIndex 回滚到指定轮次
      * @param chain      链信息
      */
-    @Override
     public void rollBackRound(Chain chain, long roundIndex) {
         List<MeetingRound> roundList = chain.getRoundList();
         for (int index = roundList.size() - 1; index >= 0; index--) {
@@ -84,7 +81,6 @@ public class PocRoundManager implements IRoundManager {
      * @param count 保留几轮轮次信息/Keep several rounds of information
      * @return boolean
      */
-    @Override
     public boolean clearRound(Chain chain, int count) {
         List<MeetingRound> roundList = chain.getRoundList();
         if (roundList.size() > count) {
@@ -103,7 +99,6 @@ public class PocRoundManager implements IRoundManager {
      * @param roundIndex 保留几轮轮次信息/Keep several rounds of information
      * @return boolean
      */
-    @Override
     public boolean clearRound(Chain chain, long roundIndex) {
         List<MeetingRound> roundList = chain.getRoundList();
         MeetingRound round;
@@ -126,7 +121,6 @@ public class PocRoundManager implements IRoundManager {
      * @param roundIndex 轮次下标/round index
      * @return MeetingRound
      */
-    @Override
     public MeetingRound getRoundByIndex(Chain chain, long roundIndex) {
         List<MeetingRound> roundList = chain.getRoundList();
         MeetingRound round;
@@ -147,7 +141,6 @@ public class PocRoundManager implements IRoundManager {
      *
      * @param chain chain info
      */
-    @Override
     public void checkIsNeedReset(Chain chain) throws Exception {
         /*
         1.如果本地不存在轮次信息,则初始化本地轮次信息
@@ -202,7 +195,6 @@ public class PocRoundManager implements IRoundManager {
      *
      * @param chain chain info
      */
-    @Override
     public void initRound(Chain chain) throws Exception {
         //resetRound(chain,false);
         MeetingRound currentRound = resetRound(chain, false);
@@ -214,15 +206,14 @@ public class PocRoundManager implements IRoundManager {
             BlockHeader newestHeader = chain.getNewestHeader();
             BlockExtendsData extendsData = new BlockExtendsData(newestHeader.getExtend());
             List<BlockHeader> blockHeaderList = chain.getBlockHeaderList();
-            BlockHeader blockHeader = newestHeader;
             for (int i = blockHeaderList.size() - 1; i >= 0; i--) {
-                blockHeader = blockHeaderList.get(i);
+                BlockHeader blockHeader = blockHeaderList.get(i);
                 extendsData = new BlockExtendsData(blockHeader.getExtend());
                 if (extendsData.getRoundIndex() < currentRound.getIndex()) {
                     break;
                 }
             }
-            MeetingRound preRound = getRound(chain, blockHeader, extendsData, false);
+            MeetingRound preRound = getRound(chain, extendsData, false);
             currentRound.setPreRound(preRound);
         }
     }
@@ -235,7 +226,6 @@ public class PocRoundManager implements IRoundManager {
      * @param isRealTime 是否根据最新时间计算轮次/Whether to calculate rounds based on current time
      * @return MeetingRound
      */
-    @Override
     public MeetingRound resetRound(Chain chain, boolean isRealTime) throws Exception {
         chain.getRoundLock().lock();
         try {
@@ -247,7 +237,7 @@ public class PocRoundManager implements IRoundManager {
                 the next round of information needs to be calculated.
                 */
                 if (round == null || round.getEndTime() < NulsDateUtils.getCurrentTimeSeconds()) {
-                    MeetingRound nextRound = getRound(chain, null, null, true);
+                    MeetingRound nextRound = getRound(chain, null, true);
                     nextRound.setPreRound(round);
                     addRound(chain, nextRound);
                     round = nextRound;
@@ -266,7 +256,7 @@ public class PocRoundManager implements IRoundManager {
             if (round != null && extendsData.getRoundIndex() == round.getIndex() && extendsData.getPackingIndexOfRound() != extendsData.getConsensusMemberCount()) {
                 return round;
             }
-            MeetingRound nextRound = getRound(chain, blockHeader, extendsData, false);
+            MeetingRound nextRound = getRound(chain, extendsData, false);
             /*
             如果当前轮次不为空且计算出的下一轮次下标小于当前轮次下标则直接返回计算出的下一轮次信息
             If the current round is not empty and the calculated next round subscript is less than the current round subscript,
@@ -288,6 +278,20 @@ public class PocRoundManager implements IRoundManager {
         return this.resetRound(chain, true);
     }
 
+    @Override
+    public MeetingRound getRound(Chain chain, BlockHeader header, BlockExtendsData roundData, boolean isRealTime) throws Exception {
+        return this.getRound(chain, roundData, isRealTime);
+    }
+
+    @Override
+    public MeetingRound getRoundByRoundIndex(Chain chain, long roundIndex, long roundStartTime, int currentMemberIndex) throws Exception {
+        BlockHeader startBlockHeader = chain.getNewestHeader();
+        if (startBlockHeader.getHeight() != 0L) {
+            startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
+        }
+        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, currentMemberIndex);
+    }
+
     /**
      * 获取下一轮的轮次信息
      * Get the next round of round objects
@@ -297,8 +301,7 @@ public class PocRoundManager implements IRoundManager {
      * @param isRealTime 是否根据最新时间计算轮次/Whether to calculate rounds based on current time
      * @return MeetingRound
      */
-    @Override
-    public MeetingRound getRound(Chain chain, BlockHeader header, BlockExtendsData roundData, boolean isRealTime) throws Exception {
+    public MeetingRound getRound(Chain chain, BlockExtendsData roundData, boolean isRealTime) throws Exception {
         chain.getRoundLock().lock();
         try {
             if (isRealTime && roundData == null) {
@@ -306,11 +309,45 @@ public class PocRoundManager implements IRoundManager {
             } else if (!isRealTime && roundData == null) {
                 return getRoundByNewestBlock(chain);
             } else {
-                return getRoundByExpectedRound(chain, header, roundData);
+                return getRoundByExpectedRound(chain, roundData);
             }
         } finally {
             chain.getRoundLock().unlock();
         }
+    }
+
+    public MeetingRound getRoundByTime(Chain chain, long time) throws Exception {
+        int blockHeaderSize = chain.getBlockHeaderList().size();
+        for (int index = blockHeaderSize - 1; index >= 0; index--) {
+            BlockHeader blockHeader = chain.getBlockHeaderList().get(index);
+            if (blockHeader.getTime() <= time) {
+                BlockExtendsData blockExtendsData = new BlockExtendsData();
+                blockExtendsData.parse(blockHeader.getExtend(), 0);
+                long roundStartTime = blockExtendsData.getRoundStartTime();
+                long roundEndTime = roundStartTime + chain.getConfig().getPackingInterval() * blockExtendsData.getConsensusMemberCount();
+                if (roundStartTime <= time) {
+                    if (roundEndTime >= time) {
+                        return getRound(chain, blockExtendsData, false);
+                    } else {
+                        int realIndex = index + 1;
+                        while (realIndex <= blockHeaderSize - 1) {
+                            blockExtendsData.parse(chain.getBlockHeaderList().get(realIndex).getExtend(), 0);
+                            roundStartTime = blockExtendsData.getRoundStartTime();
+                            roundEndTime = roundStartTime + chain.getConfig().getPackingInterval() * blockExtendsData.getConsensusMemberCount();
+                            if (roundStartTime > time) {
+                                return null;
+                            }
+                            if (roundEndTime >= time) {
+                                return getRound(chain, blockExtendsData, false);
+                            }
+                            realIndex++;
+                        }
+                        return null;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
 
@@ -345,7 +382,6 @@ public class PocRoundManager implements IRoundManager {
         找到需计算的轮次下标及轮次开始时间,如果当前时间<本地最新区块时间，则表示需计算轮次就是本地最新区块轮次
         Find the rounds subscripts to be calculated and the start time of rounds
         */
-        int currentIndex = 1;
         if (nowTime < bestRoundEndTime) {
             index = bestRoundData.getRoundIndex();
             startTime = bestRoundData.getRoundStartTime();
@@ -358,10 +394,8 @@ public class PocRoundManager implements IRoundManager {
             int diffRoundCount = (int) (diffTime / (consensusMemberCount * packingInterval));
             index = bestRoundData.getRoundIndex() + diffRoundCount + 1;
             startTime = bestRoundEndTime + diffRoundCount * consensusMemberCount * packingInterval;
-
-            currentIndex = (int) ((nowTime - startTime) / chain.getConfig().getPackingInterval() + 1);
         }
-        return calculationRound(chain, startBlockHeader, index, startTime, currentIndex);
+        return calculationRound(chain, startBlockHeader, index, startTime);
     }
 
     /**
@@ -376,35 +410,33 @@ public class PocRoundManager implements IRoundManager {
         BlockExtendsData extendsData = new BlockExtendsData(bestBlockHeader.getExtend());
         extendsData.setRoundStartTime(extendsData.getRoundEndTime(chain.getConfig().getPackingInterval()));
         extendsData.setRoundIndex(extendsData.getRoundIndex() + 1);
-        return getRoundByExpectedRound(chain, bestBlockHeader, extendsData);
+        return getRoundByExpectedRound(chain, extendsData);
     }
 
     /**
      * 根据指定区块数据计算所在轮次信息
      * Calculate next round information based on the latest block entity
      *
-     * @param chain           chain info
-     * @param bestBlockHeader
-     * @param roundData       区块里的轮次信息/block extends entity
+     * @param chain     chain info
+     * @param roundData 区块里的轮次信息/block extends entity
      * @return MeetingRound
      */
-    private MeetingRound getRoundByExpectedRound(Chain chain, BlockHeader bestBlockHeader, BlockExtendsData roundData) throws Exception {
+    private MeetingRound getRoundByExpectedRound(Chain chain, BlockExtendsData roundData) throws Exception {
         BlockHeader startBlockHeader = chain.getNewestHeader();
         long roundIndex = roundData.getRoundIndex();
         long roundStartTime = roundData.getRoundStartTime();
         if (startBlockHeader.getHeight() != 0L) {
             startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
         }
-        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, roundData.getPackingIndexOfRound());
+        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime);
     }
 
-    @Override
-    public MeetingRound getRoundByRoundIndex(Chain chain, long roundIndex, long roundStartTime, int currentMemberIndex) throws Exception {
+    public MeetingRound getRoundByRoundIndex(Chain chain, long roundIndex, long roundStartTime) throws Exception {
         BlockHeader startBlockHeader = chain.getNewestHeader();
         if (startBlockHeader.getHeight() != 0L) {
             startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
         }
-        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, currentMemberIndex);
+        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime);
     }
 
     /**
@@ -417,17 +449,16 @@ public class PocRoundManager implements IRoundManager {
      * @param startTime        轮次开始打包时间/start time
      */
     @SuppressWarnings("unchecked")
-    private MeetingRound calculationRound(Chain chain, BlockHeader startBlockHeader, long index, long startTime, int currentMemberIndex) throws Exception {
+    private MeetingRound calculationRound(Chain chain, BlockHeader startBlockHeader, long index, long startTime) throws Exception {
         MeetingRound round = new MeetingRound();
         round.setIndex(index);
         round.setStartTime(startTime);
-        round.setCurrentMemberIndex(currentMemberIndex);
         setMemberList(chain, round, startBlockHeader);
         List<byte[]> packingAddressList = CallMethodUtils.getEncryptedAddressList(chain);
         if (!packingAddressList.isEmpty()) {
             round.calcLocalPacker(packingAddressList, chain);
         }
-        chain.getLogger().debug("当前轮次为：" + round.getIndex() + ", 当前轮次开始打包时间：" + NulsDateUtils.convertDate(new Date(startTime * 1000)));
+        chain.getLogger().debug("当前轮次为：" + round.getIndex() + ";当前轮次开始打包时间：" + NulsDateUtils.convertDate(new Date(startTime * 1000)));
         chain.getLogger().debug("\ncalculation||index:{},startTime:{},startHeight:{},hash:{}\n" + round.toString() + "\n\n", index, startTime * 1000, startBlockHeader.getHeight(), startBlockHeader.getHash());
         return round;
     }
@@ -639,7 +670,6 @@ public class PocRoundManager implements IRoundManager {
      * @param chain      chain info
      * @param roundIndex 轮次下标
      */
-    @Override
     public BlockHeader getFirstBlockOfPreRound(Chain chain, long roundIndex) {
         BlockHeader firstBlockHeader = null;
         long startRoundIndex = 0L;
@@ -694,5 +724,76 @@ public class PocRoundManager implements IRoundManager {
             }
         }
         return count;
+    }
+
+
+    /**
+     * 查询两轮次之间新增的共识节点和注销的共识节点
+     * New consensus nodes and unregistered consensus nodes between queries
+     *
+     * @param chain              chain
+     * @param lastExtendsData    上一轮的轮次信息
+     * @param currentExtendsData 本轮轮次信息
+     * @return 两轮次之间节点变化信息
+     */
+    public Map<String, List<String>> getAgentChangeInfo(Chain chain, BlockExtendsData lastExtendsData, BlockExtendsData currentExtendsData) {
+        Map<String, List<String>> resultMap = new HashMap<>(2);
+        List<String> registerAgentList;
+        List<String> cancelAgentList;
+        long lastRoundIndex = -1;
+        if (lastExtendsData != null) {
+            lastRoundIndex = lastExtendsData.getRoundIndex();
+        }
+        long currentRoundIndex = currentExtendsData.getRoundIndex();
+        MeetingRound lastRound = null;
+        MeetingRound currentRound;
+        try {
+            if (lastRoundIndex != -1) {
+                lastRound = getRoundByIndex(chain, lastRoundIndex);
+                if (lastRound == null) {
+                    lastRound = getRound(chain, lastExtendsData, false);
+                }
+            }
+            currentRound = getRoundByIndex(chain, currentRoundIndex);
+            if (currentRound == null) {
+                currentRound = getRound(chain, currentExtendsData, false);
+            }
+            registerAgentList = getAgentChangeList(lastRound, currentRound, true);
+            cancelAgentList = getAgentChangeList(lastRound, currentRound, false);
+        } catch (Exception e) {
+            chain.getLogger().error(e);
+            return null;
+        }
+        resultMap.put("registerAgentList", registerAgentList);
+        resultMap.put("cancelAgentList", cancelAgentList);
+        return resultMap;
+    }
+
+    /**
+     * 获取两轮次之间新增或减少的节点列表
+     *
+     * @param lastRound    上一轮
+     * @param currentRound 本轮
+     * @param isRegister   获取增加节点列表（true）或获取减少的节点列表（false）
+     * @return 节点变化列表
+     */
+    private List<String> getAgentChangeList(MeetingRound lastRound, MeetingRound currentRound, boolean isRegister) {
+        List<String> lastRoundAgentList = new ArrayList<>();
+        List<String> currentRoundAgentList = new ArrayList<>();
+        if (lastRound != null) {
+            for (MeetingMember member : lastRound.getMemberList()) {
+                lastRoundAgentList.add(AddressTool.getStringAddressByBytes(member.getAgent().getPackingAddress()));
+            }
+        }
+        for (MeetingMember member : currentRound.getMemberList()) {
+            currentRoundAgentList.add(AddressTool.getStringAddressByBytes(member.getAgent().getPackingAddress()));
+        }
+        if (isRegister) {
+            currentRoundAgentList.removeAll(lastRoundAgentList);
+            return currentRoundAgentList;
+        } else {
+            lastRoundAgentList.removeAll(currentRoundAgentList);
+            return lastRoundAgentList;
+        }
     }
 }

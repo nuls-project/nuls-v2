@@ -288,7 +288,7 @@ public class BlockServiceImpl implements BlockService {
                 logger.debug("verifyBlock fail!chainId-" + chainId + ",height-" + height);
                 return false;
             }
-            SmallBlockCacher.setStatus(chainId, hash, COMPLETE);
+            SmallBlockCacher.setStatus(chainId, block.getHeader().getHash(), COMPLETE);
             if (broadcast) {
                 broadcastBlock(chainId, block);
             }
@@ -335,9 +335,9 @@ public class BlockServiceImpl implements BlockService {
         //3.保存区块头, 保存交易
         long startTime3 = System.nanoTime();
         BlockHeaderPo blockHeaderPo = BlockUtil.toBlockHeaderPo(block);
-        boolean headerSave = false;
+        boolean headerSave;
         boolean txSave = false;
-        if (!(headerSave = blockStorageService.save(chainId, blockHeaderPo)) || !(txSave = TransactionCall.save(chainId, blockHeaderPo, block.getTxs(), localInit, (List) result.getData()))) {
+        if (!(headerSave = blockStorageService.save(chainId, blockHeaderPo)) || !(txSave = TransactionCall.save(chainId, blockHeaderPo, block.getTxs(), localInit, contractList))) {
             if (headerSave && !TransactionCall.rollback(chainId, blockHeaderPo)) {
                 throw new NulsRuntimeException(BlockErrorCode.TX_ROLLBACK_ERROR);
             }
@@ -347,7 +347,7 @@ public class BlockServiceImpl implements BlockService {
             if (!blockStorageService.setLatestHeight(chainId, height - 1)) {
                 throw new NulsRuntimeException(BlockErrorCode.UPDATE_HEIGHT_ERROR);
             }
-            logger.error("headerSave-" + headerSave + ", txsSave-" + txSave + ", chainId-" + chainId + ", height-" + height + ", hash-" + hash);
+            commonLog.error("headerSave-" + headerSave + ", txsSave-" + txSave + ", chainId-" + chainId + ", height-" + height + ", hash-" + hash);
             return false;
         }
         long elapsedNanos3 = System.nanoTime() - startTime3;
@@ -365,7 +365,7 @@ public class BlockServiceImpl implements BlockService {
             if (!blockStorageService.setLatestHeight(chainId, height - 1)) {
                 throw new NulsRuntimeException(BlockErrorCode.UPDATE_HEIGHT_ERROR);
             }
-            logger.error("csNotice false!chainId-" + chainId + ",height-" + height);
+            commonLog.error("csNotice false!chainId-" + chainId + ",height-" + height);
             return false;
         }
 
@@ -384,12 +384,12 @@ public class BlockServiceImpl implements BlockService {
             if (!blockStorageService.setLatestHeight(chainId, height - 1)) {
                 throw new NulsRuntimeException(BlockErrorCode.UPDATE_HEIGHT_ERROR);
             }
-            logger.error("ProtocolCall saveNotice fail!chainId-" + chainId + ",height-" + height);
+            commonLog.error("ProtocolCall saveNotice fail!chainId-" + chainId + ",height-" + height);
             return false;
         }
         try {
             CrossChainCall.heightNotice(chainId, height, RPCUtil.encode(block.getHeader().serialize()));
-        }catch (Exception e){
+        } catch (Exception e) {
             LoggerUtil.COMMON_LOG.error(e);
         }
 
