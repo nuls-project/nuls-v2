@@ -24,6 +24,7 @@
 
 package io.nuls.transaction;
 
+import io.nuls.base.basic.AddressTool;
 import io.nuls.base.protocol.ModuleHelper;
 import io.nuls.base.protocol.ProtocolGroupManager;
 import io.nuls.base.protocol.RegisterHelper;
@@ -36,6 +37,7 @@ import io.nuls.core.rpc.modulebootstrap.Module;
 import io.nuls.core.rpc.modulebootstrap.NulsRpcModuleBootstrap;
 import io.nuls.core.rpc.modulebootstrap.RpcModule;
 import io.nuls.core.rpc.modulebootstrap.RpcModuleState;
+import io.nuls.core.rpc.util.AddressPrefixDatas;
 import io.nuls.core.rpc.util.NulsDateUtils;
 import io.nuls.transaction.constant.TxConfig;
 import io.nuls.transaction.constant.TxConstant;
@@ -49,8 +51,6 @@ import java.util.Set;
 import static io.nuls.transaction.utils.LoggerUtil.LOG;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-;
-
 /**
  * @author: Charlie
  * @date: 2019/3/4
@@ -60,7 +60,8 @@ public class TransactionBootstrap extends RpcModule {
 
     @Autowired
     private TxConfig txConfig;
-
+    @Autowired
+    private AddressPrefixDatas addressPrefixDatas;
     @Autowired
     private ChainManager chainManager;
 
@@ -74,6 +75,8 @@ public class TransactionBootstrap extends RpcModule {
     @Override
     public void init() {
         try {
+            //初始化地址工具
+            AddressTool.init(addressPrefixDatas);
             //初始化系统参数
             initSys();
             //初始化数据库配置文件

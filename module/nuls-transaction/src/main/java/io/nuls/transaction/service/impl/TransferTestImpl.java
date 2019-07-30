@@ -32,7 +32,6 @@ import io.nuls.base.signture.P2PHKSignature;
 import io.nuls.base.signture.TransactionSignature;
 import io.nuls.core.core.annotation.Autowired;
 import io.nuls.core.core.annotation.Component;
-import io.nuls.core.crypto.HexUtil;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.log.Log;
 import io.nuls.core.model.BigIntegerUtils;
@@ -168,8 +167,8 @@ public class TransferTestImpl {
     public void mAddressTransferLjs(String addressMoney1, String addressMoney2) throws Exception {
         int count = 10000;
         Log.info("创建转账账户...");
-        List<String> list1 = doAccountsCreateAndGiveMoney(count, new BigInteger("10000000000"), addressMoney1);
-        List<String> list2 = doAccountsCreateAndGiveMoney(count, new BigInteger("10000000000"), addressMoney2);
+        List<String> list1 = doAccountsCreateAndGiveMoney(count, new BigInteger("30000000000"), addressMoney1);
+        List<String> list2 = doAccountsCreateAndGiveMoney(count, new BigInteger("30000000000"), addressMoney2);
         //睡30秒
         Thread.sleep(30000L);
         //新生成账户各执行一笔转账
@@ -496,8 +495,7 @@ public class TransferTestImpl {
         byte[] in = hash.getBytes();
         int copyEnd = in.length;
         System.arraycopy(in, (copyEnd - 8), out, 0, 8);
-        String nonce8BytesStr = HexUtil.encode(out);
-        return HexUtil.decode(nonce8BytesStr);
+        return out;
     }
 
     private Chain createChain() {

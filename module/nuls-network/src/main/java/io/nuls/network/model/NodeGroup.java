@@ -28,10 +28,12 @@ package io.nuls.network.model;
 import io.nuls.core.core.ioc.SpringLiteContext;
 import io.nuls.core.log.Log;
 import io.nuls.network.cfg.NetworkConfig;
+import io.nuls.network.constant.NetworkConstant;
 import io.nuls.network.constant.NodeConnectStatusEnum;
 import io.nuls.network.constant.NodeStatusEnum;
 import io.nuls.network.manager.NodeGroupManager;
 import io.nuls.network.model.dto.Dto;
+import io.nuls.network.model.dto.RpcCacheMessage;
 import io.nuls.network.model.po.*;
 import io.nuls.network.netty.container.NodesContainer;
 import io.nuls.network.utils.LoggerUtil;
@@ -39,7 +41,9 @@ import io.nuls.network.utils.LoggerUtil;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -51,6 +55,11 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class NodeGroup implements Dto {
     NetworkConfig networkConfig = SpringLiteContext.getBean(NetworkConfig.class);
+    /**
+     * 缓存网络组种无法及时处理的信息
+     */
+    private BlockingDeque<RpcCacheMessage> cacheMsgQueue = new LinkedBlockingDeque<>(NetworkConstant.INIT_CACHE_MSG_QUEUE_NUMBER);
+
     private long magicNumber;
     private int chainId;
     private int maxOut;
@@ -111,6 +120,15 @@ public class NodeGroup implements Dto {
 
     public String getCrossStatus() {
         return statusMap.get(String.valueOf(crossNodeContainer.getStatus()));
+    }
+
+    public NodeGroup() {
+        this.magicNumber = networkConfig.getPacketMagic();
+        this.chainId = networkConfig.getChainId();
+        this.maxIn = networkConfig.getMaxInCount();
+        this.maxOut = networkConfig.getMaxOutCount();
+        this.minAvailableCount = 0;
+
     }
 
     public NodeGroup(long magicNumber, int chainId, int maxIn, int maxOut, int minAvailableCount) {
@@ -236,6 +254,14 @@ public class NodeGroup implements Dto {
         return false;
     }
 
+    public BlockingDeque<RpcCacheMessage> getCacheMsgQueue() {
+        return cacheMsgQueue;
+    }
+
+    public void setCacheMsgQueue(BlockingDeque<RpcCacheMessage> cacheMsgQueue) {
+        this.cacheMsgQueue = cacheMsgQueue;
+    }
+
     /**
      * 1.在可用连接充足情况下，保留一个种子连接，其他的种子连接需要断开
      * 2.在可用连接不够取代种子情况下，按可用连接数来断开种子连接
@@ -257,7 +283,6 @@ public class NodeGroup implements Dto {
             //连接的种子数量大于1，并且可用连接数量大于0
             if (nodes.size() > 1 && canConnectNodesNum > 0) {
                 Collections.shuffle(nodes);
-                nodes.remove(0);
                 while (canConnectNodesNum < nodes.size()) {
                     nodes.remove(0);
                 }

@@ -72,7 +72,10 @@ public class ContractNRC20TokenSendTxTest extends BaseQuery {
         Map result = (HashMap) (((HashMap) cmdResp2.getResponseData()).get(CREATE));
         assertTrue(cmdResp2, result);
         String hash = (String) result.get("txHash");
-        Log.info("contractResult:{}", JSONUtils.obj2PrettyJson(waitGetContractTx(hash)));
+        String contractAddress = (String) result.get("contractAddress");
+        Map map = waitGetContractTx(hash);
+        Assert.assertTrue(JSONUtils.obj2PrettyJson(map), (Boolean) ((Map)(map.get("contractResult"))).get("success"));
+        Log.info("contractResult:{}", JSONUtils.obj2PrettyJson(map));
     }
 
     /**
@@ -113,19 +116,6 @@ public class ContractNRC20TokenSendTxTest extends BaseQuery {
         Log.info("contractResult:{}", JSONUtils.obj2PrettyJson(waitGetContractTx(hash)));
     }
 
-    private Map makeTokenTransferParams(String address, String toAddress, String contractAddress, BigInteger amount, String remark) {
-        Map<String, Object> params = new HashMap<>();
-        params.put(Constants.CHAIN_ID, chainId);
-        params.put("address", address);
-        params.put("toAddress", toAddress);
-        params.put("contractAddress", contractAddress);
-        params.put("password", password);
-        params.put("amount", amount);
-        params.put("remark", remark);
-        return params;
-    }
-
-
     /**
      * 删除合约
      */
@@ -163,16 +153,6 @@ public class ContractNRC20TokenSendTxTest extends BaseQuery {
         assertTrue(cmdResp2, result);
         String hash = (String) result.get("txHash");
         Log.info("contractResult:{}", JSONUtils.obj2PrettyJson(waitGetContractTx(hash)));
-    }
-    private Map makeTransferParams(String address, String toAddress, BigInteger amount, String remark) {
-        Map<String, Object> params = new HashMap<>();
-        params.put(Constants.CHAIN_ID, chainId);
-        params.put("address", address);
-        params.put("toAddress", toAddress);
-        params.put("password", password);
-        params.put("amount", amount);
-        params.put("remark", remark);
-        return params;
     }
 
 }

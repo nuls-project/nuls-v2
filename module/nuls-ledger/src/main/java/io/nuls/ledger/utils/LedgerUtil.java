@@ -17,6 +17,15 @@ import java.util.Arrays;
  * @author lanjinsheng
  */
 public class LedgerUtil {
+
+    public static String getRealAddressStr(String addrContainPre) {
+        return AddressTool.getRealAddress(addrContainPre);
+    }
+
+    public static String getRealAddressStr(byte[] coinAddr) {
+        return AddressTool.getStringAddressNoPrefix(coinAddr);
+    }
+
     /**
      * rockdb key
      *
@@ -59,8 +68,7 @@ public class LedgerUtil {
         byte[] in = tx.getHash().getBytes();
         int copyEnd = in.length;
         System.arraycopy(in, (copyEnd - 8), out, 0, 8);
-        String nonce8BytesStr = HexUtil.encode(out);
-        return nonce8BytesStr;
+        return HexUtil.encode(out);
     }
 
     public static byte[] getNonceByTx(Transaction tx) {
@@ -72,12 +80,7 @@ public class LedgerUtil {
     }
 
     public static String getNonceEncodeByTxHash(String txHash) {
-        byte[] out = new byte[8];
-        byte[] in = HexUtil.decode(txHash);
-        int copyEnd = in.length;
-        System.arraycopy(in, (copyEnd - 8), out, 0, 8);
-        String nonce8BytesStr = HexUtil.encode(out);
-        return nonce8BytesStr;
+        return txHash.substring(txHash.length() - 16);
     }
 
     public static byte[] getNonceDecodeByTxHash(String txHash) {
@@ -119,7 +122,7 @@ public class LedgerUtil {
     }
 
     public static String getAccountAssetStrKey(CoinFrom from) {
-        return AddressTool.getStringAddressByBytes(from.getAddress()) + "-" + from.getAssetsChainId() + "-" + from.getAssetsId();
+        return LedgerUtil.getRealAddressStr(from.getAddress()) + "-" + from.getAssetsChainId() + "-" + from.getAssetsId();
     }
 
     /**

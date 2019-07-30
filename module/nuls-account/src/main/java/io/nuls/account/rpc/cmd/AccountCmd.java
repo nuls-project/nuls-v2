@@ -17,6 +17,7 @@ import io.nuls.account.util.AccountTool;
 import io.nuls.account.util.Preconditions;
 import io.nuls.account.util.manager.ChainManager;
 import io.nuls.base.RPCUtil;
+import io.nuls.base.basic.AddressTool;
 import io.nuls.base.data.Address;
 import io.nuls.base.signture.BlockSignature;
 import io.nuls.base.signture.P2PHKSignature;
@@ -24,6 +25,7 @@ import io.nuls.core.basic.Page;
 import io.nuls.core.core.annotation.Autowired;
 import io.nuls.core.core.annotation.Component;
 import io.nuls.core.crypto.ECKey;
+import io.nuls.core.crypto.HexUtil;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.exception.NulsRuntimeException;
 import io.nuls.core.model.FormatValidUtils;
@@ -32,7 +34,6 @@ import io.nuls.core.parse.JSONUtils;
 import io.nuls.core.rpc.cmd.BaseCmd;
 import io.nuls.core.rpc.model.*;
 import io.nuls.core.rpc.model.message.Response;
-import org.checkerframework.checker.units.qual.A;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -208,7 +209,7 @@ public class AccountCmd extends BaseCmd {
     }
 
 
-    @CmdAnnotation(cmd = "ac_getAccountByAddress", version = 1.0, description = "根据地址获取账户/get account according to address")
+    @CmdAnnotation(cmd = "ac_getAccountByAddress", version = 1.0, description = "通过地址获取账户信息/get account info according to address")
     @Parameters(value = {
             @Parameter(parameterName = "chainId", requestType = @TypeDescriptor(value = int.class), parameterDes = "链id"),
             @Parameter(parameterName = "address", parameterType = "String", parameterDes = "账户地址")
@@ -246,6 +247,7 @@ public class AccountCmd extends BaseCmd {
         }
         return success(new SimpleAccountDTO(account));
     }
+
 
     @CmdAnnotation(cmd = "ac_getAccountList", version = 1.0, description = "获取所有账户集合,并放入缓存/query all account collections and put them in cache")
     @Parameters(value = {
@@ -285,47 +287,6 @@ public class AccountCmd extends BaseCmd {
         return success(map);
     }
 
-    @CmdAnnotation(cmd = "ac_getUnencryptedAddressList", version = 1.0, description = "获取本地未加密账户列表/Get a list of local unencrypted accounts")
-    @Parameters(value = {
-            @Parameter(parameterName = "chainId", requestType = @TypeDescriptor(value = int.class), parameterDes = "链id")
-    })
-    @ResponseData(name = "返回值", description = "返回一个Map", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
-            @Key(name = RpcConstant.LIST, valueType = List.class, valueElement = String.class, description = "返回账户地址集合"),
-    }))
-    public Response getUnencryptedAddressList(Map params) {
-        Map<String, List<String>> map = new HashMap<>(AccountConstant.INIT_CAPACITY_2);
-        List<String> unencryptedAddressList = new ArrayList<>();
-        Chain chain = null;
-        try {
-            //query all accounts
-            Object chainIdObj = params == null ? null : params.get(RpcParameterNameConstant.CHAIN_ID);
-            List<Account> accountList;
-            chain = chainManager.getChain((Integer) chainIdObj);
-            if (chain != null) {
-                //query all accounts in a chain
-                accountList = accountService.getAccountListByChain(chain.getChainId());
-            } else {
-                //query all accounts
-                accountList = accountService.getAccountList();
-            }
-            if (null == accountList) {
-                return success();
-            }
-            for (Account account : accountList) {
-                if (!account.isEncrypted()) {
-                    unencryptedAddressList.add(account.getAddress().getBase58());
-                }
-            }
-        } catch (NulsRuntimeException e) {
-            errorLogProcess(chain, e);
-            return failed(e.getErrorCode());
-        } catch (Exception e) {
-            errorLogProcess(chain, e);
-            return failed(AccountErrorCode.SYS_UNKOWN_EXCEPTION);
-        }
-        map.put(RpcConstant.LIST, unencryptedAddressList);
-        return success(map);
-    }
 
     @CmdAnnotation(cmd = "ac_getEncryptedAddressList", version = 1.0, description = "获取本地加密账户列表/Get a list of locally encrypted accounts")
     @Parameters(value = {
@@ -481,23 +442,69 @@ public class AccountCmd extends BaseCmd {
         return success(map);
     }
 
+
+    @CmdAnnotation(cmd = "ac_getPubKey", version = 1.0, description = "根据账户地址和密码,查询账户公钥/Get the account's public key")
+    @Parameters(value = {
+            @Parameter(parameterName = "chainId", requestType = @TypeDescriptor(value = int.class), parameterDes = "链id"),
+            @Parameter(parameterName = "address", parameterType = "String", parameterDes = "账户地址"),
+            @Parameter(parameterName = "password", parameterType = "String", parameterDes = "账户密码")
+    })
+    @ResponseData(name = "返回值", description = "返回一个Map，包含一个key", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
+            @Key(name = "pubKey", description = "公钥")
+    }))
+    public Response getPubKey(Map params) {
+        Chain chain = null;
+        try {
+            // check parameters
+            Object chainIdObj = params == null ? null : params.get(RpcParameterNameConstant.CHAIN_ID);
+            Object addressObj = params == null ? null : params.get(RpcParameterNameConstant.ADDRESS);
+            Object passwordObj = params == null ? null : params.get(RpcParameterNameConstant.PASSWORD);
+            if (params == null || chainIdObj == null || addressObj == null || passwordObj == null) {
+                throw new NulsRuntimeException(AccountErrorCode.NULL_PARAMETER);
+            }
+            // parse params
+            //链ID
+            chain = chainManager.getChain((Integer) chainIdObj);
+            if (null == chain) {
+                throw new NulsRuntimeException(AccountErrorCode.CHAIN_NOT_EXIST);
+            }
+            //账户地址
+            String address = (String) addressObj;
+            //账户密码
+            String password = (String) passwordObj;
+
+            //Get the account private key
+            String publicKey = accountService.getPublicKey(chain.getChainId(), address, password);
+            Map<String, Object> map = new HashMap<>(AccountConstant.INIT_CAPACITY_2);
+            map.put("pubKey", publicKey);
+            return success(map);
+        } catch (NulsRuntimeException e) {
+            errorLogProcess(chain, e);
+            return failed(e.getErrorCode());
+        } catch (Exception e) {
+            errorLogProcess(chain, e);
+            return failed(AccountErrorCode.SYS_UNKOWN_EXCEPTION);
+        }
+
+    }
+
     /**
-     * 根据地址查询账户私匙,只返回加密账户私钥，未加密账户不返回
+     * 通过账户地址和密码,查询账户私匙
      * inquire the account's private key according to the address.
      * only returns the private key of the encrypted account, and the unencrypted account does not return.
      *
      * @param params [chainId,address,password]
      * @return
      */
-    @CmdAnnotation(cmd = "ac_getPriKeyByAddress", version = 1.0, description = "根据地址查询账户私匙,只返回加密账户私钥，未加密账户不返回/Inquire the account's private key according to the address")
+    @CmdAnnotation(cmd = "ac_getPriKeyByAddress", version = 1.0, description = "通过账户地址和密码,查询账户私匙/Inquire the account's private key according to the address")
     @Parameters(value = {
             @Parameter(parameterName = "chainId", requestType = @TypeDescriptor(value = int.class), parameterDes = "链id"),
             @Parameter(parameterName = "address", parameterType = "String", parameterDes = "账户地址"),
             @Parameter(parameterName = "password", parameterType = "String", parameterDes = "账户密码")
     })
     @ResponseData(name = "返回值", description = "返回一个Map，包含二个key", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
-            @Key(name = "priKey", valueType = boolean.class, description = "私钥"),
-            @Key(name = "valid", valueType = boolean.class, description = "账户是否存在")
+            @Key(name = "priKey", description = "私钥"),
+            @Key(name = "pubKey", description = "公钥")
     }))
     public Response getPriKeyByAddress(Map params) {
         String unencryptedPrivateKey;
@@ -520,9 +527,16 @@ public class AccountCmd extends BaseCmd {
             String address = (String) addressObj;
             //账户密码
             String password = (String) passwordObj;
-
-            //Get the account private key
-            unencryptedPrivateKey = accountService.getPrivateKey(chain.getChainId(), address, password);
+            if (!AddressTool.validAddress(chain.getChainId(), address)) {
+                return failed(AccountErrorCode.ADDRESS_ERROR);
+            }
+            int chainId = chain.getChainId();
+            Account account = accountService.getAccount(chainId, address);
+            unencryptedPrivateKey = accountService.getPrivateKey(chain.getChainId(),account, password);
+            Map<String, Object> map = new HashMap<>(AccountConstant.INIT_CAPACITY_2);
+            map.put("priKey", unencryptedPrivateKey);
+            map.put("pubKey", HexUtil.encode(account.getPubKey()));
+            return success(map);
         } catch (NulsRuntimeException e) {
             errorLogProcess(chain, e);
             return failed(e.getErrorCode());
@@ -530,11 +544,7 @@ public class AccountCmd extends BaseCmd {
             errorLogProcess(chain, e);
             return failed(AccountErrorCode.SYS_UNKOWN_EXCEPTION);
         }
-        Map<String, Object> map = new HashMap<>(AccountConstant.INIT_CAPACITY_2);
-        map.put("priKey", unencryptedPrivateKey);
-        //账户是否存在
-        map.put("valid", true);
-        return success(map);
+
     }
 
     @CmdAnnotation(cmd = "ac_getAllPriKey", version = 1.0,
@@ -566,7 +576,6 @@ public class AccountCmd extends BaseCmd {
             }
             //账户密码
             String password = (String) passwordObj;
-
             //Get the account private key
             privateKeyList = accountService.getAllPrivateKey(chain.getChainId(), password);
         } catch (NulsRuntimeException e) {
@@ -845,98 +854,6 @@ public class AccountCmd extends BaseCmd {
         return success(map);
     }
 
-    @CmdAnnotation(cmd = "ac_setPassword", version = 1.0, description = "设置账户密码/Set account password")
-    @Parameters(value = {
-            @Parameter(parameterName = "chainId", requestType = @TypeDescriptor(value = int.class), parameterDes = "链id"),
-            @Parameter(parameterName = "address", parameterType = "String", parameterDes = "账户地址"),
-            @Parameter(parameterName = "password", parameterType = "String", parameterDes = "账户新密码")
-    })
-    @ResponseData(name = "返回值", description = "返回一个Map", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
-            @Key(name = RpcConstant.VALUE, valueType = boolean.class, description = "是否设置成功")
-    }))
-    public Response setPassword(Map params) {
-        Map<String, Boolean> map = new HashMap<>(AccountConstant.INIT_CAPACITY_2);
-        Chain chain = null;
-        boolean result;
-        try {
-            // check parameters
-            Object chainIdObj = params == null ? null : params.get(RpcParameterNameConstant.CHAIN_ID);
-            Object addressObj = params == null ? null : params.get(RpcParameterNameConstant.ADDRESS);
-            Object passwordObj = params == null ? null : params.get(RpcParameterNameConstant.PASSWORD);
-            if (params == null || chainIdObj == null || addressObj == null || passwordObj == null) {
-                throw new NulsRuntimeException(AccountErrorCode.NULL_PARAMETER);
-            }
-            // parse params
-            chain = chainManager.getChain((Integer) chainIdObj);
-            if (null == chain) {
-                throw new NulsRuntimeException(AccountErrorCode.CHAIN_NOT_EXIST);
-            }
-            //账户地址
-            String address = (String) addressObj;
-            //账户密码
-            String password = (String) passwordObj;
-
-            //set account password
-            result = accountService.setPassword(chain.getChainId(), address, password);
-            map.put(RpcConstant.VALUE, result);
-        } catch (NulsRuntimeException e) {
-            errorLogProcess(chain, e);
-            return failed(e.getErrorCode());
-        } catch (Exception e) {
-            errorLogProcess(chain, e);
-            return failed(AccountErrorCode.SYS_UNKOWN_EXCEPTION);
-        }
-        return success(map);
-    }
-
-    @CmdAnnotation(cmd = "ac_setOfflineAccountPassword", version = 1.0, description = "设置离线账户密码/Set offline account password")
-    @Parameters(value = {
-            @Parameter(parameterName = "chainId", requestType = @TypeDescriptor(value = int.class), parameterDes = "链id"),
-            @Parameter(parameterName = "address", parameterType = "String", parameterDes = "账户地址"),
-            @Parameter(parameterName = "password", parameterType = "String", parameterDes = "账户新密码"),
-            @Parameter(parameterName = "priKey", parameterType = "String", parameterDes = "账户私钥")
-    })
-    @ResponseData(name = "返回值", description = "返回一个Map", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
-            @Key(name = RpcConstant.ENCRYPTED_PRIKEY, description = "返回加密后的私钥")
-    }))
-    public Response setOfflineAccountPassword(Map params) {
-        Map<String, String> map = new HashMap<>(AccountConstant.INIT_CAPACITY_2);
-        Chain chain = null;
-        try {
-            // check parameters
-            Preconditions.checkNotNull(params, AccountErrorCode.NULL_PARAMETER);
-            Object chainIdObj = params.get(RpcParameterNameConstant.CHAIN_ID);
-            Object addressObj = params.get(RpcParameterNameConstant.ADDRESS);
-            Object priKeyObj = params.get(RpcParameterNameConstant.PRIKEY);
-            Object passwordObj = params.get(RpcParameterNameConstant.PASSWORD);
-            if (chainIdObj == null || addressObj == null || priKeyObj == null || passwordObj == null) {
-                throw new NulsRuntimeException(AccountErrorCode.NULL_PARAMETER);
-            }
-            // parse params
-            chain = chainManager.getChain((Integer) chainIdObj);
-            if (null == chain) {
-                throw new NulsRuntimeException(AccountErrorCode.CHAIN_NOT_EXIST);
-            }
-            //账户地址
-            String address = (String) addressObj;
-            //账户私钥
-            String priKey = (String) priKeyObj;
-            //账户密码
-            String password = (String) passwordObj;
-
-            //set account password
-            String encryptedPriKey = accountService.setOfflineAccountPassword(chain.getChainId(), address, priKey, password);
-            map.put(RpcConstant.ENCRYPTED_PRIKEY, encryptedPriKey);
-        } catch (NulsRuntimeException e) {
-            errorLogProcess(chain, e);
-            return failed(e.getErrorCode());
-        } catch (Exception e) {
-            errorLogProcess(chain, e);
-            return failed(AccountErrorCode.SYS_UNKOWN_EXCEPTION);
-        }
-        return success(map);
-    }
-
     @CmdAnnotation(cmd = "ac_updatePassword", version = 1.0, description = "根据原密码修改账户密码/Modify the account password by the original password")
     @Parameters(value = {
             @Parameter(parameterName = "chainId", requestType = @TypeDescriptor(value = int.class), parameterDes = "链id"),
@@ -1028,45 +945,6 @@ public class AccountCmd extends BaseCmd {
             //set account password
             String encryptedPriKey = accountService.changeOfflinePassword(chain.getChainId(), address, priKey, password, newPassword);
             map.put(RpcConstant.ENCRYPTED_PRIKEY, encryptedPriKey);
-        } catch (NulsRuntimeException e) {
-            errorLogProcess(chain, e);
-            return failed(e.getErrorCode());
-        } catch (Exception e) {
-            errorLogProcess(chain, e);
-            return failed(AccountErrorCode.SYS_UNKOWN_EXCEPTION);
-        }
-        return success(map);
-    }
-
-    @CmdAnnotation(cmd = "ac_isEncrypted", version = 1.0, description = "根据账户地址获取账户是否加密/Whether the account is encrypted by the account address")
-    @Parameters(value = {
-            @Parameter(parameterName = "chainId", requestType = @TypeDescriptor(value = int.class), parameterDes = "链id"),
-            @Parameter(parameterName = "address", parameterType = "String", parameterDes = "账户地址")
-    })
-    @ResponseData(name = "返回值", description = "返回一个Map", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
-            @Key(name = RpcConstant.VALUE, valueType = boolean.class, description = "是否加密")
-    }))
-    public Response isEncrypted(Map params) {
-        Map<String, Boolean> map = new HashMap<>(AccountConstant.INIT_CAPACITY_2);
-        Chain chain = null;
-        try {
-            // check parameters
-            Preconditions.checkNotNull(params, AccountErrorCode.NULL_PARAMETER);
-            Object chainIdObj = params.get(RpcParameterNameConstant.CHAIN_ID);
-            Object addressObj = params.get(RpcParameterNameConstant.ADDRESS);
-            if (chainIdObj == null || addressObj == null) {
-                throw new NulsRuntimeException(AccountErrorCode.NULL_PARAMETER);
-            }
-            // parse params
-            chain = chainManager.getChain((Integer) chainIdObj);
-            if (null == chain) {
-                throw new NulsRuntimeException(AccountErrorCode.CHAIN_NOT_EXIST);
-            }
-            //账户地址
-            String address = (String) addressObj;
-            //账户是否加密
-            boolean result = accountService.isEncrypted(chain.getChainId(), address);
-            map.put(RpcConstant.VALUE, result);
         } catch (NulsRuntimeException e) {
             errorLogProcess(chain, e);
             return failed(e.getErrorCode());
@@ -1306,7 +1184,6 @@ public class AccountCmd extends BaseCmd {
         }
         return success(map);
     }
-
 
     private void errorLogProcess(Chain chain, Exception e) {
         if (chain == null) {

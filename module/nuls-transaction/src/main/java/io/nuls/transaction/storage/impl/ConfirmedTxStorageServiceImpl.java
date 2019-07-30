@@ -184,12 +184,12 @@ public class ConfirmedTxStorageServiceImpl implements ConfirmedTxStorageService 
 
     @Override
     public boolean isExists(int chainId, NulsHash hash) {
-        return RocksDBService.keyMayExist(TxDBConstant.DB_TRANSACTION_CONFIRMED_PREFIX + chainId, hash.getBytes());
-//        byte[] txBytes = RocksDBService.get(TxDBConstant.DB_TRANSACTION_CONFIRMED_PREFIX + chainId, hash.getBytes());
-//        if (null != txBytes && txBytes.length > 0) {
-//            return true;
-//        }
-//        return false;
+//        return RocksDBService.keyMayExist(TxDBConstant.DB_TRANSACTION_CONFIRMED_PREFIX + chainId, hash.getBytes());
+        byte[] txBytes = RocksDBService.get(TxDBConstant.DB_TRANSACTION_CONFIRMED_PREFIX + chainId, hash.getBytes());
+        if (null != txBytes && txBytes.length > 0) {
+            return true;
+        }
+        return false;
     }
 
 
@@ -222,5 +222,15 @@ public class ConfirmedTxStorageServiceImpl implements ConfirmedTxStorageService 
         }
         //根据交易hash批量查询交易数据
         return RocksDBService.multiGetKeyList(TxDBConstant.DB_TRANSACTION_CONFIRMED_PREFIX + chainId, hashList);
+    }
+
+    @Override
+    public List<String> getExistKeysStr(int chainId, List<byte[]> hashList) {
+
+        List<String> list = new ArrayList<>();
+        for(byte[] hash : getExistKeys(chainId, hashList)){
+            list.add(HexUtil.encode(hash));
+        }
+        return list;
     }
 }

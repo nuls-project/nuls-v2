@@ -1,5 +1,6 @@
 package io.nuls.crosschain.nuls;
 
+import io.nuls.base.basic.AddressTool;
 import io.nuls.base.protocol.ProtocolGroupManager;
 import io.nuls.base.protocol.RegisterHelper;
 import io.nuls.core.core.annotation.Autowired;
@@ -11,12 +12,16 @@ import io.nuls.core.rpc.model.ModuleE;
 import io.nuls.core.rpc.modulebootstrap.Module;
 import io.nuls.core.rpc.modulebootstrap.NulsRpcModuleBootstrap;
 import io.nuls.core.rpc.modulebootstrap.RpcModuleState;
+import io.nuls.core.rpc.util.AddressPrefixDatas;
 import io.nuls.crosschain.base.BaseCrossChainBootStrap;
+import io.nuls.crosschain.base.message.RegisteredChainMessage;
 import io.nuls.crosschain.nuls.constant.NulsCrossChainConfig;
 import io.nuls.crosschain.nuls.constant.NulsCrossChainConstant;
 import io.nuls.crosschain.nuls.model.bo.Chain;
+import io.nuls.crosschain.nuls.rpc.call.AccountCall;
 import io.nuls.crosschain.nuls.rpc.call.ChainManagerCall;
 import io.nuls.crosschain.nuls.rpc.call.NetWorkCall;
+import io.nuls.crosschain.nuls.srorage.RegisteredCrossChainService;
 import io.nuls.crosschain.nuls.utils.manager.ChainManager;
 
 import java.lang.reflect.Field;
@@ -36,6 +41,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class CrossChainBootStrap extends BaseCrossChainBootStrap {
     @Autowired
     private NulsCrossChainConfig nulsCrossChainConfig;
+    @Autowired
+    private RegisteredCrossChainService registeredCrossChainService;
 
     @Autowired
     private ChainManager chainManager;
@@ -56,6 +63,8 @@ public class CrossChainBootStrap extends BaseCrossChainBootStrap {
         try {
             super.init();
             initSys();
+            //增加地址工具类初始化
+            AddressTool.init(new AddressPrefixDatas());
             initDB();
             /**
              * 添加RPC接口目录
@@ -93,7 +102,7 @@ public class CrossChainBootStrap extends BaseCrossChainBootStrap {
     @Override
     public boolean doStart() {
         try {
-            while (!isDependencieReady(ModuleE.NW.abbr) || !isDependencieReady(ModuleE.TX.abbr)){
+            while (!isDependencieReady(ModuleE.NW.abbr) || !isDependencieReady(ModuleE.TX.abbr)  || !isDependencieReady(ModuleE.CS.abbr)){
                 Log.debug("wait depend modules ready");
                 Thread.sleep(2000L);
             }
@@ -132,7 +141,22 @@ public class CrossChainBootStrap extends BaseCrossChainBootStrap {
              * 如果为主网，向链管理模块过去完整的跨链注册信息
              */
             if (nulsCrossChainConfig.isMainNet() && (ModuleE.CM.abbr.equals(module.getName()))) {
-                chainManager.setRegisteredCrossChainList(ChainManagerCall.getRegisteredChainInfo().getChainInfoList());
+                RegisteredChainMessage registeredChainMessage = registeredCrossChainService.get();
+                if(registeredChainMessage != null && registeredChainMessage.getChainInfoList() != null){
+                    chainManager.setRegisteredCrossChainList(registeredChainMessage.getChainInfoList());
+                }else{
+                    registeredChainMessage = ChainManagerCall.getRegisteredChainInfo();
+                    registeredCrossChainService.save(registeredChainMessage);
+                    chainManager.setRegisteredCrossChainList(registeredChainMessage.getChainInfoList());
+
+                }
+            }
+
+            /*
+             * 如果为账户模块启动，向账户模块发送链前缀
+             */
+            if (ModuleE.AC.abbr.equals(module.getName())) {
+                AccountCall.addAddressPrefix(chainManager.getPrefixList());
             }
         }catch (Exception e){
             Log.error(e);

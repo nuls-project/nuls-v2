@@ -95,7 +95,7 @@ public class Base {
     protected String toAddress34 = "tNULSeBaMvQr8dVnk3f3DPvwCYX3ctTRtrTurD";
 
     protected String createHash = "002029ca32525f635a15c82c046114657c0d8a96a7163780ac6b425b2383b240bd56";
-    protected String contractAddress = "tNULSeBaN7enLbWZxF4jZhnJ5JqrcDW1HJfZ1R";
+    protected String contractAddress = "tNULSeBaN8cW84rugvTDgSrHNUhZEaWEMERAKZ";
     protected String contractAddress0 = "tNULSeBaN7vAqBANTtVxsiFsam4NcRUbqrCpzK";
     protected String contractAddress1 = "tNULSeBaNBhqzwK2yN9FuXmNWago7vLt64xggp";
     protected String contractAddress2 = "tNULSeBaN4ahTXVo5RH1DSnUV9tXpYm3JyBqXc";
@@ -131,7 +131,7 @@ public class Base {
     protected String contractAddress32 = "tNULSeBaMx5VtE2EJTHtHueWQ1yA37EP1AGuia";
     protected String contractAddress33 = "tNULSeBaN7gkAGGdnj9hDkKgFDXDf6LnnbWpSG";
     protected String contractAddress34 = "tNULSeBaN4kWaxmgYq2oFMvQ9hq8UEdivvA7i7";
-    protected String contractAddress_nrc20 = "tNULSeBaN2g47oyHbew347cxv44iBDfxyzFfzJ";
+    protected String contractAddress_nrc20 = "tNULSeBaNARcN51M8hoBnxrpAp5zazncj89f6i";
     protected String contractAddress_nrc200 = "tNULSeBaMzThBLi2gwarkgcEdKAT8twK4KF1Uf";
     protected String contractAddress_nrc201 = "tNULSeBaN8LYBqbDhfF7cW11iu9bk1QyjNNVK6";
     protected String contractAddress_nrc202 = "tNULSeBaN9TgWh4hteRMiWKNeEumnKPJCUTh53";
@@ -251,7 +251,7 @@ public class Base {
 
     protected void assertTrue(Response cmdResp2, Map result) throws JsonProcessingException {
         if(null == result) {
-            Log.info("Contract-result:{}", JSONUtils.obj2PrettyJson(cmdResp2));
+            Log.error("Contract-result:{}", JSONUtils.obj2PrettyJson(cmdResp2));
             Assert.assertTrue(false);
         }
         Log.info("Contract-result:{}", JSONUtils.obj2PrettyJson(result));
@@ -304,13 +304,36 @@ public class Base {
         params.put(Constants.CHAIN_ID, chainId);
         params.put("sender", sender);
         params.put("value", value);
-        params.put("gasLimit", 200000L);
+        params.put("gasLimit", 2000000L);
         params.put("price", 25);
         params.put("contractAddress", contractAddress);
         params.put("methodName", methodName);
         params.put("methodDesc", methodDesc);
         params.put("args", args);
         params.put("password", password);
+        params.put("remark", remark);
+        return params;
+    }
+
+    protected Map makeTransferParams(String address, String toAddress, BigInteger amount, String remark) {
+        Map<String, Object> params = new HashMap<>();
+        params.put(Constants.CHAIN_ID, chainId);
+        params.put("address", address);
+        params.put("toAddress", toAddress);
+        params.put("password", password);
+        params.put("amount", amount);
+        params.put("remark", remark);
+        return params;
+    }
+
+    protected Map makeTokenTransferParams(String address, String toAddress, String contractAddress, BigInteger amount, String remark) {
+        Map<String, Object> params = new HashMap<>();
+        params.put(Constants.CHAIN_ID, chainId);
+        params.put("address", address);
+        params.put("toAddress", toAddress);
+        params.put("contractAddress", contractAddress);
+        params.put("password", password);
+        params.put("amount", amount);
         params.put("remark", remark);
         return params;
     }

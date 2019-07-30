@@ -32,6 +32,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.nuls.base.basic.NulsByteBuffer;
+import io.nuls.network.constant.NetworkConstant;
 import io.nuls.network.manager.ConnectionManager;
 import io.nuls.network.manager.MessageManager;
 import io.nuls.network.manager.handler.base.BaseChannelHandler;
@@ -64,6 +65,8 @@ public class ServerChannelHandler extends BaseChannelHandler {
         if (!success) {
             ctx.close();
         }
+        ctx.channel().config().setWriteBufferHighWaterMark(NetworkConstant.HIGH_WATER_MARK);
+        ctx.channel().config().setWriteBufferLowWaterMark(NetworkConstant.LOW_WATER_MARK);
 
     }
 
@@ -110,7 +113,8 @@ public class ServerChannelHandler extends BaseChannelHandler {
                 ctx.channel().close();
             }
         } catch (Exception e) {
-            throw e;
+            LoggerUtil.COMMON_LOG.error(e);
+//            throw e;
         } finally {
             buf.clear();
         }

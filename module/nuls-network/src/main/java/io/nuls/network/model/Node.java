@@ -29,9 +29,13 @@ import io.netty.channel.Channel;
 import io.nuls.network.constant.NetworkConstant;
 import io.nuls.network.manager.NodeGroupManager;
 import io.nuls.network.model.dto.Dto;
+import io.nuls.network.model.dto.PeerCacheMessage;
 import io.nuls.network.model.po.BasePo;
 import io.nuls.network.model.po.NodePo;
 import io.nuls.network.netty.listener.EventListener;
+
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * 一个peer节点可以同时为多条链使用，
@@ -105,6 +109,7 @@ public class Node implements Dto {
     private EventListener connectedListener;
     private EventListener disconnectListener;
 
+    private BlockingDeque<PeerCacheMessage> cacheSendMsgQueue = new LinkedBlockingDeque<>(NetworkConstant.INIT_CACHE_MSG_QUEUE_NUMBER);
 
     public Node(long magicNumber, String ip, int remotePort, int remoteCrossPort, int type, boolean isCrossConnect) {
         this(ip + NetworkConstant.COLON + remotePort, magicNumber, ip, remotePort, remoteCrossPort, type, isCrossConnect);
@@ -349,6 +354,14 @@ public class Node implements Dto {
 
     public void setHadShare(boolean hadShare) {
         this.hadShare = hadShare;
+    }
+
+    public BlockingDeque<PeerCacheMessage> getCacheSendMsgQueue() {
+        return cacheSendMsgQueue;
+    }
+
+    public void setCacheSendMsgQueue(BlockingDeque<PeerCacheMessage> cacheSendMsgQueue) {
+        this.cacheSendMsgQueue = cacheSendMsgQueue;
     }
 
     @Override

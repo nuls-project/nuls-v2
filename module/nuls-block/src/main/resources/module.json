@@ -13,7 +13,7 @@
   "chainSwtichThreshold": 3,
   "cacheSize": 1000,
   "heightRange": 1000,
-  "waitInterval": 50,
+  "waitInterval": 1000,
   "maxRollback": 1000,
   "consistencyNodePercent": 60,
   "minNodeAmount": 0,
@@ -28,7 +28,7 @@
   "maxLoop": 10,
   "synSleepInterval": 1000,
   "waitNetworkInterval": 5000,
-  "cachedBlockSizeLimit": 104857600,
+  "cachedBlockSizeLimit": 20971520,
   "genesisBlockPath": "",
   "cleanParam": 2
 }

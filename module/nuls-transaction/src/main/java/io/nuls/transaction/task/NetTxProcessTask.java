@@ -40,6 +40,7 @@ import io.nuls.transaction.rpc.call.NetworkCall;
 import io.nuls.transaction.rpc.call.TransactionCall;
 import io.nuls.transaction.service.TxService;
 import io.nuls.transaction.storage.UnconfirmedTxStorageService;
+import io.nuls.transaction.utils.TxDuplicateRemoval;
 import io.nuls.transaction.utils.TxUtil;
 
 import java.util.*;
@@ -63,11 +64,10 @@ public class NetTxProcessTask implements Runnable {
         try {
             process();
         } catch (Exception e) {
-            e.printStackTrace();
+            chain.getLogger().error("NetTxProcessTask Exception");
             chain.getLogger().error(e);
         }
     }
-
 
     private void process() {
         while (true) {
@@ -97,7 +97,9 @@ public class NetTxProcessTask implements Runnable {
                     }*/
                     //待打包队列map超过预定值,则不再接受处理交易,直接转发交易完整交易
                     if (TxUtil.discardTx(packableTxMapSize)) {
-                        NetworkCall.broadcastTx(chain, tx, txNetPO.getExcludeNode());
+                        //待打包队列map超过预定值, 不处理转发失败的情况
+                        String hash = tx.getHash().toHex();
+                        NetworkCall.broadcastTx(chain, tx, TxDuplicateRemoval.getExcludeNode(hash));
                         it.remove();
                         continue;
                     }
@@ -116,9 +118,9 @@ public class NetTxProcessTask implements Runnable {
                         //当节点是出块节点时, 才将交易放入待打包队列
                         packablePool.add(chain, tx);
                     }
-                    //保存到rocksdb
-                    //unconfirmedTxStorageService.putTx(chain.getChainId(), tx, txNet.getOriginalSendNanoTime());
-                    NetworkCall.forwardTxHash(chain, tx.getHash(), txNet.getExcludeNode());
+                    //网络交易不处理转发失败的情况
+                    String hash = tx.getHash().toHex();
+                    NetworkCall.forwardTxHash(chain, tx.getHash(), TxDuplicateRemoval.getExcludeNode(hash));
                     //chain.getLoggerMap().get(TxConstant.LOG_NEW_TX_PROCESS).debug("NEW TX count:{} - hash:{}", ++count, hash.toHex());
                 }
             } catch (Exception e) {

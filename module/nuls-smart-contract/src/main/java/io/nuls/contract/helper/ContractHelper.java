@@ -190,7 +190,8 @@ public class ContractHelper {
             return false;
         }
         for (ProgramMethod method : methods) {
-            if (ContractConstant.BALANCE_TRIGGER_METHOD_NAME.equals(method.getName())) {
+            if (BALANCE_TRIGGER_METHOD_NAME.equals(method.getName())
+                && BALANCE_TRIGGER_METHOD_DESC.equals(method.getDesc())) {
                 return method.isPayable();
             }
         }
@@ -546,6 +547,7 @@ public class ContractHelper {
             }
         } catch (Exception e) {
             Log.warn("contract event parse error.", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -595,6 +597,7 @@ public class ContractHelper {
             }
         } catch (Exception e) {
             Log.warn("contract event parse error.", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -618,6 +621,7 @@ public class ContractHelper {
         } catch (Exception e) {
             // skip it
             Log.error(e);
+            throw new RuntimeException(e);
         }
     }
 

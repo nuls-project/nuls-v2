@@ -35,15 +35,10 @@ public class UnconfirmedTxStorageServiceImpl implements UnconfirmedTxStorageServ
 
     @Override
     public boolean putTx(int chainId, Transaction tx) {
-        return putTx(chainId,tx, 0L);
-    }
-
-    @Override
-    public boolean putTx(int chainId, Transaction tx, long originalSendNanoTime) {
         if (tx == null) {
             return false;
         }
-        TransactionUnconfirmedPO txPO = new TransactionUnconfirmedPO(tx, NulsDateUtils.getCurrentTimeSeconds(), originalSendNanoTime);
+        TransactionUnconfirmedPO txPO = new TransactionUnconfirmedPO(tx, NulsDateUtils.getCurrentTimeSeconds());
         byte[] txHashBytes;
         txHashBytes = tx.getHash().getBytes();
         boolean result = false;
@@ -64,7 +59,7 @@ public class UnconfirmedTxStorageServiceImpl implements UnconfirmedTxStorageServ
         try {
             for (TransactionNetPO txNetPO : txNetPOList) {
                 Transaction tx = txNetPO.getTx();
-                TransactionUnconfirmedPO txPO = new TransactionUnconfirmedPO(tx, NulsDateUtils.getCurrentTimeSeconds(), txNetPO.getOriginalSendNanoTime());
+                TransactionUnconfirmedPO txPO = new TransactionUnconfirmedPO(tx, NulsDateUtils.getCurrentTimeSeconds());
                 //序列化对象为byte数组存储
                 txPOMap.put(tx.getHash().getBytes(), txPO.serialize());
             }
@@ -86,12 +81,12 @@ public class UnconfirmedTxStorageServiceImpl implements UnconfirmedTxStorageServ
 
     @Override
     public boolean isExists(int chainId, NulsHash hash) {
-        return RocksDBService.keyMayExist(TxDBConstant.DB_TRANSACTION_UNCONFIRMED_PREFIX + chainId, hash.getBytes());
-//        byte[] txBytes = RocksDBService.get(TxDBConstant.DB_TRANSACTION_UNCONFIRMED_PREFIX + chainId, hash.getBytes());
-//        if (null != txBytes && txBytes.length > 0) {
-//            return true;
-//        }
-//        return false;
+//        return RocksDBService.keyMayExist(TxDBConstant.DB_TRANSACTION_UNCONFIRMED_PREFIX + chainId, hash.getBytes());
+        byte[] txBytes = RocksDBService.get(TxDBConstant.DB_TRANSACTION_UNCONFIRMED_PREFIX + chainId, hash.getBytes());
+        if (null != txBytes && txBytes.length > 0) {
+            return true;
+        }
+        return false;
     }
 
     @Override

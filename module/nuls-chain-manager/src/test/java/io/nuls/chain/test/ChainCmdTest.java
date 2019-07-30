@@ -58,7 +58,7 @@ public class ChainCmdTest {
 
     @Test
     public void chainReg() throws Exception {
-        System.out.println(ResponseMessageProcessor.requestAndResponse(ModuleE.CM.abbr, "cm_chainReg", null));
+        System.out.println(JSONUtils.obj2json(ResponseMessageProcessor.requestAndResponse(ModuleE.CM.abbr, "cm_chainReg", null)));
     }
 
     @Test
@@ -67,10 +67,15 @@ public class ChainCmdTest {
         parameters.put("chainId",100);
         parameters.put("chainName","ilovess");
         parameters.put("addressType","1");
+        parameters.put("addressPrefix","LJS");
         parameters.put("magicNumber",3136151);
         parameters.put("minAvailableNodeNum",1);
         parameters.put("singleNodeMinConnectionNum",1);
         parameters.put("txConfirmedBlockNum",10);
+
+        parameters.put("maxSignatureCount",100);
+        parameters.put("signatureBFTRatio",67);
+        parameters.put("verifierList","LJS9busmCRxEW1oNRdnw5pGCEpMxu9hymtMua,LJS9busmQ1nWLcriD5VyGWgor2JFMoGsUmgR8");
 
         parameters.put("address","tNULSeBaMoodYW7AqyJrgYdWiJ6nfwfVHHHyXm");
         parameters.put("assetId",1);

@@ -89,15 +89,17 @@ public interface RpcConstants {
     String VALID_RESULT = "valid";
 
     String CMD_AC_SIGN_DIGEST = "ac_signDigest";
+    String CMD_AC_ADDRESS_PREFIX = "ac_addAddressPrefix";
 
 
     /**
      * 跨链协议接口
      */
     String CMD_GET_FRIEND_CHAIN_CIRCULATE = "getFriendChainCirculate";
-//    String CMD_REG_CROSS_CHAIN = "registerCrossChain";
-//    String CMD_CANCEL_CROSS_CHAIN = "cancelCrossChain";
+    String CMD_REG_CROSS_CHAIN = "registerCrossChain";
+    String CMD_CANCEL_CROSS_CHAIN = "cancelCrossChain";
 
     String CMD_CROSS_CHAIN_REGISTER_CHANGE = "crossChainRegisterChange";
+
 
 }

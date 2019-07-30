@@ -40,6 +40,7 @@ import io.nuls.poc.model.po.AgentPo;
 import io.nuls.poc.rpc.call.CallMethodUtils;
 import io.nuls.poc.service.AgentService;
 import io.nuls.poc.storage.AgentStorageService;
+import io.nuls.poc.utils.TxUtil;
 import io.nuls.poc.utils.enumeration.ConsensusStatus;
 import io.nuls.poc.utils.manager.AgentManager;
 import io.nuls.poc.utils.manager.ChainManager;
@@ -116,16 +117,7 @@ public class AgentServiceImpl implements AgentService {
             Transaction tx = new Transaction(TxType.REGISTER_AGENT);
             tx.setTime(NulsDateUtils.getCurrentTimeSeconds());
             //3.1.组装共识节点信息
-            Agent agent = new Agent();
-            agent.setAgentAddress(AddressTool.getAddress(dto.getAgentAddress()));
-            agent.setPackingAddress(AddressTool.getAddress(dto.getPackingAddress()));
-            if (StringUtils.isBlank(dto.getRewardAddress())) {
-                agent.setRewardAddress(agent.getAgentAddress());
-            } else {
-                agent.setRewardAddress(AddressTool.getAddress(dto.getRewardAddress()));
-            }
-            agent.setDeposit(BigIntegerUtils.stringToBigInteger(dto.getDeposit()));
-            agent.setCommissionRate(dto.getCommissionRate());
+            Agent agent = TxUtil.createAgent(dto);
             tx.setTxData(agent.serialize());
             //3.2.组装coinData
             CoinData coinData = coinDataManager.getCoinData(agent.getAgentAddress(), chain, new BigInteger(dto.getDeposit()), ConsensusConstant.CONSENSUS_LOCK_TIME, tx.size() + P2PHKSignature.SERIALIZE_LENGTH,chain.getConfig().getAgentChainId(),chain.getConfig().getAgentAssetId());
@@ -583,16 +575,21 @@ public class AgentServiceImpl implements AgentService {
             return Result.getFailed(ConsensusErrorCode.CHAIN_NOT_EXIST);
         }
         try {
-            MeetingRound round = roundManager.resetRound(chain, true);
-            MeetingMember member = round.getMyMember();
+            MeetingRound round = roundManager.getCurrentRound(chain);
+            MeetingMember member = null;
+            if(round != null){
+                member = round.getMyMember();
+            }
             Map<String, Object> resultMap = new HashMap<>(4);
             if (member != null) {
                 resultMap.put("address", AddressTool.getStringAddressByBytes(member.getAgent().getPackingAddress()));
                 resultMap.put("password", chain.getConfig().getPassword());
             }
             List<String> packAddressList = new ArrayList<>();
-            for (MeetingMember meetingMember : round.getMemberList()) {
-                packAddressList.add(AddressTool.getStringAddressByBytes(meetingMember.getAgent().getPackingAddress()));
+            if(round != null){
+                for (MeetingMember meetingMember : round.getMemberList()) {
+                    packAddressList.add(AddressTool.getStringAddressByBytes(meetingMember.getAgent().getPackingAddress()));
+                }
             }
             resultMap.put("packAddressList", packAddressList);
             return Result.getSuccess(ConsensusErrorCode.SUCCESS).setData(resultMap);

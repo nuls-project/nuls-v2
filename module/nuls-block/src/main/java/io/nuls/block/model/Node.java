@@ -83,7 +83,8 @@ public class Node {
     }
 
     public void setCredit(int credit) {
-        this.credit = credit;
+        //主动设置的下载信用值不低于10
+        this.credit = Math.max(credit, 10);
     }
 
     public long getDuration() {
@@ -102,7 +103,7 @@ public class Node {
         if (success) {
             this.duration = duration;
             //下载成功,信用值加20,上限为初始信用值的两倍
-            credit = Math.min(100, credit + 20);
+            credit = Math.min(100, credit + 10);
         } else {
             //下载失败,信用值降为原值的四分之一,下限为0
             credit >>= 2;

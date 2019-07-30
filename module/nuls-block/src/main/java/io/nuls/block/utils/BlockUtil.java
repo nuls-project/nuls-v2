@@ -28,12 +28,13 @@ import io.nuls.block.constant.ChainTypeEnum;
 import io.nuls.block.manager.BlockChainManager;
 import io.nuls.block.manager.ContextManager;
 import io.nuls.block.message.HashMessage;
+import io.nuls.block.message.HeightMessage;
 import io.nuls.block.model.Chain;
 import io.nuls.block.model.ChainContext;
 import io.nuls.block.model.ChainParameters;
-import io.nuls.block.rpc.call.ConsensusUtil;
-import io.nuls.block.rpc.call.NetworkUtil;
-import io.nuls.block.rpc.call.TransactionUtil;
+import io.nuls.block.rpc.call.ConsensusCall;
+import io.nuls.block.rpc.call.NetworkCall;
+import io.nuls.block.rpc.call.TransactionCall;
 import io.nuls.block.service.BlockService;
 import io.nuls.block.storage.ChainStorageService;
 import io.nuls.core.basic.Result;
@@ -42,6 +43,7 @@ import io.nuls.core.core.annotation.Autowired;
 import io.nuls.core.core.annotation.Component;
 import io.nuls.core.exception.NulsRuntimeException;
 import io.nuls.core.log.logback.NulsLogger;
+import io.nuls.core.model.ByteUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +52,7 @@ import java.util.SortedSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static io.nuls.block.constant.CommandConstant.GET_BLOCK_BY_HEIGHT_MESSAGE;
 import static io.nuls.block.constant.CommandConstant.GET_BLOCK_MESSAGE;
 
 /**
@@ -179,15 +182,15 @@ public class BlockUtil {
         //1.收到的区块与主链最新高度差大于1000(可配置),丢弃
         ChainContext context = ContextManager.getContext(chainId);
         ChainParameters parameters = context.getParameters();
-        NulsLogger commonLog = context.getLogger();
+        NulsLogger logger = context.getLogger();
         if (Math.abs(blockHeight - masterChainEndHeight) > parameters.getHeightRange()) {
-            commonLog.debug("chainId:" + chainId + ", received out of range block, height:" + blockHeight + ", hash:" + blockHash);
+            logger.debug("chainId:" + chainId + ", received out of range block, height:" + blockHeight + ", hash:" + blockHash);
             return Result.getFailed(BlockErrorCode.OUT_OF_RANGE);
         }
 
         //2.收到的区块可以连到主链,验证通过
         if (blockHeight == masterChainEndHeight + 1 && blockPreviousHash.equals(masterChainEndHash)) {
-            commonLog.debug("chainId:" + chainId + ", received continuous block of masterChain, height:" + blockHeight + ", hash:" + blockHash);
+            logger.debug("chainId:" + chainId + ", received continuous block of masterChain, height:" + blockHeight + ", hash:" + blockHash);
             return Result.getSuccess(BlockErrorCode.SUCCESS);
         }
 
@@ -195,7 +198,7 @@ public class BlockUtil {
             //3.收到的区块是主链上的重复区块,丢弃
             BlockHeaderPo blockHeader = blockService.getBlockHeaderPo(chainId, blockHeight);
             if (blockHash.equals(blockHeader.getHash())) {
-                commonLog.debug("chainId:" + chainId + ", received duplicate block of masterChain, height:" + blockHeight + ", hash:" + blockHash);
+                logger.debug("chainId:" + chainId + ", received duplicate block of masterChain, height:" + blockHeight + ", hash:" + blockHash);
                 return Result.getFailed(BlockErrorCode.DUPLICATE_MAIN_BLOCK);
             }
             //4.收到的区块是主链上的分叉区块,保存区块,并新增一条分叉链链接到主链
@@ -203,8 +206,8 @@ public class BlockUtil {
                 chainStorageService.save(chainId, block);
                 Chain forkChain = ChainGenerator.generate(chainId, block, masterChain, ChainTypeEnum.FORK);
                 BlockChainManager.addForkChain(chainId, forkChain);
-                commonLog.info("chainId:" + chainId + ", received fork block of masterChain, height:" + blockHeight + ", hash:" + blockHash);
-                ConsensusUtil.evidence(chainId, blockService, header);
+                logger.info("chainId:" + chainId + ", received fork block of masterChain, height:" + blockHeight + ", hash:" + blockHash);
+                ConsensusCall.evidence(chainId, blockService, header);
                 return Result.getFailed(BlockErrorCode.FORK_BLOCK);
             }
         }
@@ -226,7 +229,7 @@ public class BlockUtil {
         NulsHash blockPreviousHash = header.getPreHash();
         SortedSet<Chain> forkChains = BlockChainManager.getForkChains(chainId);
         ChainContext context = ContextManager.getContext(chainId);
-        NulsLogger commonLog = context.getLogger();
+        NulsLogger logger = context.getLogger();
         try {
             for (Chain forkChain : forkChains) {
                 long forkChainStartHeight = forkChain.getStartHeight();
@@ -236,13 +239,13 @@ public class BlockUtil {
                 if (blockHeight == forkChainEndHeight + 1 && blockPreviousHash.equals(forkChainEndHash)) {
                     chainStorageService.save(chainId, block);
                     forkChain.addLast(block);
-                    commonLog.debug("chainId:" + chainId + ", received continuous block of forkChain, height:" + blockHeight + ", hash:" + blockHash);
-                    ConsensusUtil.evidence(chainId, blockService, header);
+                    logger.debug("chainId:" + chainId + ", received continuous block of forkChain, height:" + blockHeight + ", hash:" + blockHash);
+                    ConsensusCall.evidence(chainId, blockService, header);
                     return Result.getFailed(BlockErrorCode.FORK_BLOCK);
                 }
                 //2.重复,丢弃
                 if (forkChainStartHeight <= blockHeight && blockHeight <= forkChainEndHeight && forkChain.getHashList().contains(blockHash)) {
-                    commonLog.debug("chainId:" + chainId + ", received duplicate block of forkChain, height:" + blockHeight + ", hash:" + blockHash);
+                    logger.debug("chainId:" + chainId + ", received duplicate block of forkChain, height:" + blockHeight + ", hash:" + blockHash);
                     return Result.getFailed(BlockErrorCode.FORK_BLOCK);
                 }
                 //3.分叉
@@ -250,13 +253,13 @@ public class BlockUtil {
                     chainStorageService.save(chainId, block);
                     Chain newForkChain = ChainGenerator.generate(chainId, block, forkChain, ChainTypeEnum.FORK);
                     BlockChainManager.addForkChain(chainId, newForkChain);
-                    commonLog.debug("chainId:" + chainId + ", received fork block of forkChain, height:" + blockHeight + ", hash:" + blockHash);
-                    ConsensusUtil.evidence(chainId, blockService, header);
+                    logger.debug("chainId:" + chainId + ", received fork block of forkChain, height:" + blockHeight + ", hash:" + blockHash);
+                    ConsensusCall.evidence(chainId, blockService, header);
                     return Result.getFailed(BlockErrorCode.FORK_BLOCK);
                 }
             }
         } catch (Exception e) {
-            commonLog.error("", e);
+            logger.error("", e);
         }
         //4.与分叉链没有关联,进入孤儿链判断流程
         return Result.getFailed(BlockErrorCode.IRRELEVANT_BLOCK);
@@ -322,7 +325,7 @@ public class BlockUtil {
         ChainContext context = ContextManager.getContext(chainId);
         List<Integer> transactionType = context.getSystemTransactionType();
         if (transactionType.isEmpty()) {
-            transactionType.addAll(TransactionUtil.getSystemTypes(chainId));
+            transactionType.addAll(TransactionCall.getSystemTypes(chainId));
         }
         SmallBlock smallBlock = new SmallBlock();
         smallBlock.setHeader(block.getHeader());
@@ -387,11 +390,47 @@ public class BlockUtil {
     }
 
     /**
+     * 根据区块高度从节点下载区块
+     *
+     * @param chainId 链Id/chain id
+     * @param nodeId
+     * @param height
+     * @return
+     */
+    public static Block downloadBlockByHeight(int chainId, String nodeId, long height) {
+        if (height < 0 || nodeId == null) {
+            return null;
+        }
+        HeightMessage message = new HeightMessage(height);
+        ChainContext context = ContextManager.getContext(chainId);
+        int singleDownloadTimeout = context.getParameters().getSingleDownloadTimeout();
+        NulsLogger logger = context.getLogger();
+        Future<Block> future = BlockCacher.addSingleBlockRequest(chainId, NulsHash.calcHash(ByteUtils.longToBytes(height)));
+        logger.debug("get block from " + nodeId + " begin, height-" + height);
+        boolean result = NetworkCall.sendToNode(chainId, message, nodeId, GET_BLOCK_BY_HEIGHT_MESSAGE);
+        if (!result) {
+            BlockCacher.removeBlockByHashFuture(chainId, NulsHash.calcHash(ByteUtils.longToBytes(height)));
+            return null;
+        }
+        try {
+            Block block = future.get(singleDownloadTimeout, TimeUnit.MILLISECONDS);
+            logger.debug("get block from " + nodeId + " success!, height-" + height);
+            return block;
+        } catch (Exception e) {
+            logger.error("get block from " + nodeId + " fail!, height-" + height, e);
+            return null;
+        } finally {
+            BlockCacher.removeBlockByHashFuture(chainId, NulsHash.calcHash(ByteUtils.longToBytes(height)));
+        }
+    }
+
+    /**
      * 根据区块hash从节点下载区块
      *
      * @param chainId 链Id/chain id
      * @param hash
      * @param nodeId
+     * @param height
      * @return
      */
     public static Block downloadBlockByHash(int chainId, NulsHash hash, String nodeId, long height) {
@@ -402,20 +441,20 @@ public class BlockUtil {
         message.setRequestHash(hash);
         ChainContext context = ContextManager.getContext(chainId);
         int singleDownloadTimeout = context.getParameters().getSingleDownloadTimeout();
-        NulsLogger commonLog = context.getLogger();
+        NulsLogger logger = context.getLogger();
         Future<Block> future = BlockCacher.addSingleBlockRequest(chainId, hash);
-        commonLog.debug("get block-" + hash + " from " + nodeId + "begin, height-" + height);
-        boolean result = NetworkUtil.sendToNode(chainId, message, nodeId, GET_BLOCK_MESSAGE);
+        logger.debug("get block-" + hash + " from " + nodeId + "begin, height-" + height);
+        boolean result = NetworkCall.sendToNode(chainId, message, nodeId, GET_BLOCK_MESSAGE);
         if (!result) {
             BlockCacher.removeBlockByHashFuture(chainId, hash);
             return null;
         }
         try {
             Block block = future.get(singleDownloadTimeout, TimeUnit.MILLISECONDS);
-            commonLog.debug("get block-" + hash + " from " + nodeId + " success!, height-" + height);
+            logger.debug("get block-" + hash + " from " + nodeId + " success!, height-" + height);
             return block;
         } catch (Exception e) {
-            commonLog.error("get block-" + hash + " from " + nodeId + " fail!, height-" + height, e);
+            logger.error("get block-" + hash + " from " + nodeId + " fail!, height-" + height, e);
             return null;
         } finally {
             BlockCacher.removeBlockByHashFuture(chainId, hash);

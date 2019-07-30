@@ -25,17 +25,23 @@
 package io.nuls.network.manager.handler.message;
 
 import io.nuls.base.RPCUtil;
+import io.nuls.base.basic.NulsByteBuffer;
+import io.nuls.base.data.NulsHash;
 import io.nuls.core.constant.BaseConstant;
+import io.nuls.core.crypto.HexUtil;
 import io.nuls.core.rpc.info.Constants;
+import io.nuls.core.rpc.model.CmdPriority;
 import io.nuls.core.rpc.model.message.MessageUtil;
 import io.nuls.core.rpc.model.message.Request;
 import io.nuls.core.rpc.netty.processor.ResponseMessageProcessor;
-import io.nuls.core.thread.ThreadUtils;
+import io.nuls.network.constant.NetworkConstant;
 import io.nuls.network.manager.NodeGroupManager;
 import io.nuls.network.manager.handler.MessageHandlerFactory;
 import io.nuls.network.manager.handler.base.BaseMessageHandler;
 import io.nuls.network.model.NetworkEventResult;
 import io.nuls.network.model.Node;
+import io.nuls.network.model.NodeGroup;
+import io.nuls.network.model.dto.RpcCacheMessage;
 import io.nuls.network.model.message.base.BaseMessage;
 import io.nuls.network.model.message.base.MessageHeader;
 import io.nuls.network.utils.LoggerUtil;
@@ -83,22 +89,30 @@ public class OtherModuleMessageHandler extends BaseMessageHandler {
     public NetworkEventResult recieve(MessageHeader header, byte[] payLoadBody, Node node) {
         long magicNum = header.getMagicNumber();
         int chainId = NodeGroupManager.getInstance().getChainIdByMagicNum(magicNum);
+        NodeGroup nodeGroup = NodeGroupManager.getInstance().getNodeGroupByChainId(chainId);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("chainId", chainId);
         paramMap.put("nodeId", node.getId());
         String cmd = header.getCommandStr();
         paramMap.put("cmd", cmd);
-        paramMap.put("messageBody", RPCUtil.encode(payLoadBody));
-        List<String> protocolRoles = new ArrayList<>(MessageHandlerFactory.getInstance().getProtocolRoleHandlerMap(cmd));
+        String messageBody = RPCUtil.encode(payLoadBody);
+        paramMap.put("messageBody", messageBody);
+        Map<String,CmdPriority>  protocolRoles =(Map<String,CmdPriority>)(MessageHandlerFactory.getInstance().getProtocolRoleHandlerMap(cmd));
         if (protocolRoles.isEmpty()) {
             LoggerUtil.logger(chainId).error("unknown mssages. cmd={},handler may be unRegistered to network.", cmd);
             return NetworkEventResult.getResultSuccess();
         }
-        for (String role : protocolRoles) {
+        for (Map.Entry<String,CmdPriority> entry : protocolRoles.entrySet()) {
             try {
                 Request request = MessageUtil.newRequest(BaseConstant.MSG_PROCESS, paramMap, Constants.BOOLEAN_FALSE, Constants.ZERO, Constants.ZERO);
-                if (ResponseMessageProcessor.requestOnly(role, request).equals("0")) {
-                    LoggerUtil.logger(chainId).error("chainId = {},cmd={},RPC fail,msg drop", chainId, cmd);
+                if ("0".equals(ResponseMessageProcessor.requestOnly(entry.getKey(), request))) {
+                    if (nodeGroup.getCacheMsgQueue().size() > NetworkConstant.MAX_CACHE_MSG_QUEUE) {
+                        LoggerUtil.COMMON_LOG.error("chainId = {},cmd={},CacheMsgQueue size={}.RPC fail,drop msg", chainId, cmd, nodeGroup.getCacheMsgQueue().size());
+                    } else {
+                        LoggerUtil.COMMON_LOG.error("chainId = {},cmd={},RPC fail,add to cache", chainId, cmd);
+                        RpcCacheMessage peerMessage = new RpcCacheMessage(node.getId(), cmd, messageBody);
+                        nodeGroup.getCacheMsgQueue().addLast(peerMessage);
+                    }
                 }
             } catch (Exception e) {
                 LoggerUtil.logger(chainId).error("{}", e);

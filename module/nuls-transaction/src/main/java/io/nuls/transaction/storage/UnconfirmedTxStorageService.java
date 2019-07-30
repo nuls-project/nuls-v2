@@ -23,8 +23,6 @@ public interface UnconfirmedTxStorageService {
      * @param tx
      * @return 保存是否成功
      */
-    boolean putTx(int chainId, Transaction tx, long originalSendNanoTime);
-
     boolean putTx(int chainId, Transaction tx);
 
 
@@ -115,5 +113,11 @@ public interface UnconfirmedTxStorageService {
      */
     List<byte[]> getExistKeys(int chainId, List<byte[]> hashList);
 
+    /**
+     * 根据hash 获取存在的key
+     * @param chainId
+     * @param hashList
+     * @return
+     */
     List<String> getExistKeysStr(int chainId, List<byte[]> hashList);
 }

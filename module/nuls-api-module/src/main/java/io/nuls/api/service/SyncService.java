@@ -299,6 +299,9 @@ public class SyncService {
     }
 
     private void processAliasTx(int chainId, TransactionInfo tx) {
+        if(tx.getCoinFroms() == null) {
+            return;
+        }
         CoinFromInfo input = tx.getCoinFroms().get(0);
         AccountLedgerInfo ledgerInfo = calcBalance(chainId, input);
         txRelationInfoSet.add(new TxRelationInfo(input, tx, ledgerInfo.getTotalBalance()));
@@ -537,7 +540,7 @@ public class SyncService {
         createContractTxInfo(tx, contractInfo);
         contractInfoMap.put(contractInfo.getContractAddress(), contractInfo);
 
-        if (contractInfo.isSuccess() && contractInfo.isNrc20()) {
+        if (contractInfo.isSuccess()) {
             processTokenTransfers(chainId, contractInfo.getResultInfo().getTokenTransfers(), tx);
         }
     }
@@ -551,7 +554,7 @@ public class SyncService {
         contractResultList.add(callInfo.getResultInfo());
         createContractTxInfo(tx, contractInfo);
 
-        if (callInfo.getResultInfo().isSuccess() && contractInfo.isNrc20()) {
+        if (callInfo.getResultInfo().isSuccess()) {
             processTokenTransfers(chainId, callInfo.getResultInfo().getTokenTransfers(), tx);
         }
     }
