@@ -289,7 +289,7 @@ public class PocRoundManager implements IRoundManager {
         if (startBlockHeader.getHeight() != 0L) {
             startBlockHeader = getFirstBlockOfPreRound(chain, roundIndex);
         }
-        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime, currentMemberIndex);
+        return calculationRound(chain, startBlockHeader, roundIndex, roundStartTime);
     }
 
     /**
@@ -736,6 +736,7 @@ public class PocRoundManager implements IRoundManager {
      * @param currentExtendsData 本轮轮次信息
      * @return 两轮次之间节点变化信息
      */
+    @Override
     public Map<String, List<String>> getAgentChangeInfo(Chain chain, BlockExtendsData lastExtendsData, BlockExtendsData currentExtendsData) {
         Map<String, List<String>> resultMap = new HashMap<>(2);
         List<String> registerAgentList;

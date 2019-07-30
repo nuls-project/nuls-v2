@@ -5,6 +5,9 @@ import io.nuls.base.data.BlockHeader;
 import io.nuls.poc.model.bo.Chain;
 import io.nuls.poc.model.bo.round.MeetingRound;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author Niels
  */
@@ -35,4 +38,5 @@ public interface IRoundManager {
 
     BlockHeader getFirstBlockOfPreRound(Chain chain, long roundIndex);
 
+    Map<String, List<String>> getAgentChangeInfo(Chain chain, BlockExtendsData lastExtendsData, BlockExtendsData currentExtendsData);
 }

@@ -7,6 +7,9 @@ import io.nuls.core.core.annotation.Component;
 import io.nuls.poc.model.bo.Chain;
 import io.nuls.poc.model.bo.round.MeetingRound;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 轮次信息管理类
  * Round Information Management Class
@@ -164,4 +167,7 @@ public class RoundManager {
         return getRoundManager(chain).getFirstBlockOfPreRound(chain, roundIndex);
     }
 
+    public Map<String, List<String>> getAgentChangeInfo(Chain chain, BlockExtendsData lastExtendsData, BlockExtendsData currentExtendsData) {
+        return getRoundManager(chain).getAgentChangeInfo(chain,lastExtendsData,currentExtendsData);
+    }
 }
