@@ -642,6 +642,18 @@ public class ECKey {
      */
     protected byte[] doSign(byte[] input, BigInteger privateKeyForSigning) {
         HexUtil.checkNotNull(privateKeyForSigning);
+        if (Secp256k1Context.isEnabled()) {
+            try {
+                byte[] signature = NativeSecp256k1.sign(
+                        input,
+                        Utils.bigIntegerToBytes(privateKeyForSigning, 32)
+                );
+                return signature;
+            } catch (NativeSecp256k1Util.AssertFailException e) {
+                log.error("Caught AssertFailException inside secp256k1", e);
+                throw new RuntimeException(e);
+            }
+        }
         ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
         ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(privateKeyForSigning, CURVE);
         signer.init(true, privKey);
@@ -661,6 +673,14 @@ public class ECKey {
      * @param pub       The public key bytes to use.
      */
     public static boolean verify(byte[] data, ECDSASignature signature, byte[] pub) {
+        if (Secp256k1Context.isEnabled()) {
+            try {
+                return NativeSecp256k1.verify(data, signature.encodeToDER(), pub);
+            } catch (NativeSecp256k1Util.AssertFailException e) {
+                log.error("Caught AssertFailException inside secp256k1", e);
+                return false;
+            }
+        }
         ECDSASigner signer = new ECDSASigner();
         ECPublicKeyParameters params = new ECPublicKeyParameters(CURVE.getCurve().decodePoint(pub), CURVE);
         signer.init(false, params);
@@ -681,6 +701,14 @@ public class ECKey {
      * @throws Exception if the signature is unparseable in some way.
      */
     public static boolean verify(byte[] data, byte[] signature, byte[] pub) {
+        if (Secp256k1Context.isEnabled()) {
+            try {
+                return NativeSecp256k1.verify(data, signature, pub);
+            } catch (NativeSecp256k1Util.AssertFailException e) {
+                log.error("Caught AssertFailException inside secp256k1", e);
+                return false;
+            }
+        }
         return verify(data, ECKey.ECDSASignature.decodeFromDER(signature), pub);
     }
 
