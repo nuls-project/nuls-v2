@@ -75,7 +75,7 @@ public class ChainServiceImpl implements ChainService {
      */
     @Override
     public void initMainChain() throws Exception {
-        int chainId = Integer.valueOf(nulsChainConfig.getMainChainId());
+        int chainId = Integer.parseInt(nulsChainConfig.getMainChainId());
         BlockChain chain = getChain(chainId);
         if (chain != null) {
             return;

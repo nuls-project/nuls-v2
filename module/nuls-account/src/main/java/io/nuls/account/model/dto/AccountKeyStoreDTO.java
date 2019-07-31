@@ -64,7 +64,7 @@ public class AccountKeyStoreDTO {
 
     public AccountKeyStoreDTO(AccountKeyStore accountKeyStore) {
         this.address = accountKeyStore.getAddress();
-        this.encryptedPrivateKey = null == accountKeyStore.getEncryptedPrivateKey() ? null : accountKeyStore.getEncryptedPrivateKey();
+        this.encryptedPrivateKey = accountKeyStore.getEncryptedPrivateKey();
         this.pubKey = HexUtil.encode(accountKeyStore.getPubKey());
         this.prikey = null == accountKeyStore.getPrikey() ? null : HexUtil.encode(accountKeyStore.getPrikey());
     }

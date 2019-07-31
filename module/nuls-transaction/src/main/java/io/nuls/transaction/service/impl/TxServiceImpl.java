@@ -1265,9 +1265,7 @@ public class TxServiceImpl implements TxService {
         long f4 = System.currentTimeMillis();
         timeF3 += f4 - f3;
 
-        Set<String> set = new HashSet<>();
-        set.addAll(unconfirmedList);
-        unconfirmedList = null;
+        Set<String> set = new HashSet<>(unconfirmedList);
         long d = 0L;
         for (TxVerifyWrapper txVerifyWrapper : txList) {
             Transaction tx = txVerifyWrapper.getTx();
@@ -1339,7 +1337,7 @@ public class TxServiceImpl implements TxService {
         List<String> scNewList = new ArrayList<>();
         String scStateRoot = preStateRoot;
         if (contractNotify) {
-            Map<String, Object> map = null;
+            Map<String, Object> map;
             try {
                 map = ContractCall.contractBatchEnd(chain, blockHeight);
             } catch (NulsException e) {
@@ -1456,6 +1454,7 @@ public class TxServiceImpl implements TxService {
             logger.warn("contract stateRoot error.");
             throw new NulsException(TxErrorCode.CONTRACT_VERIFY_FAIL);
         }
+        logger.debug("[验区块交易] 合约验证 -距方法开始的时间:{}", NulsDateUtils.getCurrentTimeMillis() - s1);
 
         //多线程处理结果
         try {
@@ -1465,10 +1464,7 @@ public class TxServiceImpl implements TxService {
                     throw new NulsException(TxErrorCode.TX_VERIFY_FAIL);
                 }
             }
-        } catch (InterruptedException e) {
-            logger.error(e);
-            throw new NulsException(TxErrorCode.SYS_UNKOWN_EXCEPTION);
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             logger.error(e);
             throw new NulsException(TxErrorCode.SYS_UNKOWN_EXCEPTION);
         }

@@ -186,7 +186,7 @@ public interface AccountConstant {
      */
     byte NORMAL_TX_LOCKED = 0;
 
-    Comparator<String> PUBKEY_COMPARATOR = new Comparator<String>() {
+    Comparator<String> PUBKEY_COMPARATOR = new Comparator<>() {
         private Comparator<byte[]> COMPARATOR = UnsignedBytes.lexicographicalComparator();
 
         @Override
