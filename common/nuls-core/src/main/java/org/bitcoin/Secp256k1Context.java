@@ -43,7 +43,9 @@ public class Secp256k1Context {
   }
 
   public static long getContext() {
-     if(!enabled) return -1; //sanity check
+     if(!enabled) {
+         return -1; //sanity check
+     }
      return context;
   }
 
