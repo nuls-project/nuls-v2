@@ -9,18 +9,25 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
+/**
+ * -Djava.library.path=/usr/local/lib
+ */
 public class SignatureUtilTest {
 
     public static void main(String[] args) {
-        System.out.println(System.getProperty("java.library.path"));
         ECKey key = new ECKey();
-        long l = System.nanoTime();
-        for (int i = 0; i < 10000; i++) {
-            NulsHash hash = NulsHash.calcHash((i + "").getBytes());
-            NulsSignData signData = SignatureUtil.signDigest(hash.getBytes(), key);
-            ECKey.verify(hash.getBytes(), signData.getSignBytes(), key.getPubKey());
+        long t = 0;
+        for (int j = 0; j < 20; j++) {
+            long l = System.nanoTime();
+            for (int i = 0; i < 5000; i++) {
+                NulsHash hash = NulsHash.calcHash((i + "").getBytes());
+                byte[] bytes = key.sign(hash.getBytes());
+                ECKey.verify(hash.getBytes(), bytes, key.getPubKey());
+            }
+            long l1 = (System.nanoTime() - l) / 1000000;
+            t += l1;
         }
-        System.out.println((System.nanoTime() - l) / 1000000);
+        System.out.println(t / 20);
     }
 
 }

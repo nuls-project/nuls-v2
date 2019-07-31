@@ -36,6 +36,9 @@ public class Secp256k1Context {
       }
       enabled = isEnabled;
       context = contextRef;
+      if (enabled) {
+          System.out.println("jni enabled!!!");
+      }
   }
 
   public static boolean isEnabled() {
