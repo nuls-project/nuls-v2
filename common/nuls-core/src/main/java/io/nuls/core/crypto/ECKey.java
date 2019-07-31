@@ -24,6 +24,9 @@ import com.google.common.primitives.UnsignedBytes;
 import io.nuls.core.basic.VarInt;
 import io.nuls.core.model.ObjectUtils;
 import io.nuls.core.parse.SerializeUtils;
+import org.bitcoin.NativeSecp256k1;
+import org.bitcoin.NativeSecp256k1Util;
+import org.bitcoin.Secp256k1Context;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
@@ -644,11 +647,10 @@ public class ECKey {
         HexUtil.checkNotNull(privateKeyForSigning);
         if (Secp256k1Context.isEnabled()) {
             try {
-                byte[] signature = NativeSecp256k1.sign(
+                return NativeSecp256k1.sign(
                         input,
                         Utils.bigIntegerToBytes(privateKeyForSigning, 32)
                 );
-                return signature;
             } catch (NativeSecp256k1Util.AssertFailException e) {
                 log.error("Caught AssertFailException inside secp256k1", e);
                 throw new RuntimeException(e);
@@ -715,7 +717,7 @@ public class ECKey {
     /**
      * 用私钥对数据进行签名
      *
-     * @param hash   需签名数据
+     * @param hash 需签名数据
      * @return byte[] 签名
      */
     public byte[] sign(Sha256Hash hash) {

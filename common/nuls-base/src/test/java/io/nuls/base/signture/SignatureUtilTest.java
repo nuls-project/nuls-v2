@@ -11,8 +11,8 @@ import static org.junit.Assert.*;
 
 public class SignatureUtilTest {
 
-    @Test
-    public void name() {
+    public static void main(String[] args) {
+        System.out.println(System.getProperty("java.library.path"));
         ECKey key = new ECKey();
         long l = System.nanoTime();
         for (int i = 0; i < 10000; i++) {
@@ -22,4 +22,5 @@ public class SignatureUtilTest {
         }
         System.out.println((System.nanoTime() - l) / 1000000);
     }
+
 }
