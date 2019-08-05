@@ -61,14 +61,19 @@ public class AddressTest {
                 break;
             }
         }
+        long total = 0L;
+        List<GenesisItem> itemList = new ArrayList<>();
         for (Account account : resultList) {
             byte[] addressV1 = io.nuls.sdk.core.utils.AddressTool.getAddress(account.getAddressV1());
             byte[] bytesV1 = new byte[20];
             System.arraycopy(addressV1, 3, bytesV1, 0, 20);
             byte[] addressV2 = new Address(2, "tNULS", BaseConstant.DEFAULT_ADDRESS_TYPE, bytesV1).getAddressBytes();
             account.setAddressV2(AddressTool.getStringAddressByBytes(addressV2));
+            total += account.getBalance();
+            itemList.add(new GenesisItem(account.getAddressV2(), account.getBalance()));
         }
-        System.out.println(JSONUtils.obj2json(resultList));
+        System.out.println("total : " + total);
+        System.out.println(JSONUtils.obj2json(itemList));
     }
 
     /**
@@ -143,6 +148,41 @@ public class AddressTest {
 
         public void setAddressV2(String addressV2) {
             this.addressV2 = addressV2;
+        }
+    }
+
+    static class GenesisItem {
+        public GenesisItem(String address, long amount) {
+            this.address = address;
+            this.amount = amount;
+        }
+
+        private String address;
+        private long amount;
+        private long lockTime = 0;
+
+        public String getAddress() {
+            return address;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        public long getAmount() {
+            return amount;
+        }
+
+        public void setAmount(long amount) {
+            this.amount = amount;
+        }
+
+        public long getLockTime() {
+            return lockTime;
+        }
+
+        public void setLockTime(long lockTime) {
+            this.lockTime = lockTime;
         }
     }
 }
