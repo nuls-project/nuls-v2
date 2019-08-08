@@ -63,7 +63,7 @@ public class ConsensusCall {
      * @return
      */
     public static Result verify(int chainId, Block block, int download) {
-        NulsLogger commonLog = ContextManager.getContext(chainId).getLogger();
+        NulsLogger logger = ContextManager.getContext(chainId).getLogger();
         try {
             Map<String, Object> params = new HashMap<>(5);
 //            params.put(Constants.VERSION_KEY_STR, "1.0");
@@ -85,7 +85,7 @@ public class ConsensusCall {
             }
             return Result.getFailed(ErrorCode.init(response.getResponseErrorCode()));
         } catch (Exception e) {
-            commonLog.error("", e);
+            logger.error("", e);
             return Result.getFailed(BlockErrorCode.BLOCK_VERIFY_ERROR);
         }
     }
@@ -98,7 +98,7 @@ public class ConsensusCall {
      * @return
      */
     public static boolean notice(int chainId, int status) {
-        NulsLogger commonLog = ContextManager.getContext(chainId).getLogger();
+        NulsLogger logger = ContextManager.getContext(chainId).getLogger();
         try {
             Map<String, Object> params = new HashMap<>(2);
 //            params.put(Constants.VERSION_KEY_STR, "1.0");
@@ -106,7 +106,7 @@ public class ConsensusCall {
             params.put("status", status);
             return ResponseMessageProcessor.requestAndResponse(ModuleE.CS.abbr, "cs_updateAgentStatus", params).isSuccess();
         } catch (Exception e) {
-            commonLog.error("", e);
+            logger.error("", e);
             return false;
         }
     }
@@ -166,7 +166,7 @@ public class ConsensusCall {
      * @return
      */
     public static boolean rollbackNotice(int chainId, long height) {
-        NulsLogger commonLog = ContextManager.getContext(chainId).getLogger();
+        NulsLogger logger = ContextManager.getContext(chainId).getLogger();
         try {
             Map<String, Object> params = new HashMap<>(2);
 //            params.put(Constants.VERSION_KEY_STR, "1.0");
@@ -175,7 +175,7 @@ public class ConsensusCall {
 
             return ResponseMessageProcessor.requestAndResponse(ModuleE.CS.abbr, "cs_chainRollBack", params).isSuccess();
         } catch (Exception e) {
-            commonLog.error("", e);
+            logger.error("", e);
             return false;
         }
     }
@@ -192,7 +192,7 @@ public class ConsensusCall {
         if (localInit) {
             return true;
         }
-        NulsLogger commonLog = ContextManager.getContext(chainId).getLogger();
+        NulsLogger logger = ContextManager.getContext(chainId).getLogger();
         try {
             Map<String, Object> params = new HashMap<>(3);
 //            params.put(Constants.VERSION_KEY_STR, "1.0");
@@ -201,7 +201,7 @@ public class ConsensusCall {
 
             return ResponseMessageProcessor.requestAndResponse(ModuleE.CS.abbr, "cs_addBlock", params).isSuccess();
         } catch (Exception e) {
-            commonLog.error("", e);
+            logger.error("", e);
             return false;
         }
     }

@@ -144,4 +144,8 @@ public interface CommandConstant {
      * 接收区块的最终验证结果
      */
     String RECEIVE_VERIFY_RESULT = "receiveVerifyResult";
+    /**
+     * 接收本地节点新打包的区块
+     */
+    String GET_STATUS = "getStatus";
 }

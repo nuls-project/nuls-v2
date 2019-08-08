@@ -104,7 +104,7 @@ public class VersionMessageHandler extends BaseMessageHandler {
                 sameIpCount++;
             }
             if (sameIpCount >= sameIpMaxCount) {
-                LoggerUtil.logger(chainId).info("refuse canConnectIn sameIpCount={},sameIpMaxCount={}, node.getType={}", ip, node.getIp(), node.getType());
+                LoggerUtil.logger(chainId).info("refuse canConnectIn ip={},sameIpCount={},sameIpMaxCount={}, node.getType={}", ip, sameIpCount, sameIpMaxCount, node.getType());
                 return false;
             }
         }
@@ -136,6 +136,24 @@ public class VersionMessageHandler extends BaseMessageHandler {
                 LoggerUtil.logger(nodeGroup.getChainId()).error("node={} version canConnectIn fail..Cross=true, but group is moon net", node.getId());
                 node.getChannel().close();
                 return;
+            } else {
+                //判断本地是否出块了，还未出块则取消连接
+                BlockRpcService blockRpcService = SpringLiteContext.getBean(BlockRpcServiceImpl.class);
+                if (nodeGroup.isMoonNode()) {
+                    //主网节点，不用判断，主网卫星链不会存在高度0的情况
+                } else {
+                    //看跨链节点的高度是否不为0
+                    if (!nodeGroup.isHadBlockHeigh()) {
+                        BestBlockInfo bestBlockInfo = blockRpcService.getBestBlockHeader(nodeGroup.getChainId());
+                        if (bestBlockInfo.getBlockHeight() < 1) {
+                            LoggerUtil.logger(nodeGroup.getChainId()).error("node={} version canConnectIn fail..Cross=true, but blockHeight={}", bestBlockInfo.getBlockHeight());
+                            node.getChannel().close();
+                            return;
+                        } else {
+                            nodeGroup.setHadBlockHeigh(true);
+                        }
+                    }
+                }
             }
             maxIn = nodeGroup.getMaxCrossIn();
             nodesContainer = nodeGroup.getCrossNodeContainer();
@@ -199,6 +217,9 @@ public class VersionMessageHandler extends BaseMessageHandler {
         VerackMessage verackMessage = MessageFactory.getInstance().buildVerackMessage(node, message.getHeader().getMagicNumber(), VerackMessageBody.VER_SUCCESS);
         LoggerUtil.logger(node.getNodeGroup().getChainId()).info("rec node={} ver msg success.go response verackMessage..cross={}", node.getId(), node.isCrossConnect());
         MessageManager.getInstance().sendHandlerMsg(verackMessage, node, true);
+        if (node.isSeedNode()) {
+            MessageManager.getInstance().sendGetAddressMessage(node, false, false, true);
+        }
 
     }
 

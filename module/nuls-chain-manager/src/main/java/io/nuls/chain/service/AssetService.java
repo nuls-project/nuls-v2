@@ -92,6 +92,15 @@ public interface AssetService {
     boolean assetExist(Asset asset, Map<String, Integer> map) throws Exception;
 
     /**
+     * 注册链 资产判断
+     * @param asset
+     * @param map
+     * @return
+     * @throws Exception
+     */
+    boolean regChainAssetExist(Asset asset, Map<String, Integer> map) throws Exception;
+
+    /**
      * @param chainId
      * @param assetKey
      * @return
@@ -132,17 +141,8 @@ public interface AssetService {
      * Register asset
      *
      * @param asset
-     * @param blockChains
      * @throws Exception Any error will throw an exception
      */
-    void registerAsset(Asset asset, List<BlockChain> blockChains) throws Exception;
+    void registerAsset(Asset asset) throws Exception;
 
-    /**
-     * 回滚注册资产
-     * Rollback the registered Asset
-     *
-     * @param asset The Asset be rollback
-     * @throws Exception Any error will throw an exception
-     */
-    void registerAssetRollback(Asset asset) throws Exception;
 }

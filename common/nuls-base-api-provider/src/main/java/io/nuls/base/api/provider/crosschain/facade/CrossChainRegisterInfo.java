@@ -34,7 +34,6 @@ public class CrossChainRegisterInfo {
     private String regAddress;
     private String regTxHash;
     private long createTime;
-    private String seeds;
     List<String> verifierList;
     /**
      * 按100来计算拜占庭比例
@@ -47,6 +46,12 @@ public class CrossChainRegisterInfo {
 
     private List<String> selfAssetKeyList;
     private List<String> totalAssetKeyList;
+
+    String mainNetVerifierSeeds = "";
+    String mainNetCrossConnectSeeds = "";
+
+    private boolean enable = true;
+
 
     public int getChainId() {
         return chainId;
@@ -120,13 +125,6 @@ public class CrossChainRegisterInfo {
         this.createTime = createTime;
     }
 
-    public String getSeeds() {
-        return seeds;
-    }
-
-    public void setSeeds(String seeds) {
-        this.seeds = seeds;
-    }
 
     public String getAddressPrefix() {
         return addressPrefix;
@@ -174,5 +172,29 @@ public class CrossChainRegisterInfo {
 
     public void setMaxSignatureCount(int maxSignatureCount) {
         this.maxSignatureCount = maxSignatureCount;
+    }
+
+    public String getMainNetVerifierSeeds() {
+        return mainNetVerifierSeeds;
+    }
+
+    public void setMainNetVerifierSeeds(String mainNetVerifierSeeds) {
+        this.mainNetVerifierSeeds = mainNetVerifierSeeds;
+    }
+
+    public String getMainNetCrossConnectSeeds() {
+        return mainNetCrossConnectSeeds;
+    }
+
+    public void setMainNetCrossConnectSeeds(String mainNetCrossConnectSeeds) {
+        this.mainNetCrossConnectSeeds = mainNetCrossConnectSeeds;
+    }
+
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
     }
 }

@@ -31,6 +31,9 @@ import io.nuls.network.manager.ConnectionManager;
 import io.nuls.network.manager.NodeGroupManager;
 import io.nuls.network.model.Node;
 import io.nuls.network.model.NodeGroup;
+import io.nuls.network.model.dto.BestBlockInfo;
+import io.nuls.network.rpc.call.BlockRpcService;
+import io.nuls.network.rpc.call.impl.BlockRpcServiceImpl;
 import io.nuls.network.utils.IpUtil;
 import io.nuls.network.utils.LoggerUtil;
 
@@ -38,6 +41,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * 节点维护任务
@@ -70,15 +76,58 @@ public class NodeMaintenanceTask implements Runnable {
     }
 
     private void process(NodeGroup nodeGroup, boolean isCross) {
+        if (isCross) {
+            if (nodeGroup.isMoonNode()) {
+                //主网节点，不用判断，主网卫星链不会存在高度0的情况
+            } else {
+                //看跨链节点的高度是否不为0
+                if (!nodeGroup.isHadBlockHeigh()) {
+                    BlockRpcService blockRpcService = SpringLiteContext.getBean(BlockRpcServiceImpl.class);
+                    BestBlockInfo bestBlockInfo = blockRpcService.getBestBlockHeader(nodeGroup.getChainId());
+                    if (bestBlockInfo.getBlockHeight() < 1) {
+                        LoggerUtil.logger(nodeGroup.getChainId()).error("chainId={} cross connect process stop.blockHeight={}", nodeGroup.getChainId(), bestBlockInfo.getBlockHeight());
+                        return;
+                    } else {
+                        nodeGroup.setHadBlockHeigh(true);
+                    }
+                }
+            }
+        }
         List<Node> needConnectNodes = getNeedConnectNodes(nodeGroup, isCross);
         if (needConnectNodes == null || needConnectNodes.size() == 0) {
             return;
         }
-        needConnectNodes.forEach(n -> LoggerUtil.logger(nodeGroup.getChainId()).debug("尝试连接:chainId={},isCross={},node={}", nodeGroup.getChainId(), isCross, n.getId()));
+        int count = 0;
+        List<Future<Node>> connectNodeList = new ArrayList<>();
         for (Node node : needConnectNodes) {
             node.setType(Node.OUT);
-            connectionNode(node);
+            count++;
+            Future<Node> future = connectionManager.maintenance.submit(new Callable<Node>() {
+                @Override
+                public Node call() {
+                    try {
+                        connectionNode(node);
+                    } catch (Exception e) {
+                        return node;
+                    }
+                    return node;
+                }
+            });
+            connectNodeList.add(future);
+            if (count > 10) {
+                break;
+            }
         }
+        connectNodeList.forEach(n -> {
+            try {
+                LoggerUtil.logger(nodeGroup.getChainId()).info("maintenance:chainId={},isCross={},node={}", nodeGroup.getChainId(), isCross, n.get().getId());
+            } catch (InterruptedException e) {
+                LoggerUtil.COMMON_LOG.error(e);
+            } catch (ExecutionException e) {
+                LoggerUtil.COMMON_LOG.error(e);
+            }
+        });
+
     }
 
     private boolean connectionNode(Node node) {

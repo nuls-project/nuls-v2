@@ -29,9 +29,7 @@ import io.nuls.base.basic.AddressTool;
 import io.nuls.base.basic.NulsByteBuffer;
 import io.nuls.base.data.*;
 import io.nuls.base.signture.P2PHKSignature;
-import io.nuls.base.signture.SignatureUtil;
 import io.nuls.base.signture.TransactionSignature;
-import io.nuls.core.constant.TxType;
 import io.nuls.core.crypto.HexUtil;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.log.Log;
@@ -49,12 +47,9 @@ import io.nuls.core.rpc.util.NulsDateUtils;
 import io.nuls.core.thread.ThreadUtils;
 import io.nuls.core.thread.commom.NulsThreadFactory;
 import io.nuls.transaction.constant.TxConstant;
-import io.nuls.transaction.constant.TxErrorCode;
 import io.nuls.transaction.model.bo.Chain;
-import io.nuls.transaction.model.bo.TxRegister;
 import io.nuls.transaction.model.bo.config.ConfigBean;
 import io.nuls.transaction.model.dto.CoinDTO;
-import io.nuls.transaction.rpc.call.AccountCall;
 import io.nuls.transaction.rpc.call.LedgerCall;
 import io.nuls.transaction.rpc.call.TransactionCall;
 import io.nuls.transaction.token.AccountData;
@@ -120,7 +115,7 @@ public class TxValid {
 
     @Test
     public void importPriKeyTest() {
-        importPriKey("b54db432bba7e13a6c4a28f65b925b18e63bcb79143f7b894fa735d5d3d09db5", password);//种子出块地址 tNULSeBaMkrt4z9FYEkkR9D6choPVvQr94oYZp
+//        importPriKey("b54db432bba7e13a6c4a28f65b925b18e63bcb79143f7b894fa735d5d3d09db5", password);//种子出块地址 tNULSeBaMkrt4z9FYEkkR9D6choPVvQr94oYZp
 //        importPriKey("188b255c5a6d58d1eed6f57272a22420447c3d922d5765ebb547bc6624787d9f", password);//种子出块地址 tNULSeBaMoGr2RkLZPfJeS5dFzZeNj1oXmaYNe
         importPriKey("9ce21dad67e0f0af2599b41b515a7f7018059418bab892a7b68f283d489abc4b", password);//20 tNULSeBaMvEtDfvZuukDf2mVyfGo3DdiN8KLRG
         importPriKey("477059f40708313626cccd26f276646e4466032cabceccbf571a7c46f954eb75", password);//21 tNULSeBaMnrs6JKrCy6TQdzYJZkMZJDng7QAsD
@@ -626,7 +621,7 @@ public class TxValid {
 
     @Test
     public void createAgentTx() throws Exception {
-        createAgent(address26, "tNULSeBaMoRVvrr9noCDWwNNe3ZAbCvRWEPtij");
+        createAgent(address20, "tNULSeBaMoRVvrr9noCDWwNNe3ZAbCvRWEPtij");
     }
 
     private String createAgent(String address, String packing) throws Exception {
@@ -647,7 +642,7 @@ public class TxValid {
     @Test
     public void depositToAgent() throws Exception {
         //组装委托节点交易
-        String hash = deposit(address26, "");
+        String hash = deposit(address20, "3f686219f3d2b5eed48c7bbc553a77a0bc5c59bef16f2a7cf7835a157c3c2d96");
     }
 
     private String deposit(String address, String agentHash) throws Exception {
@@ -690,7 +685,7 @@ public class TxValid {
 
     @Test
     public void stopAgentTx() throws Exception {
-        String hash = stopAgent(address25);
+        String hash = stopAgent(address20);
         Log.debug("stopAgent-txHash:{}", hash);
     }
 
@@ -1138,40 +1133,6 @@ public class TxValid {
     }
 
 
-    private void validateTxSignature(Transaction tx, TxRegister txRegister, Chain chain) throws NulsException {
-        //只需要验证,需要验证签名的交易(一些系统交易不用签名)
-//        if (txRegister.getVerifySignature()) {
-        Set<String> addressSet = SignatureUtil.getAddressFromTX(tx, chain.getChainId());
-        CoinData coinData = new CoinData(); //TxUtil.getCoinData(tx);
-        coinData.parse(new NulsByteBuffer(tx.getCoinData()));
-
-        if (null == coinData || null == coinData.getFrom() || coinData.getFrom().size() <= 0) {
-            throw new NulsException(TxErrorCode.TX_DATA_VALIDATION_ERROR);
-        }
-        //判断from中地址和签名的地址是否匹配
-        for (CoinFrom coinFrom : coinData.getFrom()) {
-            if (tx.isMultiSignTx()) {
-                MultiSigAccount multiSigAccount = AccountCall.getMultiSigAccount(coinFrom.getAddress());
-                if (null == multiSigAccount) {
-                    throw new NulsException(TxErrorCode.MULTISIGN_ACCOUNT_NOT_EXIST);
-                }
-                for (byte[] bytes : multiSigAccount.getPubKeyList()) {
-                    String addr = AddressTool.getStringAddressByBytes(AddressTool.getAddress(bytes, chain.getChainId()));
-                    if (!addressSet.contains(addr)) {
-                        throw new NulsException(TxErrorCode.SIGN_ADDRESS_NOT_MATCH_COINFROM);
-                    }
-                }
-            } else if (!addressSet.contains(AddressTool.getStringAddressByBytes(coinFrom.getAddress()))
-                    && tx.getType() != TxType.STOP_AGENT) {
-                throw new NulsException(TxErrorCode.SIGN_ADDRESS_NOT_MATCH_COINFROM);
-            }
-        }
-        if (!SignatureUtil.validateTransactionSignture(tx)) {
-            throw new NulsException(TxErrorCode.SIGNATURE_ERROR);
-        }
-//        }
-    }
-
     /**
      * 组装coinTo数据
      * assembly coinTo data
@@ -1323,21 +1284,22 @@ public class TxValid {
 
 
     /**
-     * beta1 发放测试币
+     * beta1/beta2 发放测试币
      **/
     @Test
     public void accountTokenBeta() throws Exception {
         TestJSONObj testJSONObj = new TestJSONObj();
         List<AccountDataBetaOne> accountDataList = testJSONObj.readStreamBetaOne();
-        createTransfer(address20, address29, new BigInteger("988999900000000"));
-        createTransfer(address21, address29, new BigInteger("988999900000000"));
-        createTransfer(address22, address29, new BigInteger("988999900000000"));
+        createTransfer(address20, address29, new BigInteger("999999900000000"));
+        createTransfer(address21, address29, new BigInteger("999999900000000"));
+        createTransfer(address22, address29, new BigInteger("999999900000000"));
         createTransfer(address23, address29, new BigInteger("999999900000000"));
         createTransfer(address24, address29, new BigInteger("999999900000000"));
         createTransfer(address25, address29, new BigInteger("999999900000000"));
         createTransfer(address26, address29, new BigInteger("999999900000000"));
         createTransfer(address27, address29, new BigInteger("999999900000000"));
         createTransfer(address28, address29, new BigInteger("999999900000000"));
+        createTransfer(address29, "tNULSeBaMtGu7vkqGzmcLHSPo2nTZQw4j8uzgr", new BigInteger("100000000000000"));
         Thread.sleep(20000L);
         for (AccountDataBetaOne ac : accountDataList) {
             String hash = createTransfer(address29, ac.getAddressV2(), new BigInteger(String.valueOf(ac.getBalance())));

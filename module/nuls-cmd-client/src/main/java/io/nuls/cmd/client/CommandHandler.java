@@ -32,10 +32,7 @@ import io.nuls.cmd.client.processor.block.GetBestBlockHeaderProcessor;
 import io.nuls.cmd.client.processor.block.GetBlockHeaderProcessor;
 import io.nuls.cmd.client.processor.consensus.*;
 import io.nuls.cmd.client.processor.contract.*;
-import io.nuls.cmd.client.processor.crosschain.CreateCrossTxProcessor;
-import io.nuls.cmd.client.processor.crosschain.GetCrossChainRegisterInfoProcessor;
-import io.nuls.cmd.client.processor.crosschain.GetCrossTxStateProcessor;
-import io.nuls.cmd.client.processor.crosschain.RegisterCrossChainProcessor;
+import io.nuls.cmd.client.processor.crosschain.*;
 import io.nuls.cmd.client.processor.ledger.GetBalanceProcessor;
 import io.nuls.cmd.client.processor.network.GetNetworkProcessor;
 import io.nuls.cmd.client.processor.system.ExitProcessor;
@@ -174,8 +171,13 @@ public class CommandHandler implements InitializingBean {
 
 
         register(getBean(RegisterCrossChainProcessor.class));
+        register(getBean(CrossAssetAddProcessor.class));
+        register(getBean(CrossAssetDisableProcessor.class));
+        register(getBean(UpdateCrossChainProcessor.class));
+
         register(getBean(CreateCrossTxProcessor.class));
         register(getBean(GetCrossChainRegisterInfoProcessor.class));
+        register(getBean(GetCrossAssetInfoProcessor.class));
         register(getBean(GetCrossTxStateProcessor.class));
     }
 
@@ -267,6 +269,9 @@ public class CommandHandler implements InitializingBean {
             }
             return processor.execute(args).toString();
         } catch (Exception e) {
+            if(System.Logger.Level.DEBUG.getName().equals(System.getProperty("log.level"))){
+                e.printStackTrace();
+            }
             return CommandConstant.EXCEPTION + ": " + e.getMessage();
         }
     }

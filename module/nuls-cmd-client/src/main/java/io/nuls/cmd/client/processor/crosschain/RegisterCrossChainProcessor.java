@@ -7,6 +7,7 @@ import io.nuls.cmd.client.CommandResult;
 import io.nuls.core.core.annotation.Component;
 
 import java.math.BigInteger;
+import java.util.Map;
 
 /**
  * @Author: zhoulijun
@@ -111,10 +112,10 @@ public class RegisterCrossChainProcessor extends CrossChainBaseProcessor {
         req.setDecimalPlaces(decimalPlaces);
         req.setMinAvailableNodeNum(minAvailableNodeNum);
         req.setTxConfirmedBlockNum(txConfirmedBlockNum);
-        Result<String> result = chainManageProvider.registerChain(req);
+        Result<Map> result = chainManageProvider.registerChain(req);
         if (result.isFailed()) {
             return CommandResult.getFailed(result);
         }
-        return CommandResult.getSuccess(result.getData());
+        return CommandResult.getSuccess(result);
     }
 }
