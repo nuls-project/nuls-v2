@@ -1,10 +1,10 @@
 package io.nuls.core.log.logback;
 
-import ch.qos.logback.classic.Logger;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.exception.NulsRuntimeException;
 import io.nuls.core.log.Log;
 import io.nuls.core.parse.JSONUtils;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -250,27 +250,26 @@ public class NulsLogger {
      * @return 日志记录点的全路径
      */
     private String getLogTrace() {
-        StringBuilder logTrace = new StringBuilder();
-        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        if (stack.length > 1) {
-            // index为3上一级调用的堆栈信息，index为1和2都为Log类自己调两次（可忽略），index为0为主线程触发（可忽略）
-            StackTraceElement ste = stack[3];
-            if(BASIC_PATH_MAP.contains(ste.getClassName())){
-                ste = stack[4];
-            }
-            if (ste != null) {
-                // 获取类名、方法名、日志的代码行数
-                logTrace.append(ste.getClassName());
-                logTrace.append('.');
-                logTrace.append(ste.getMethodName());
-                logTrace.append('(');
-                logTrace.append(ste.getFileName());
-                logTrace.append(':');
-                logTrace.append(ste.getLineNumber());
-                logTrace.append(')');
-            }
-        }
-        return logTrace.toString();
+        //        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+//        if (stack.length > 1) {
+//            // index为3上一级调用的堆栈信息，index为1和2都为Log类自己调两次（可忽略），index为0为主线程触发（可忽略）
+//            StackTraceElement ste = stack[3];
+//            if(BASIC_PATH_MAP.contains(ste.getClassName())){
+//                ste = stack[4];
+//            }
+//            if (ste != null) {
+//                // 获取类名、方法名、日志的代码行数
+//                logTrace.append(ste.getClassName());
+//                logTrace.append('.');
+//                logTrace.append(ste.getMethodName());
+//                logTrace.append('(');
+//                logTrace.append(ste.getFileName());
+//                logTrace.append(':');
+//                logTrace.append(ste.getLineNumber());
+//                logTrace.append(')');
+//            }
+//        }
+        return "";
     }
 
     public Logger getLogger() {

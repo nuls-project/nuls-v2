@@ -1,9 +1,9 @@
 package io.nuls.core.log.logback;
 
+import ch.qos.logback.classic.AsyncAppender;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import io.nuls.core.model.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -25,16 +25,16 @@ public class LoggerBuilder {
     private static final Level DEFAULT_LEVEL = Level.INFO;
 
     static {
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        Logger logger = context.getLogger("io.netty");
+
+        Logger logger = LOGGER_CONTEXT.getLogger("io.netty");
         logger.setAdditive(false);
         logger.setLevel(Level.ERROR);
 
-        Logger mongodbLogger = context.getLogger("org.mongodb.driver.protocol.command");
+        Logger mongodbLogger = LOGGER_CONTEXT.getLogger("org.mongodb.driver.protocol.command");
         mongodbLogger.setAdditive(false);
         mongodbLogger.setLevel(Level.ERROR);
 
-        Logger mongodbLogger2 = context.getLogger("org.mongodb.driver.cluster");
+        Logger mongodbLogger2 = LOGGER_CONTEXT.getLogger("org.mongodb.driver.cluster");
         mongodbLogger2.setAdditive(false);
         mongodbLogger2.setLevel(Level.ERROR);
     }

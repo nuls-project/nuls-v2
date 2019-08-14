@@ -24,12 +24,11 @@ mainAssetId=1
 mainSymbol=NULS
 blackHolePublicKey=0298f88c3cae67385ce3cbee00f78816db3e56e566b62bd0f4c5b45f205d3021c3
 
-
 [network]
 port=18001
 crossPort=18002
 #魔法参数
-packetMagic=2019073101
+packetMagic=19900913
 #种子节点
 selfSeedIps=192.168.1.130:18001,192.168.1.131:18001,192.168.1.132:18001,192.168.1.133:18001
 #主网的跨链种子连接节点

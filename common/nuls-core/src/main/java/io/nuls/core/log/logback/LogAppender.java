@@ -1,5 +1,6 @@
 package io.nuls.core.log.logback;
 
+import ch.qos.logback.classic.AsyncAppender;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
@@ -12,9 +13,10 @@ import ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy;
 import ch.qos.logback.core.util.FileSize;
 import ch.qos.logback.core.util.OptionHelper;
 import io.nuls.core.model.StringUtils;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
+
+import static io.nuls.core.log.logback.LoggerBuilder.LOGGER_CONTEXT;
 
 /**
  * 日志打印管理类，日志文件创建，日志文件大小，保存时间，日志输出格式等设置管理
@@ -42,11 +44,10 @@ public class LogAppender {
         if(fileName.startsWith(File.separator)){
             fileName = fileName.substring(1);
         }
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         RollingFileAppender appender = new RollingFileAppender();
         /*设置上下文，每个logger都关联到logger上下文，默认上下文名称为default。
         但可以使用<contextName>设置成其他名字，用于区分不同应用程序的记录。一旦设置，不能修改。*/
-        appender.setContext(context);
+        appender.setContext(LOGGER_CONTEXT);
 
         //这里设置级别过滤器
         LogFilter levelController = new LogFilter();
@@ -55,13 +56,13 @@ public class LogAppender {
         appender.addFilter(levelFilter);
 
         //设置文件名
-        appender.setFile(OptionHelper.substVars(rootPath+fileName + ".log",context));
+        appender.setFile(OptionHelper.substVars(rootPath + fileName + ".log", LOGGER_CONTEXT));
         appender.setAppend(true);
         appender.setPrudent(false);
         //设置文件创建时间及大小的类
         SizeAndTimeBasedRollingPolicy policy = new SizeAndTimeBasedRollingPolicy();
         //文件名格式
-        String fp = OptionHelper.substVars(rootPath+ fileName + ".%d{yyyy-MM-dd}.%i.zip",context);
+        String fp = OptionHelper.substVars(rootPath + fileName + ".%d{yyyy-MM-dd}.%i.zip", LOGGER_CONTEXT);
         //最大日志文件大小
         policy.setMaxFileSize(FileSize.valueOf("100MB"));
         //设置文件名模式
@@ -69,7 +70,7 @@ public class LogAppender {
         //设置保存最近3天的日志
         policy.setMaxHistory(3);
         //总大小限制
-        policy.setContext(context);
+        policy.setContext(LOGGER_CONTEXT);
         policy.setTotalSizeCap(FileSize.valueOf("1GB"));
         //设置父节点是appender
         policy.setParent(appender);
@@ -79,7 +80,7 @@ public class LogAppender {
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
         //设置上下文，每个logger都关联到logger上下文，默认上下文名称为default。
         //但可以使用<contextName>设置成其他名字，用于区分不同应用程序的记录。一旦设置，不能修改。
-        encoder.setContext(context);
+        encoder.setContext(LOGGER_CONTEXT);
         //设置格式
         /*encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %replace(%caller{1}){'\\t|Caller.{1}0|\\r\\n', ''} - %msg%n");*/
         encoder.setPattern("%d{yyyy-MM-dd HH:mm:ss.SSS}  [%thread] %-5level - %msg%n");
@@ -92,9 +93,8 @@ public class LogAppender {
     }
 
     @SuppressWarnings("unchecked")
-    public static Appender<ILoggingEvent> createConsoleAppender(Level level){
+    public static Appender<ILoggingEvent> createConsoleAppender(Level level, LoggerContext context) {
         ConsoleAppender appender = new ConsoleAppender();
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         appender.setContext(context);
         //这里设置级别过滤器
         LogFilter levelController = new LogFilter();
@@ -113,5 +113,12 @@ public class LogAppender {
         appender.setEncoder(encoder);
         appender.start();
         return appender;
+    }
+
+    static AsyncAppender createAsyncAppender(Appender<ILoggingEvent> appender) {
+        AsyncAppender asyncAppender = new AsyncAppender();
+        asyncAppender.setContext(LOGGER_CONTEXT);
+        asyncAppender.addAppender(appender);
+        return asyncAppender;
     }
 }
