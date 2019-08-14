@@ -263,6 +263,8 @@ public class WalletRpcHandler {
             method.setReturnType((String) map1.get("returnArg"));
             method.setView((boolean) map1.get("view"));
             method.setPayable((boolean) map1.get("payable"));
+            method.setEvent((boolean) map1.get("event"));
+            method.setJsonSerializable((boolean) map1.get("jsonSerializable"));
             argsList = (List<Map<String, Object>>) map1.get("args");
             paramList = new ArrayList<>();
             for (Map<String, Object> arg : argsList) {
@@ -445,6 +447,18 @@ public class WalletRpcHandler {
         }
     }
 
+    public static Result sendCrossTx(int chainId, String txHex) {
+        Map<String, Object> params = new HashMap<>();
+        params.put(Constants.CHAIN_ID, chainId);
+        params.put("tx", txHex);
+        try {
+            Map map = (Map) RpcCall.request(ModuleE.CC.abbr, CommandConstant.SEND_CROSS_TX, params);
+            return Result.getSuccess(null).setData(map);
+        } catch (NulsException e) {
+            return Result.getFailed(e.getErrorCode());
+        }
+    }
+
     public static Result isAliasUsable(int chainId, String alias) {
         Map<String, Object> params = new HashMap<>();
         params.put(Constants.CHAIN_ID, chainId);
@@ -491,19 +505,21 @@ public class WalletRpcHandler {
                 chainInfoMap.put(chainInfo.getChainId(), chainInfo);
 
                 List<Map<String, Object>> assetList = (List<Map<String, Object>>) resultMap.get("assetInfoList");
-                for (Map<String, Object> assetMap : assetList) {
-                    AssetInfo assetInfo = new AssetInfo();
-                    assetInfo.setChainId((Integer) resultMap.get("chainId"));
-                    assetInfo.setAssetId((Integer) assetMap.get("assetId"));
-                    assetInfo.setSymbol((String) assetMap.get("symbol"));
-                    assetInfo.setDecimals((Integer) assetMap.get("decimalPlaces"));
-                    boolean usable = (boolean) assetMap.get("usable");
-                    if (usable) {
-                        assetInfo.setStatus(ENABLE);
-                    } else {
-                        assetInfo.setStatus(DISABLE);
+                if (assetList != null) {
+                    for (Map<String, Object> assetMap : assetList) {
+                        AssetInfo assetInfo = new AssetInfo();
+                        assetInfo.setChainId((Integer) resultMap.get("chainId"));
+                        assetInfo.setAssetId((Integer) assetMap.get("assetId"));
+                        assetInfo.setSymbol((String) assetMap.get("symbol"));
+                        assetInfo.setDecimals((Integer) assetMap.get("decimalPlaces"));
+                        boolean usable = (boolean) assetMap.get("usable");
+                        if (usable) {
+                            assetInfo.setStatus(ENABLE);
+                        } else {
+                            assetInfo.setStatus(DISABLE);
+                        }
+                        assetInfoMap.put(assetInfo.getKey(), assetInfo);
                     }
-                    assetInfoMap.put(assetInfo.getKey(), assetInfo);
                 }
             }
             map.clear();
@@ -520,6 +536,19 @@ public class WalletRpcHandler {
             List list = (List) RpcCall.request(ModuleE.AC.abbr, CommandConstant.GET_ALL_ADDRESS_PREFIX, null);
             return Result.getSuccess(null).setData(list);
         } catch (NulsException e) {
+            return Result.getFailed(e.getErrorCode());
+        }
+    }
+
+
+    public static Result getByzantineCount(int chainId, String txHash) {
+        try {
+            Map<String,Object> params = new HashMap<>();
+            params.put("chainId", chainId);
+            params.put("txHash", txHash);
+            Map<String,Object> map = (Map<String, Object>) RpcCall.request(ModuleE.CC.abbr, CommandConstant.GET_BYZANTINE_COUNT, params);
+            return Result.getSuccess(null).setData(map);
+        }catch (NulsException e) {
             return Result.getFailed(e.getErrorCode());
         }
     }

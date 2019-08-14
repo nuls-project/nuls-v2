@@ -24,6 +24,14 @@ public interface CrossChainService {
     Result createCrossTx(Map<String,Object> params);
 
     /**
+     * 接收API_MODULE组装的跨链交易
+     * @param params api_module新跨链交易
+     *
+     * @return processor result
+     * */
+    Result newApiModuleCrossTx(Map<String,Object> params);
+
+    /**
      * 跨链交易验证
      * @param params 跨链交易验证所需参数
      *
@@ -77,6 +85,14 @@ public interface CrossChainService {
      * @return processor result
      * */
     Result getRegisteredChainInfoList(Map<String,Object> params);
+
+    /**
+     * 查询已注册跨链的链信息列表
+     *
+     * @param params    无
+     * @return processor result
+     * */
+    Result getByzantineCount(Map<String,Object> params);
 
     /**
      * 设置跨链交易类型

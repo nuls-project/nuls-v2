@@ -43,6 +43,24 @@ public class CrossChainCmd  extends BaseCmd {
         return success(result.getData());
     }
 
+    /**
+     * 接收API_MODULE组装的跨链交易
+     * Receiving cross-chain transactions assembled by API_MODULE
+     * */
+    @CmdAnnotation(cmd = "newApiModuleCrossTx", version = 1.0, description = "接收API_MODULE组装的跨链交易/Receiving cross-chain transactions assembled by API_MODULE")
+    @Parameter(parameterName = "chainId", requestType = @TypeDescriptor(value = int.class), parameterDes = "链ID")
+    @Parameter(parameterName = "tx", parameterType = "String", parameterDes = "交易")
+    @ResponseData(name = "返回值", description = "交易Hash", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
+            @Key(name = "txHash", description = "交易Hash")
+    }))
+    public Response newApiModuleCrossTx(Map<String,Object> params){
+        Result result = service.newApiModuleCrossTx(params);
+        if(result.isFailed()){
+            return failed(result.getErrorCode());
+        }
+        return success(result.getData());
+    }
+
 
     /**
      * 查询跨链交易处理状态
@@ -70,6 +88,22 @@ public class CrossChainCmd  extends BaseCmd {
     }))
     public Response getRegisteredChainInfoList(Map<String,Object> params){
         Result result = service.getRegisteredChainInfoList(params);
+        if(result.isFailed()){
+            return failed(result.getErrorCode());
+        }
+        return success(result.getData());
+    }
+
+    /**
+     * 查询当前签名拜占庭最小通过数量（当前验证人数量*本链拜占庭比例）
+     * */
+    @CmdAnnotation(cmd = "getByzantineCount", version = 1.0, description = "查询当前签名拜占庭最小通过数量/查询当前签名拜占庭最小通过数量")
+    @Parameter(parameterName = "chainId", requestType = @TypeDescriptor(value = int.class), parameterDes = "链ID")
+    @ResponseData(name = "返回值", description = "返回一个Map对象", responseType = @TypeDescriptor(value = Map.class, mapKeys = {
+            @Key(name = "value", valueType = int.class, description = "当前拜占庭最小签名数")
+    }))
+    public Response getByzantineCount(Map<String,Object> params){
+        Result result = service.getByzantineCount(params);
         if(result.isFailed()){
             return failed(result.getErrorCode());
         }

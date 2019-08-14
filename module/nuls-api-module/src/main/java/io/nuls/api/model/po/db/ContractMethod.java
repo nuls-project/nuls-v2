@@ -9,6 +9,8 @@ public class ContractMethod {
     private String returnType;
     private boolean view;
     private boolean payable;
+    private boolean event;
+    private boolean jsonSerializable;
     private List<ContractMethodArg> params;
 
     public String getName() {
@@ -49,6 +51,22 @@ public class ContractMethod {
 
     public void setPayable(boolean payable) {
         this.payable = payable;
+    }
+
+    public boolean isEvent() {
+        return event;
+    }
+
+    public void setEvent(boolean event) {
+        this.event = event;
+    }
+
+    public boolean isJsonSerializable() {
+        return jsonSerializable;
+    }
+
+    public void setJsonSerializable(boolean jsonSerializable) {
+        this.jsonSerializable = jsonSerializable;
     }
 
     public List<ContractMethodArg> getParams() {

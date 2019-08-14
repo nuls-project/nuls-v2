@@ -47,6 +47,11 @@ public class ChainServiceImpl implements ChainService {
         chainNameMap.put(blockChain.getChainName(), 1);
     }
 
+    public void removeChainMapInfo(long magicNumber, String chainName) {
+        chainNetMagicNumberMap.remove(String.valueOf(magicNumber));
+        chainNameMap.remove(chainName);
+    }
+
     @Override
     public boolean hadExistMagicNumber(long magicNumber) {
         return (null != chainNetMagicNumberMap.get(String.valueOf(magicNumber)));
@@ -162,7 +167,8 @@ public class ChainServiceImpl implements ChainService {
 
     @Override
     public boolean chainExist(int chainId) throws Exception {
-        return (null != getChain(chainId));
+        BlockChain blockChain = getChain(chainId);
+        return (null != blockChain && !blockChain.isDelete());
     }
 
 
@@ -182,11 +188,7 @@ public class ChainServiceImpl implements ChainService {
          */
         assetService.createAsset(asset);
 
-        /*
-          3. 插入链
-         */
-        blockChain.addCreateAssetId(CmRuntimeInfo.getAssetKey(blockChain.getChainId(), asset.getAssetId()));
-        blockChain.addCirculateAssetId(CmRuntimeInfo.getAssetKey(blockChain.getChainId(), asset.getAssetId()));
+
         saveChain(blockChain);
         /*
             通知网络模块创建链
@@ -208,11 +210,29 @@ public class ChainServiceImpl implements ChainService {
                 case TxType.REGISTER_CHAIN_AND_ASSET:
                     BlockChain blockChain = TxUtil.buildChainWithTxData(tx, false);
                     rpcService.destroyCrossGroup(blockChain);
+                    Map<String, Object> chainAssetId = new HashMap<>();
+                    chainAssetId.put("chainId", blockChain.getChainId());
+                    chainAssetId.put("assetId", 0);
+                    rpcService.cancelCrossChain(chainAssetId);
+                    removeChainMapInfo(blockChain.getMagicNumber(), blockChain.getChainName());
                     break;
                 case TxType.DESTROY_CHAIN_AND_ASSET:
                     BlockChain delBlockChain = TxUtil.buildChainWithTxData(tx, true);
                     BlockChain dbRegChain = this.getChain(delBlockChain.getChainId());
                     rpcService.createCrossGroup(dbRegChain);
+                    rpcService.registerCrossChain(delBlockChain);
+                    addChainMapInfo(delBlockChain);
+                    break;
+                case TxType.ADD_ASSET_TO_CHAIN:
+                    Asset asset = TxUtil.buildAssetWithTxChain(tx);
+                    Map<String, Object> chainAssetIdAdd = new HashMap<>();
+                    chainAssetIdAdd.put("chainId", asset.getChainId());
+                    chainAssetIdAdd.put("assetId", asset.getAssetId());
+                    rpcService.cancelCrossChain(chainAssetIdAdd);
+                    break;
+                case TxType.REMOVE_ASSET_FROM_CHAIN:
+                    Asset assetDel = TxUtil.buildAssetWithTxChain(tx);
+                    rpcService.registerCrossAsset(assetDel);
                     break;
                 default:
                     break;
@@ -237,11 +257,11 @@ public class ChainServiceImpl implements ChainService {
         dbChain.setDelAddress(blockChain.getDelAddress());
         dbChain.setDelAssetId(blockChain.getDelAssetId());
         dbChain.setDelTxHash(blockChain.getDelTxHash());
-        dbChain.removeCreateAssetId(CmRuntimeInfo.getAssetKey(blockChain.getChainId(), blockChain.getDelAssetId()));
         dbChain.setDelete(true);
         updateChain(dbChain);
         //通知销毁链
         rpcService.destroyCrossGroup(dbChain);
+        removeChainMapInfo(blockChain.getMagicNumber(), blockChain.getChainName());
         return dbChain;
     }
 
@@ -257,9 +277,10 @@ public class ChainServiceImpl implements ChainService {
         chainInfoMap.put("chainName", blockChain.getChainName());
         chainInfoMap.put("minAvailableNodeNum", blockChain.getMinAvailableNodeNum());
         chainInfoMap.put("maxSignatureCount", blockChain.getMaxSignatureCount());
-        chainInfoMap.put("addressPrefix",blockChain.getAddressPrefix());
+        chainInfoMap.put("addressPrefix", blockChain.getAddressPrefix());
         chainInfoMap.put("signatureByzantineRatio", blockChain.getSignatureByzantineRatio());
         chainInfoMap.put("verifierList", new HashSet(blockChain.getVerifierList()));
+        chainInfoMap.put("registerTime", blockChain.getCreateTime());
         List<Asset> assets = assetService.getAssets(blockChain.getSelfAssetKeyList());
         List<Map<String, Object>> rtAssetList = new ArrayList<>();
         for (Asset asset : assets) {
@@ -272,6 +293,17 @@ public class ChainServiceImpl implements ChainService {
             rtAssetList.add(assetMap);
         }
         chainInfoMap.put("assetInfoList", rtAssetList);
+        return chainInfoMap;
+    }
+
+    @Override
+    public Map<String, Object> getChainAssetsSimpleInfo(BlockChain blockChain) throws Exception {
+        Map<String, Object> chainInfoMap = new HashMap<>();
+        chainInfoMap.put("chainId", blockChain.getChainId());
+        chainInfoMap.put("chainName", blockChain.getChainName());
+        chainInfoMap.put("addressPrefix", blockChain.getAddressPrefix());
+        chainInfoMap.put("registerTime", blockChain.getCreateTime());
+        chainInfoMap.put("enable", !blockChain.isDelete());
         return chainInfoMap;
     }
 
