@@ -66,7 +66,7 @@ public class MultiTestJyc extends Thread {
         BigInteger balance = getBalance(chain, SOURCE_ADDRESS);
         LOG.info(SOURCE_ADDRESS + "-----balance:{}", balance);
 
-        int count = 6000;
+        int count = 8000;
         {
             LOG.info("##########create " + count + " accounts##########");
             int loop = count / 100 == 0 ? 1 : count / 100;
@@ -97,6 +97,8 @@ public class MultiTestJyc extends Thread {
         new MultiTestJyc(3).start();
         new MultiTestJyc(4).start();
         new MultiTestJyc(5).start();
+        new MultiTestJyc(6).start();
+        new MultiTestJyc(7).start();
     }
 
     @Override

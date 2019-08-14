@@ -21,7 +21,8 @@ import java.util.Map;
 public class LoggerBuilder {
 
     private static final Map<String, NulsLogger> CONTAINER = new HashMap<>();
-    private static final Level DEFAULT_LEVEL = Level.ALL;
+    static final LoggerContext LOGGER_CONTEXT = (LoggerContext) LoggerFactory.getILoggerFactory();
+    private static final Level DEFAULT_LEVEL = Level.INFO;
 
     static {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -63,14 +64,14 @@ public class LoggerBuilder {
     @SuppressWarnings("unchecked")
     private static NulsLogger build(String fileName, Level fileLevel, Level consoleLevel) {
         RollingFileAppender fileAppender = LogAppender.getAppender(fileName, fileLevel);
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        Logger logger = context.getLogger(fileAppender.getEncoder().toString());
+        AsyncAppender asyncAppender = LogAppender.createAsyncAppender(fileAppender);
+        Logger logger = LOGGER_CONTEXT.getLogger(asyncAppender.toString());
         //设置不向上级打印信息
         logger.setAdditive(false);
         logger.addAppender(fileAppender);
         //输出到控制台
-        Appender consoleAppender = LogAppender.createConsoleAppender(consoleLevel);
-        logger.addAppender(consoleAppender);
+//        Appender consoleAppender = LogAppender.createConsoleAppender(consoleLevel);
+//        logger.addAppender(consoleAppender);
         return new NulsLogger(logger);
     }
 
