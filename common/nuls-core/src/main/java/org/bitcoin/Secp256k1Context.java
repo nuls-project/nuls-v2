@@ -34,7 +34,7 @@ public class Secp256k1Context {
           System.out.println("UnsatisfiedLinkError: " + e.toString());
           isEnabled = false;
       }
-      enabled = isEnabled;
+      enabled = false;
       context = contextRef;
       if (enabled) {
           System.out.println("jni enabled!!!");
