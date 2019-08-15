@@ -24,6 +24,7 @@ import io.nuls.core.rpc.util.AddressPrefixDatas;
 import io.nuls.core.rpc.util.NulsDateUtils;
 import io.nuls.core.thread.ThreadUtils;
 import io.nuls.core.thread.commom.NulsThreadFactory;
+import org.bitcoin.Secp256k1Context;
 
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -138,6 +139,9 @@ public class BlockBootstrap extends RpcModule {
     @Override
     public RpcModuleState onDependenciesReady() {
         Log.info("block onDependenciesReady");
+        if (Secp256k1Context.isEnabled()) {
+            Log.info("jni Secp256k1Context enabled!!!!");
+        }
         NulsDateUtils.getInstance().start();
         if (started) {
             List<Integer> chainIds = ContextManager.CHAIN_ID_LIST;
