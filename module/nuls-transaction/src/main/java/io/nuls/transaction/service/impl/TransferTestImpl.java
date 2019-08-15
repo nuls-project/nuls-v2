@@ -510,19 +510,35 @@ public class TransferTestImpl {
 
 
     public void mtTest(Integer threads) {
+        List<String> list = List.of(
+                "tNULSeBaMnrs6JKrCy6TQdzYJZkMZJDng7QAsD",
+                "tNULSeBaMvEtDfvZuukDf2mVyfGo3DdiN8KLRG",
+                "tNULSeBaMrbMRiFAUeeAt6swb4xVBNyi81YL24",
+                "tNULSeBaMu38g1vnJsSZUCwTDU9GsE5TVNUtpD",
+                "tNULSeBaMp9wC9PcWEcfesY7YmWrPfeQzkN1xL",
+                "tNULSeBaMshNPEnuqiDhMdSA4iNs6LMgjY6tcL",
+                "tNULSeBaMoodYW7AqyJrgYdWiJ6nfwfVHHHyXm",
+                "tNULSeBaMmTNYqywL5ZSHbyAQ662uE3wibrgD1",
+                "tNULSeBaMoNnKitV28JeuUdBaPSR6n1xHfKLj2",
+                "tNULSeBaMqywZjfSrKNQKBfuQtVxAHBQ8rB2Zn"
+        );
         for (int i = 0; i < threads; i++) {
-            new MtThread().start();
+            new MtThread(list.get(i)).start();
         }
     }
 
     private class MtThread extends Thread {
+        private String richAddress;
+
+        public MtThread(String richAddress) {
+            this.richAddress = richAddress;
+        }
         @Override
         public void run() {
             try {
                 int count = 1000;
-                List<String> list1 = doAccountsCreateAndGiveMoney(count, new BigInteger("10000000000"), "tNULSeBaMnrs6JKrCy6TQdzYJZkMZJDng7QAsD");
-                Thread.sleep(15000L);
-                List<String> list2 = doAccountsCreateAndGiveMoney(count, new BigInteger("10000000000"), "tNULSeBaMnrs6JKrCy6TQdzYJZkMZJDng7QAsD");
+                List<String> list1 = doAccountsCreateAndGiveMoney(count, new BigInteger("10000000000"), richAddress);
+                List<String> list2 = doAccountsCreateAndGiveMoney(count, new BigInteger("10000000000"), richAddress);
                 Thread.sleep(15000L);
                 //新生成账户各执行一笔转账
                 long countTx = 0;

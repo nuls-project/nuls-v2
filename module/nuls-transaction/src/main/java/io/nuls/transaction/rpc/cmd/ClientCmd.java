@@ -250,6 +250,7 @@ public class ClientCmd extends BaseCmd {
         try {
             ObjectUtils.canNotEmpty(params.get("threads"), TxErrorCode.PARAMETER_ERROR.getMsg());
             Integer threads = (Integer) params.get("threads");
+            transferTest.importPriKeyTest();
             transferTest.mtTest(threads);
             return success();
         } catch (Exception e) {
