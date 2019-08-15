@@ -509,4 +509,38 @@ public class TransferTestImpl {
     }
 
 
+    public void mtTest(Integer threads) {
+        for (int i = 0; i < threads; i++) {
+            new MtThread().start();
+        }
+    }
+
+    private class MtThread extends Thread {
+        @Override
+        public void run() {
+            try {
+                int count = 1000;
+                List<String> list1 = doAccountsCreateAndGiveMoney(count, new BigInteger("10000000000"), "tNULSeBaMnrs6JKrCy6TQdzYJZkMZJDng7QAsD");
+                Thread.sleep(15000L);
+                List<String> list2 = doAccountsCreateAndGiveMoney(count, new BigInteger("10000000000"), "tNULSeBaMnrs6JKrCy6TQdzYJZkMZJDng7QAsD");
+                Thread.sleep(15000L);
+                //新生成账户各执行一笔转账
+                long countTx = 0;
+                Map<String, NulsHash> preHashMap = new HashMap<>();
+                long x = 0;
+                while (true) {
+                    x++;
+                    Log.info("start Transfer {} 笔,  * 第 {} 次", countTx, x);
+                    long startTime = System.currentTimeMillis();
+                    countTx = countTx + doTrans(preHashMap, list1, list2, count);
+                    countTx = countTx + doTrans(preHashMap, list2, list1, count);
+                    long endTime = System.currentTimeMillis();
+                    long executionTime = endTime - startTime;
+                    Log.info("tx count:{} - execution time:{} milliseconds,  about≈:{}seconds", countTx, executionTime, executionTime / 1000);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

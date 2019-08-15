@@ -239,6 +239,24 @@ public class ClientCmd extends BaseCmd {
         }
     }
 
+    /**
+     * cmd 执行批量发交易的测试用例
+     *
+     * @param params
+     * @return
+     */
+    @CmdAnnotation(cmd = "mtTest", version = 1.0, description = "")
+    public Response mtTest(Map params) {
+        try {
+            ObjectUtils.canNotEmpty(params.get("threads"), TxErrorCode.PARAMETER_ERROR.getMsg());
+            Integer threads = (Integer) params.get("threads");
+            transferTest.mtTest(threads);
+            return success();
+        } catch (Exception e) {
+            return failed(TxErrorCode.SYS_UNKOWN_EXCEPTION);
+        }
+    }
+
 
     private void errorLogProcess(Chain chain, Exception e) {
         if (chain == null) {

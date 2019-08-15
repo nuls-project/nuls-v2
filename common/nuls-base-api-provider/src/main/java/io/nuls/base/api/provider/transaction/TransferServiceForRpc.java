@@ -41,6 +41,21 @@ import java.util.stream.Collectors;
 public class TransferServiceForRpc extends BaseRpcService implements TransferService {
 
     @Override
+    public Result mtTest(int threads) {
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put(Constants.VERSION_KEY_STR, "1.0");
+            params.put("threads", threads);
+            Request request = MessageUtil.newRequest("mtTest", params, Constants.BOOLEAN_TRUE, Constants.ZERO, Constants.ZERO);
+            String messageId = ResponseMessageProcessor.requestOnly(ModuleE.TX.abbr, request);
+            return "0".equals(messageId) ? Result.fail("", "") : new Result();
+        } catch (Exception e) {
+            return Result.fail("", "fail");
+        }
+
+    }
+
+    @Override
     public Result transferTest(int method, String addr1, String addr2) {
         try {
             Map<String, Object> params = new HashMap<>();

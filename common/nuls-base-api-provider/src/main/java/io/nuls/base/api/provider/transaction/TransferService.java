@@ -12,6 +12,13 @@ import io.nuls.base.data.Transaction;
 public interface TransferService {
 
     //todo
+
+    /**
+     * 测试多线程发交易 要删
+     */
+    Result mtTest(int threads);
+
+    //todo
     /**
      * 测试批量发交易 要删
      */
