@@ -106,6 +106,7 @@ public class CommandHandler implements InitializingBean {
         //transfer
         register(getBean(TransferProcessor.class));
         register(getBean(TransferTestProcessor.class));
+        register(getBean(MultiThreadTestProcessor.class));
         //transfer by alias
 //        register(getBean(TransferByAliasProcessor.class));
 
