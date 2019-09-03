@@ -167,8 +167,8 @@ public class CommonUtil {
             }
         }
         int minPassCount = agentCount * byzantineRatio / NulsCrossChainConstant.MAGIC_NUM_100;
-        if(minPassCount == 0){
-            minPassCount = 1;
+        if(minPassCount < 2){
+            minPassCount = 2;
         }
         chain.getLogger().debug("当前共识节点数量为：{},最少签名数量为:{}",agentCount,minPassCount );
         return minPassCount;
