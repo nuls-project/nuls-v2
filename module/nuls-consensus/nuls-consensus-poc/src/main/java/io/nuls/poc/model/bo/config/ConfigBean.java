@@ -156,6 +156,11 @@ public class ConfigBean extends BaseNulsData {
      * */
     private long deflationTimeInterval;
 
+    /**
+     * 协议升级时间
+     * */
+    private long protocolUpgrade;
+
     public long getPackingInterval() {
         return packingInterval;
     }
@@ -355,6 +360,14 @@ public class ConfigBean extends BaseNulsData {
 
     public void setTotalInflationAmount(BigInteger totalInflationAmount) {
         this.totalInflationAmount = totalInflationAmount;
+    }
+
+    public long getProtocolUpgrade() {
+        return protocolUpgrade;
+    }
+
+    public void setProtocolUpgrade(long protocolUpgrade) {
+        this.protocolUpgrade = protocolUpgrade;
     }
 
     @Override
