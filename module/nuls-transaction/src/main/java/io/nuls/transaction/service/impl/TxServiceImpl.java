@@ -1498,8 +1498,8 @@ public class TxServiceImpl implements TxService {
             List<String> txHashList = TransactionCall.txModuleValidator(chain,
                     entry.getKey(), entry.getValue(), blockHeaderStr);
             if (txHashList != null && txHashList.size() > 0) {
-                logger.debug("batch module verify fail:{}, module-code:{},  return count:{}", entry.getKey(), txHashList.size());
-                break;
+                logger.debug("batch module verify fail, module-code:{},  return count:{}", entry.getKey(), txHashList.size());
+                throw new NulsException(TxErrorCode.TX_VERIFY_FAIL);
             }
         }
         logger.debug("[验区块交易] 模块统一验证时间:{}", NulsDateUtils.getCurrentTimeMillis() - moduleV);
