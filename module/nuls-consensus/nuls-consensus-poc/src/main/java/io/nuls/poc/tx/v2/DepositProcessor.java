@@ -69,13 +69,12 @@ public class DepositProcessor implements TransactionProcessor {
                     chain.getLogger().info("Conflict between Intelligent Delegation Transaction and Red Card Transaction or Stop Node Transaction");
                     errorCode = ConsensusErrorCode.CONFLICT_ERROR.getCode();
                 }
-                if(blockHeader != null && txs.size() >1 && blockHeader.getTime() > chain.getConfig().getProtocolUpgrade()){
+                if(txs.size() >1 && blockHeader.getTime() > chain.getConfig().getProtocolUpgrade()){
                     NulsHash agentHash = deposit.getAgentHash();
                     BigInteger totalDeposit = BigInteger.ZERO;
                     if(agentDepositTotalMap.containsKey(agentHash)){
                         totalDeposit = agentDepositTotalMap.get(agentHash).add(deposit.getDeposit());
                         if (totalDeposit.compareTo(chain.getConfig().getCommissionMax()) > 0) {
-                            invalidTxList.add(depositTx);
                             chain.getLogger().info("Node delegation amount exceeds maximum delegation amount");
                             throw new NulsException(ConsensusErrorCode.DEPOSIT_OVER_AMOUNT);
                         }else{
