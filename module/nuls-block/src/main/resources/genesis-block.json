@@ -6,11 +6,6 @@
       "address": "tNULSeBaMnrs6JKrCy6TQdzYJZkMZJDng7QAsD",
       "amount": 1000000000000000,
       "lockTime": 0
-    },
-    {
-      "address": "tNULSeBaMnrs6JKrCy6TQdzYJZkMZJDng7QAsD",
-      "amount": 1000000000000000,
-      "lockTime": 0
     }
   ],
   "extend": "01000000010076c8775d0100010001005a64002056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
